@@ -92,7 +92,7 @@
 <script>
 const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function showError(msg) {
   const el = document.getElementById('error-msg');
@@ -108,7 +108,7 @@ function showLoading(msg) {
 }
 
 async function redirectUser(userId) {
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await sb
     .from('profiles')
     .select('role, dashboard_access')
     .eq('id', userId)
@@ -119,31 +119,30 @@ async function redirectUser(userId) {
     return;
   }
 
-  const autorisé = 
+  const autorise =
     profile.role === 'gestionnaire' ||
     profile.role === 'secretaire' ||
     (profile.role === 'technicien' && profile.dashboard_access === true);
 
-  if (autorisé) {
+  if (autorise) {
     window.location.href = 'dashboard.html';
   } else {
-    await supabase.auth.signOut();
-    showError('Vous n\'avez pas accès à ce portail. Utilisez l\'application GEQ habituelle.');
+    await sb.auth.signOut();
+    showError('Vous n\'avez pas acces a ce portail.');
   }
 }
 
 async function signIn() {
   showLoading('Redirection vers Google...');
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.href }
   });
   if (error) showError(error.message);
 }
 
-// Vérifie si déjà connecté au chargement
 (async () => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     showLoading('Connexion en cours...');
     await redirectUser(session.user.id);
