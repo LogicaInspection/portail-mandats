@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portail Mandats</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+.header {
+  background: white; border-bottom: 1px solid #e5e7eb;
+  padding: 0 32px; display: flex; align-items: center;
+  justify-content: space-between; height: 64px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-left img { height: 36px; object-fit: contain; }
+.header-divider { width: 1px; height: 28px; background: #e5e7eb; }
+.header-title { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.user-info { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #555; }
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #1a1a2e; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.btn-logout {
+  padding: 7px 14px; border: 1px solid #e5e7eb; border-radius: 8px;
+  background: white; color: #555; font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.btn-logout:hover { background: #f5f5f5; }
+
+.main { max-width: 1400px; margin: 0 auto; padding: 28px 24px; }
+
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 24px;
+  background: white; padding: 4px; border-radius: 12px;
+  width: fit-content; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.tab {
+  padding: 8px 20px; border-radius: 8px; border: none;
+  background: none; font-size: 14px; font-weight: 500;
+  color: #888; cursor: pointer; transition: all 0.2s;
+}
+.tab.active { background: #1a1a2e; color: white; }
+.tab:hover:not(.active) { background: #f5f5f5; color: #444; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: white; border-radius: 12px; padding: 20px 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.stat-label { font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.stat-value { font-size: 26px; font-weight: 700; color: #1a1a2e; }
+.stat-sub { font-size: 12px; color: #999; margin-top: 4px; }
+
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-input {
+  flex: 1; min-width: 200px; max-width: 320px;
+  padding: 10px 16px; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; font-size: 14px; outline: none; transition: border 0.2s;
+}
+.search-input:focus { border-color: #1a1a2e; }
+select.filter {
+  padding: 10px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+  font-size: 14px; background: white; outline: none; color: #444; cursor: pointer;
+}
+select.filter:focus { border-color: #1a1a2e; }
+.btn-new {
+  margin-left: auto; padding: 10px 22px;
+  background: #1a1a2e; color: white; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-new:hover { background: #2d2d4e; }
+
+.table-wrap { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; }
+.t-header {
+  display: grid; padding: 11px 20px;
+  background: #f8f9fa; border-bottom: 1px solid #e5e7eb;
+  font-size: 11px; font-weight: 600; color: #999;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.t-row {
+  display: grid; padding: 14px 20px;
+  border-bottom: 1px solid #f3f3f3;
+  cursor: pointer; transition: background 0.15s; align-items: center;
+}
+.t-row:last-child { border-bottom: none; }
+.t-row:hover { background: #f8f9fa; }
+
+.cols-gest { grid-template-columns: 92px 1fr 180px 150px 130px 130px 110px; gap: 12px; }
+.cols-tech { grid-template-columns: 92px 1fr 180px 150px 130px 130px; gap: 12px; }
+
+.badge {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.badge-logica { background: #e3f0ff; color: #1565c0; }
+.badge-geq    { background: #fdecea; color: #b71c1c; }
+
+.statuts { display: flex; gap: 8px; }
+.s-dot {
+  display: flex; align-items: center; gap: 3px;
+  font-size: 11px; color: #999;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; }
+.dot-green  { background: #4caf50; }
+.dot-orange { background: #ff9800; }
+.dot-gray   { background: #ddd; }
+
+.empty { text-align: center; padding: 56px 20px; color: #bbb; }
+.empty div { font-size: 40px; margin-bottom: 12px; }
+
+/* Modal nouveau mandat */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal {
+  background: white; border-radius: 16px; padding: 36px;
+  width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.modal h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 8px; }
+.modal p { font-size: 14px; color: #888; margin-bottom: 24px; }
+.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn-logica {
+  padding: 16px; border: 2px solid #e3f0ff; border-radius: 12px;
+  background: #f0f7ff; cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.btn-logica:hover { border-color: #1565c0; background: #e3f0ff; }
+.btn-geq {
+  padding: 16px; border: 2px solid #fdecea; border-radius: 12px;
+  background: #fff5f5; cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.btn-geq:hover { border-color: #b71c1c; background: #fdecea; }
+.modal-comp-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.modal-comp-sub { font-size: 12px; color: #888; }
+.btn-cancel-modal {
+  margin-top: 16px; width: 100%; padding: 10px;
+  border: 1px solid #e5e7eb; border-radius: 10px;
+  background: none; color: #888; font-size: 14px; cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .cols-gest, .cols-tech { grid-template-columns: 1fr; }
+  .t-header { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <img src="https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg" alt="GEQ">
+    <div class="header-divider"></div>
+    <span class="header-title">Portail Mandats</span>
+  </div>
+  <div class="header-right">
+    <div class="user-info">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <span id="user-name">...</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="tous" onclick="setTab('tous')">Tous</button>
+    <button class="tab" data-tab="logica" onclick="setTab('logica')">🏠 Logica</button>
+    <button class="tab" data-tab="geq" onclick="setTab('geq')">🏢 GEQ</button>
+    <button class="tab" id="tab-fdp" style="display:none" onclick="goToFDP()">📊 Fonds de prévoyance</button>
+  </div>
+
+  <!-- STATS GESTIONNAIRE -->
+  <div class="stats-row" id="stats-gest" style="display:none">
+    <div class="stat-card">
+      <div class="stat-label">Mandats ce mois</div>
+      <div class="stat-value" id="s-mois">—</div>
+      <div class="stat-sub" id="s-total">— au total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Rapports en attente</div>
+      <div class="stat-value" id="s-rapports">—</div>
+      <div class="stat-sub">à envoyer</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Non payés</div>
+      <div class="stat-value" id="s-nonpaye">—</div>
+      <div class="stat-sub">factures ouvertes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Revenus ce mois</div>
+      <div class="stat-value" id="s-revenus">—</div>
+      <div class="stat-sub">total TTC</div>
+    </div>
+  </div>
+
+  <!-- STATS TECHNICIEN -->
+  <div class="stats-row" id="stats-tech" style="display:none">
+    <div class="stat-card">
+      <div class="stat-label">Mandats cette année</div>
+      <div class="stat-value" id="t-annee">—</div>
+      <div class="stat-sub" id="t-mois-sub">— ce mois</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Logica</div>
+      <div class="stat-value" id="t-logica">—</div>
+      <div class="stat-sub">inspections</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">GEQ</div>
+      <div class="stat-value" id="t-geq">—</div>
+      <div class="stat-sub">mandats</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Mes commissions</div>
+      <div class="stat-value" id="t-comm">—</div>
+      <div class="stat-sub">cette année</div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <input type="text" class="search-input" id="search" placeholder="🔍  Rechercher client, adresse..." oninput="filterMandats()">
+    <select class="filter" id="f-statut" onchange="filterMandats()">
+      <option value="">Tous les statuts</option>
+      <option value="nonpaye">Non payé</option>
+      <option value="paye">Payé</option>
+      <option value="rapport_pending">Rapport à envoyer</option>
+      <option value="confirmation_pending">Confirmation à envoyer</option>
+    </select>
+    <select class="filter" id="f-tech" style="display:none" onchange="filterMandats()">
+      <option value="">Tous les techniciens</option>
+    </select>
+    <button class="btn-new" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
+      + Nouveau mandat
+    </button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap" id="table-wrap">
+    <div class="empty"><div>⏳</div><p>Chargement des mandats...</p></div>
+  </div>
+
+</div>
+
+<!-- MODAL NOUVEAU MANDAT -->
+<div class="modal-overlay" id="modal-new" style="display:none" onclick="hideModal(event)">
+  <div class="modal">
+    <h2>Nouveau mandat</h2>
+    <p>Pour quelle compagnie ?</p>
+    <div class="modal-btns">
+      <div class="btn-logica" onclick="goNewMandat('logica')">
+        <div class="modal-comp-title" style="color:#1565c0">🏠 Logica</div>
+        <div class="modal-comp-sub">Inspection pré-achat</div>
+      </div>
+      <div class="btn-geq" onclick="goNewMandat('geq')">
+        <div class="modal-comp-title" style="color:#b71c1c">🏢 GEQ</div>
+        <div class="modal-comp-sub">Expertise & services</div>
+      </div>
+    </div>
+    <button class="btn-cancel-modal" onclick="document.getElementById('modal-new').style.display='none'">Annuler</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let profile = null;
+let allMandats = [];
+let currentTab = 'tous';
+
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+
+  const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+  if (!p) { window.location.href = 'index.html'; return; }
+  profile = p;
+
+  const hasAccess =
+    (p.role === 'gestionnaire' && p.dashboard_access) ||
+    p.role === 'secretaire' ||
+    (p.role === 'technicien' && p.dashboard_access);
+  if (!hasAccess) { window.location.href = 'index.html'; return; }
+
+  const initiales = ((p.prenom||'')[0] + (p.nom||'')[0]).toUpperCase();
+  document.getElementById('user-avatar').textContent = initiales;
+  document.getElementById('user-name').textContent = `${p.prenom} ${p.nom}`;
+
+  // FDP tab : gestionnaire ou technicien Jacob/Alain
+  if (p.role === 'gestionnaire' || p.role === 'technicien') {
+    document.getElementById('tab-fdp').style.display = 'block';
+  }
+
+  // Bouton nouveau : gestionnaire + secrétaire
+  if (p.role === 'gestionnaire' || p.role === 'secretaire') {
+    document.getElementById('btn-new').style.display = 'flex';
+  }
+
+  // Stats et filtre tech pour gestionnaire
+  if (p.role === 'gestionnaire') {
+    document.getElementById('stats-gest').style.display = 'grid';
+    document.getElementById('f-tech').style.display = 'block';
+    await loadTechs();
+  } else if (p.role === 'technicien') {
+    document.getElementById('stats-tech').style.display = 'grid';
+  }
+
+  await loadMandats();
+})();
+
+async function loadTechs() {
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, nom, prenom')
+    .eq('role', 'technicien')
+    .eq('dashboard_access', true)
+    .order('nom');
+  const sel = document.getElementById('f-tech');
+  (data || []).forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.id;
+    o.textContent = `${t.prenom} ${t.nom}`;
+    sel.appendChild(o);
+  });
+}
+
+async function loadMandats() {
+  document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>⏳</div><p>Chargement...</p></div>';
+  const { data, error } = await supabase
+    .from('mandats')
+    .select('*, technicien:profiles!mandats_technicien_id_fkey(id, nom, prenom)')
+    .order('date_mandat', { ascending: false, nullsFirst: false });
+
+  if (error) {
+    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>⚠️</div><p>Erreur de chargement</p></div>';
+    return;
+  }
+  allMandats = data || [];
+  updateStats();
+  filterMandats();
+}
+
+function updateStats() {
+  const now = new Date();
+  const annee = now.getFullYear();
+  const moisN = now.getMonth();
+
+  if (profile.role === 'gestionnaire') {
+    const mois = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getMonth() === moisN && new Date(m.date_mandat).getFullYear() === annee);
+    document.getElementById('s-mois').textContent = mois.length;
+    document.getElementById('s-total').textContent = `${allMandats.length} au total`;
+    document.getElementById('s-rapports').textContent = allMandats.filter(m => !m.statut_rapport_envoye).length;
+    document.getElementById('s-nonpaye').textContent = allMandats.filter(m => !m.statut_paye).length;
+    const rev = mois.reduce((s, m) => s + (parseFloat(m.total_ttc) || 0), 0);
+    document.getElementById('s-revenus').textContent = money(rev);
+  } else if (profile.role === 'technicien') {
+    const ann = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getFullYear() === annee);
+    const mois = ann.filter(m => new Date(m.date_mandat).getMonth() === moisN);
+    document.getElementById('t-annee').textContent = ann.length;
+    document.getElementById('t-mois-sub').textContent = `${mois.length} ce mois`;
+    document.getElementById('t-logica').textContent = ann.filter(m => m.compagnie === 'logica').length;
+    document.getElementById('t-geq').textContent = ann.filter(m => m.compagnie === 'geq').length;
+    const comm = ann.reduce((s, m) => s + (parseFloat(m.commission_totale) || 0), 0);
+    document.getElementById('t-comm').textContent = money(comm);
+  }
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  filterMandats();
+}
+
+function filterMandats() {
+  const s = document.getElementById('search').value.toLowerCase();
+  const st = document.getElementById('f-statut').value;
+  const tech = document.getElementById('f-tech').value;
+
+  let list = allMandats;
+  if (currentTab !== 'tous') list = list.filter(m => m.compagnie === currentTab);
+  if (s) list = list.filter(m =>
+    (m.client_nom||'').toLowerCase().includes(s) ||
+    (m.adresse||'').toLowerCase().includes(s) ||
+    (m.client_email||'').toLowerCase().includes(s) ||
+    (m.client_telephone||'').toLowerCase().includes(s)
+  );
+  if (st === 'nonpaye') list = list.filter(m => !m.statut_paye);
+  if (st === 'paye') list = list.filter(m => m.statut_paye);
+  if (st === 'rapport_pending') list = list.filter(m => !m.statut_rapport_envoye);
+  if (st === 'confirmation_pending') list = list.filter(m => !m.statut_confirmation_envoyee);
+  if (tech) list = list.filter(m => m.technicien_id === tech);
+
+  renderTable(list);
+}
+
+function renderTable(list) {
+  const isGest = profile.role === 'gestionnaire';
+  const cols = isGest ? 'cols-gest' : 'cols-tech';
+
+  if (!list.length) {
+    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>📋</div><p>Aucun mandat trouvé</p></div>';
+    return;
+  }
+
+  let html = `<div class="t-header ${cols}">
+    <div>Date</div><div>Client</div><div>Adresse</div>
+    <div>Type</div><div>Technicien</div><div>Statuts</div>
+    ${isGest ? '<div>Total TTC</div>' : ''}
+  </div>`;
+
+  list.forEach(m => {
+    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA') : '—';
+    const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
+    const tech = m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : '—';
+    const badge = m.compagnie === 'logica'
+      ? '<span class="badge badge-logica">Logica</span>'
+      : '<span class="badge badge-geq">GEQ</span>';
+
+    const dFact = m.statut_facture_envoyee ? 'dot-green' : 'dot-gray';
+    const dPaye = m.statut_paye ? 'dot-green' : 'dot-orange';
+    const dRapp = m.statut_rapport_envoye ? 'dot-green' : 'dot-gray';
+
+    html += `<div class="t-row ${cols}" onclick="window.location.href='mandat.html?id=${m.id}'">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#333">${date}</div>
+        ${heure ? `<div style="font-size:11px;color:#999">${heure}</div>` : ''}
+      </div>
+      <div>
+        <div style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:2px">${m.client_nom}</div>
+        <div style="font-size:12px;color:#999">${m.client_telephone||''}</div>
+      </div>
+      <div style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.adresse||'—'}</div>
+      <div>
+        ${badge}
+        <div style="font-size:11px;color:#999;margin-top:4px">${m.type_mandat||''}</div>
+      </div>
+      <div style="font-size:13px;color:#555">${tech}</div>
+      <div class="statuts">
+        <div class="s-dot"><div class="dot ${dFact}"></div>Fact.</div>
+        <div class="s-dot"><div class="dot ${dPaye}"></div>Payé</div>
+        <div class="s-dot"><div class="dot ${dRapp}"></div>Rapp.</div>
+      </div>
+      ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '—'}</div>` : ''}
+    </div>`;
+  });
+
+  document.getElementById('table-wrap').innerHTML = html;
+}
+
+function showModalNouveauMandat() {
+  document.getElementById('modal-new').style.display = 'flex';
+}
+function hideModal(e) {
+  if (e.target.id === 'modal-new') document.getElementById('modal-new').style.display = 'none';
+}
+function goNewMandat(comp) {
+  window.location.href = `mandat.html?mode=new&compagnie=${comp}`;
+}
+function goToFDP() {
+  window.location.href = 'https://geq-suivi-app.vercel.app/dashboard.html';
+}
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = 'index.html';
+}
+function money(n) {
+  return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n||0);
+}
+</script>
+</body>
+</html>
