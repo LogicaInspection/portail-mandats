@@ -433,4 +433,550 @@ function fillForm(){
   document.getElementById('f-compagnie').value=m.compagnie||'logica';
   document.getElementById('f-client-nom').value=m.client_nom||'';
   document.getElementById('f-client-tel').value=m.client_telephone||'';
-  document.getElementById('f-client-email').value=m.client_email
+  document.getElementById('f-client-email').value=m.client_email||'';
+  document.getElementById('f-adresse').value=m.adresse||'';
+  document.getElementById('f-date').value=m.date_mandat||'';
+  document.getElementById('f-heure').value=m.heure_mandat?m.heure_mandat.substring(0,5):'';
+  document.getElementById('f-tech').value=m.technicien_id||'';
+  document.getElementById('f-notes').value=m.notes||'';
+  document.getElementById('prix-base').value=m.prix_base||0;
+  document.getElementById('comm-base').value=m.commission_manuelle||0;
+  document.getElementById('transport').value=m.transport_montant||0;
+  if(m.type_batiment) document.getElementById('f-type-batiment').value=m.type_batiment;
+  if(m.type_mandat) document.getElementById('f-type-mandat').value=m.type_mandat;
+  if(m.courtier_nom) document.getElementById('f-courtier').value=m.courtier_nom;
+  if(m.reference_client) document.getElementById('f-reference').value=m.reference_client;
+  if(m.listing_url) document.getElementById('f-listing').value=m.listing_url;
+
+  // Statuts
+  setStBtn('st-conf',m.statut_confirmation_envoyee);
+  setStBtn('st-fact',m.statut_facture_envoyee);
+  setStBtn('st-paye',m.statut_paye);
+  setStBtn('st-rapp',m.statut_rapport_envoye);
+  if(m.statut_paye){
+    document.getElementById('paye-section').classList.add('show');
+    if(m.paye_par){
+      const clientNom=m.client_nom||'Client';
+      document.getElementById('par-client-nom').textContent=clientNom;
+      if(m.paye_par===clientNom||m.paye_par==='client'){
+        document.getElementById('par-client').classList.add('on');
+      } else {
+        document.getElementById('par-autre').classList.add('on');
+        document.getElementById('par-autre-input').style.display='block';
+        document.getElementById('par-autre-input').value=m.paye_par;
+      }
+    }
+    if(m.mode_paiement){
+      document.querySelectorAll('.btn-mode').forEach(b=>{
+        if(b.textContent.toLowerCase().includes(m.mode_paiement.toLowerCase())||
+           (m.mode_paiement==='virement'&&b.textContent.includes('Interac'))){
+          b.classList.add('on');
+        }
+      });
+    }
+  }
+  // Titre
+  document.getElementById('htitle').textContent=m.client_nom||'Mandat';
+  document.getElementById('par-client-nom').textContent=m.client_nom||'Client';
+
+  // Tech comm
+  if(profile.role==='technicien'){
+    document.getElementById('tech-comm-val').textContent=money(m.commission_totale);
+  }
+  onCompagnieChange();
+  recalc();
+}
+
+function onCompagnieChange(){
+  const comp=document.getElementById('f-compagnie').value;
+  document.querySelectorAll('.logica-only').forEach(el=>el.style.display=comp==='logica'?'':'none');
+  document.querySelectorAll('.geq-only').forEach(el=>el.style.display=comp==='geq'?'':'none');
+  document.getElementById('fg-type-geq').style.display=comp==='geq'?'flex':'none';
+  updateBadge();
+  renderEmails();
+}
+
+function updateBadge(){
+  const comp=document.getElementById('f-compagnie').value;
+  const b=document.getElementById('hbadge');
+  b.style.display='inline-block';
+  b.textContent=comp==='logica'?'Logica':'GEQ';
+  b.className='badge '+(comp==='logica'?'badge-logica':'badge-geq');
+}
+
+// EXTRAS
+function renderExtras(){
+  const list=document.getElementById('extras-list');
+  const isGest=profile.role==='gestionnaire';
+  list.innerHTML='';
+  if(!extras.length){list.innerHTML='<div style="font-size:13px;color:#bbb;padding:8px 0">Aucun service suppl\u00e9mentaire</div>';return;}
+  extras.forEach((ex,i)=>{
+    const row=document.createElement('div');
+    row.className='extra-row';
+    row.innerHTML=`
+      <input type="checkbox" class="extra-check" ${ex.actif?'checked':''} onchange="extraToggle(${i},this.checked)">
+      <span class="extra-name">${ex.service_nom}</span>
+      <input class="fin-input-sm" type="number" min="0" step="0.01" value="${ex.prix||0}" 
+        oninput="extraSetPrix(${i},this.value)" ${!isGest&&profile.role==='secretaire'?'':''}
+        title="Prix client">
+      ${isGest?`<input class="fin-input-sm comm-col" type="number" min="0" step="0.01" value="${ex.commission||0}" 
+        oninput="extraSetComm(${i},this.value)" title="Commission">`:
+        `<span class="comm-col"></span>`}
+      ${profile.role==='gestionnaire'||profile.role==='secretaire'?
+        `<button class="btn-rm del-col" onclick="removeExtra(${i})">✕</button>`:'<span></span>'}
+    `;
+    list.appendChild(row);
+  });
+  if(document.getElementById('f-compagnie').value==='geq'){
+    document.querySelector('.btn-add-extra').style.display='block';
+  }
+  recalc();
+}
+
+function extraToggle(i,v){extras[i].actif=v;recalc();}
+function extraSetPrix(i,v){extras[i].prix=parseFloat(v)||0;recalc();}
+function extraSetComm(i,v){extras[i].commission=parseFloat(v)||0;recalcComm();}
+function removeExtra(i){extras.splice(i,1);renderExtras();}
+function addExtra(){
+  extras.push({id:Math.random().toString(36).substr(2,9),service_nom:'Nouveau service',prix:0,commission:0,actif:false});
+  renderExtras();
+}
+
+// FINANCES CALC
+function recalc(){
+  const base=parseFloat(document.getElementById('prix-base').value)||0;
+  const trans=parseFloat(document.getElementById('transport').value)||0;
+  const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
+  const st=base+extrasSum+trans;
+  const tps=st*0.05;
+  const tvq=st*0.09975;
+  const ttc=st+tps+tvq;
+  document.getElementById('sous-total').textContent=money(st);
+  document.getElementById('tps-val').textContent=money(tps);
+  document.getElementById('tvq-val').textContent=money(tvq);
+  document.getElementById('total-ttc').textContent=money(ttc);
+  document.getElementById('transport-comm').textContent=money(trans);
+  recalcComm();
+}
+
+function recalcComm(){
+  const trans=parseFloat(document.getElementById('transport').value)||0;
+  const baseComm=parseFloat(document.getElementById('comm-base').value)||0;
+  const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
+  const total=baseComm+extComm+trans;
+  document.getElementById('total-comm').textContent=money(total);
+}
+
+// STATUTS
+function setStBtn(id,val){
+  const btn=document.getElementById(id);
+  btn.classList.toggle('on',!!val);
+  btn.querySelector('.ck').textContent=val?'✓':'○';
+}
+
+async function toggleSt(field,btnId){
+  const btn=document.getElementById(btnId);
+  const newVal=!btn.classList.contains('on');
+  setStBtn(btnId,newVal);
+  if(!isNew&&mandat){
+    const up={};up[field]=newVal;
+    await sb.from('mandats').update(up).eq('id',mandat.id);
+    if(mandat) mandat[field]=newVal;
+    toast(newVal?'Statut activ\u00e9':'Statut d\u00e9sactiv\u00e9');
+  }
+}
+
+function togglePaye(){
+  const btn=document.getElementById('st-paye');
+  const newVal=!btn.classList.contains('on');
+  setStBtn('st-paye',newVal);
+  document.getElementById('paye-section').classList.toggle('show',newVal);
+  if(!isNew&&mandat){
+    sb.from('mandats').update({statut_paye:newVal}).eq('id',mandat.id);
+    if(mandat) mandat.statut_paye=newVal;
+    toast(newVal?'Marqu\u00e9 pay\u00e9 ✓':'Statut pay\u00e9 retir\u00e9');
+  }
+}
+
+function setPar(type){
+  document.querySelectorAll('.btn-par').forEach(b=>b.classList.remove('on'));
+  const clientNom=document.getElementById('f-client-nom').value||'Client';
+  document.getElementById('par-client-nom').textContent=clientNom;
+  if(type==='client'){
+    document.getElementById('par-client').classList.add('on');
+    document.getElementById('par-autre-input').style.display='none';
+    if(!isNew&&mandat){
+      sb.from('mandats').update({paye_par:clientNom}).eq('id',mandat.id);
+    }
+  } else {
+    document.getElementById('par-autre').classList.add('on');
+    document.getElementById('par-autre-input').style.display='block';
+    document.getElementById('par-autre-input').focus();
+  }
+}
+
+function setParAutre(v){
+  if(!isNew&&mandat) sb.from('mandats').update({paye_par:v}).eq('id',mandat.id);
+}
+
+function setMode(mode){
+  document.querySelectorAll('.btn-mode').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  if(!isNew&&mandat) sb.from('mandats').update({mode_paiement:mode}).eq('id',mandat.id);
+}
+
+// SAVE
+async function saveMandat(){
+  const nom=document.getElementById('f-client-nom').value.trim();
+  if(!nom){toast('Le nom du client est requis','err');return;}
+  const comp=document.getElementById('f-compagnie').value;
+  const typeMand=comp==='logica'?'Inspection pr\u00e9-achat':document.getElementById('f-type-mandat').value;
+  const base=parseFloat(document.getElementById('prix-base').value)||0;
+  const trans=parseFloat(document.getElementById('transport').value)||0;
+  const commBase=parseFloat(document.getElementById('comm-base').value)||0;
+  const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
+  const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
+  const st=base+extrasSum+trans;
+  const tps=st*0.05;
+  const tvq=st*0.09975;
+  const ttc=st+tps+tvq;
+  const commTot=commBase+extComm+trans;
+
+  const techId=document.getElementById('f-tech').value||null;
+  const {data:{session}}=await sb.auth.getSession();
+
+  const payload={
+    compagnie:comp,
+    type_mandat:typeMand,
+    technicien_id:techId,
+    created_by:isNew?session.user.id:undefined,
+    date_mandat:document.getElementById('f-date').value||null,
+    heure_mandat:document.getElementById('f-heure').value||null,
+    client_nom:nom,
+    client_telephone:document.getElementById('f-client-tel').value||null,
+    client_email:document.getElementById('f-client-email').value||null,
+    adresse:document.getElementById('f-adresse').value||null,
+    courtier_nom:document.getElementById('f-courtier').value||null,
+    reference_client:document.getElementById('f-reference').value||null,
+    listing_url:document.getElementById('f-listing').value||null,
+    type_batiment:document.getElementById('f-type-batiment').value||null,
+    prix_base:base,
+    transport_montant:trans,
+    commission_manuelle:commBase,
+    sous_total:st,
+    tps:tps,
+    tvq:tvq,
+    total_ttc:ttc,
+    commission_totale:commTot,
+    notes:document.getElementById('f-notes').value||null,
+  };
+  if(isNew) delete payload.created_by;
+
+  let savedId;
+  if(isNew){
+    const {data,error}=await sb.from('mandats').insert({...payload,created_by:session.user.id}).select().single();
+    if(error){toast('Erreur: '+error.message,'err');return;}
+    savedId=data.id;
+    mandat=data;
+    // Save extras
+    if(extras.length){
+      const exInsert=extras.map(e=>({mandat_id:savedId,service_nom:e.service_nom,prix:e.prix,commission:e.commission,actif:e.actif}));
+      const {data:exData}=await sb.from('mandat_extras').insert(exInsert).select();
+      extras=exData||extras;
+    }
+    isNew=false;
+    toast('Mandat cr\u00e9\u00e9 ✓');
+    history.replaceState(null,'',`?id=${savedId}`);
+    document.getElementById('htitle').textContent=nom;
+    document.getElementById('btn-del').style.display=profile.role==='gestionnaire'?'flex':'none';
+    document.getElementById('sec-docs').style.display='block';
+    document.getElementById('sec-emails').style.display='block';
+    renderDocs();
+    renderEmails();
+  } else {
+    const {error}=await sb.from('mandats').update(payload).eq('id',mandat.id);
+    if(error){toast('Erreur: '+error.message,'err');return;}
+    mandat={...mandat,...payload};
+    // Update extras
+    await sb.from('mandat_extras').delete().eq('mandat_id',mandat.id);
+    if(extras.length){
+      const exInsert=extras.map(e=>({mandat_id:mandat.id,service_nom:e.service_nom,prix:e.prix,commission:e.commission,actif:e.actif}));
+      const {data:exData}=await sb.from('mandat_extras').insert(exInsert).select();
+      extras=exData||extras;
+    }
+    toast('Sauvegard\u00e9 ✓');
+  }
+  document.getElementById('par-client-nom').textContent=nom;
+  if(profile.role==='technicien') document.getElementById('tech-comm-val').textContent=money(commTot);
+}
+
+// DELETE
+async function deleteMandat(){
+  if(!confirm('Supprimer ce mandat ? Cette action est irr\u00e9versible.')) return;
+  await sb.from('mandats').delete().eq('id',mandat.id);
+  window.location.href='dashboard.html';
+}
+
+// DOCS
+const DOC_TYPES_LOGICA=[
+  {key:'rapport_inspection',label:'📋 Rapport d\'inspection'},
+  {key:'declaration_vendeur',label:'📜 D\u00e9claration du vendeur'},
+  {key:'autre',label:'📎 Autres documents'},
+];
+const DOC_TYPES_GEQ=[
+  {key:'rapport',label:'📋 Rapport'},
+  {key:'resultat_analyse',label:'🧪 R\u00e9sultats d\'analyse'},
+  {key:'autre',label:'📎 Autres documents'},
+];
+
+function renderDocs(){
+  const comp=mandat?mandat.compagnie:document.getElementById('f-compagnie').value;
+  const types=comp==='logica'?DOC_TYPES_LOGICA:DOC_TYPES_GEQ;
+  const sec=document.getElementById('doc-section');
+  sec.innerHTML='';
+  types.forEach(t=>{
+    const typeDocs=docs.filter(d=>d.type_document===t.key);
+    const block=document.createElement('div');
+    block.className='doc-block';
+    let html=`<div class="doc-block-title">${t.label}</div>`;
+    typeDocs.forEach(d=>{
+      html+=`<div class="doc-file">
+        <span class="doc-fn">📄 ${d.nom_fichier}</span>
+        <button class="btn-dl" onclick="downloadDoc('${d.storage_path}','${d.nom_fichier}')">⬇ T\u00e9l\u00e9charger</button>
+        ${profile.role==='gestionnaire'||profile.role==='secretaire'?
+          `<button class="btn-deldoc" onclick="deleteDoc('${d.id}','${d.storage_path}')">✕</button>`:''}
+      </div>`;
+    });
+    if(profile.role!=='technicien'||typeDocs.length===0){
+      html+=`<div class="doc-drop" onclick="triggerUpload('${t.key}')">
+        ＋ T\u00e9l\u00e9verser un fichier
+        <input type="file" id="file-${t.key}" onchange="uploadDoc('${t.key}',this)">
+      </div>`;
+    }
+    block.innerHTML=html;
+    sec.appendChild(block);
+  });
+}
+
+function triggerUpload(key){
+  document.getElementById('file-'+key).click();
+}
+
+async function uploadDoc(key,input){
+  if(!input.files[0]||!mandat) return;
+  const file=input.files[0];
+  const path=`${mandat.id}/${key}_${Date.now()}_${file.name}`;
+  toast('T\u00e9l\u00e9versement en cours...');
+  const {error}=await sb.storage.from('mandat-documents').upload(path,file);
+  if(error){toast('Erreur upload: '+error.message,'err');return;}
+  const {data:{session}}=await sb.auth.getSession();
+  const {data:docData}=await sb.from('mandat_documents').insert({
+    mandat_id:mandat.id,type_document:key,
+    nom_fichier:file.name,storage_path:path,
+    taille_fichier:file.size,uploaded_by:session.user.id
+  }).select().single();
+  docs.push(docData);
+  renderDocs();
+  toast('Fichier t\u00e9l\u00e9vers\u00e9 ✓');
+}
+
+async function downloadDoc(path,nom){
+  const {data}=await sb.storage.from('mandat-documents').createSignedUrl(path,300);
+  if(data){
+    const a=document.createElement('a');
+    a.href=data.signedUrl;a.download=nom;a.click();
+  }
+}
+
+async function deleteDoc(id,path){
+  if(!confirm('Supprimer ce fichier ?')) return;
+  await sb.storage.from('mandat-documents').remove([path]);
+  await sb.from('mandat_documents').delete().eq('id',id);
+  docs=docs.filter(d=>d.id!==id);
+  renderDocs();
+  toast('Fichier supprim\u00e9');
+}
+
+// EMAILS
+function renderEmails(){
+  const comp=mandat?mandat.compagnie:document.getElementById('f-compagnie').value;
+  const list=document.getElementById('email-list');
+  list.innerHTML='';
+  const btns=comp==='logica'?[
+    {type:'conf_logica',icon:'📧',title:'Confirmation d\'inspection',sub:'Convention de service + Norme de pratique en pi\u00e8ces jointes',field:'statut_confirmation_envoyee'},
+    {type:'rapp_logica',icon:'📋',title:'Voici votre rapport d\'inspection',sub:'Rapport d\'inspection en pi\u00e8ce jointe',field:'statut_rapport_envoye'},
+  ]:[
+    {type:'conf_geq_inspection',icon:'📧',title:'Confirmation d\'inspection GEQ',sub:'Convention + Norme en pi\u00e8ces jointes',field:'statut_confirmation_envoyee'},
+    {type:'conf_geq_expertise',icon:'📧',title:'Confirmation d\'expertise technique',sub:'',field:'statut_confirmation_envoyee'},
+    {type:'rapp_geq_expertise',icon:'📋',title:'Rapport d\'expertise technique',sub:'Rapport en pi\u00e8ce jointe',field:'statut_rapport_envoye'},
+    {type:'rapp_geq_analyse',icon:'🧪',title:'R\u00e9sultats d\'analyse de qualit\u00e9 de l\'air fongique',sub:'R\u00e9sultats en pi\u00e8ce jointe',field:'statut_rapport_envoye'},
+  ];
+  btns.forEach(b=>{
+    const sent=mandat&&mandat[b.field];
+    const btn=document.createElement('button');
+    btn.className='btn-email'+(sent?' sent':'');
+    btn.innerHTML=`<span class="ei">${b.icon}</span><div class="email-info"><div class="et">${b.title}</div><div class="es">${b.sub||''}</div></div>${sent?'<span style="margin-left:auto;font-size:12px;color:#4caf50">✓ Envoy\u00e9</span>':''}`;
+    btn.onclick=()=>openEmailModal(b.type);
+    list.appendChild(btn);
+  });
+}
+
+function getEmailContent(type){
+  if(!mandat) return null;
+  const dateStr=mandat.date_mandat?new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'[DATE \u00e0 confirmer]';
+  const heureStr=mandat.heure_mandat?mandat.heure_mandat.substring(0,5):'[HEURE \u00e0 confirmer]';
+  const adresse=mandat.adresse||'[ADRESSE]';
+  const googleLinkGeq=profile.google_review_url_geq||'https://g.page/r/CcwF17qG5ZPEEBM/review';
+  const googleLinkLogica=profile.google_review_url_logica||'https://g.page/r/Cc71RgXYNZtdEBM/review';
+
+  // Nom du tech
+  const techSelect=document.getElementById('f-tech');
+  const techNom=techSelect.options[techSelect.selectedIndex]?.text||`${profile.prenom} ${profile.nom}`;
+
+  if(type==='conf_logica') return {
+    subj:'Confirmation d\'inspection',
+    body:`Bonjour,\n\nF\u00e9licitation et merci de confier \u00e0 Logica Inspection en b\u00e2timent la d\u00e9licate t\u00e2che d'inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : ${dateStr}\n2. Heure : ${heureStr}\n3. Adresse : ${adresse}\n4. Nom de votre inspecteur : ${techNom}\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l'inspection qui seront remplis lors de l'inspection. Nous vous invitons \u00e0 en prendre connaissance.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir par courriel une copie de la D\u00e9claration des Vendeurs (DV), la fiche de vente et des rapports d'inspection ant\u00e9rieurs (si disponibles et moins de 5 ans) d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un \u00c9mail distinct et les informations pour virement bancaire sont \u00e9crites au bas de cette derni\u00e8re.\n8. Les frais de l'inspection sont payables le jour m\u00eame de l'inspection.\n9. Frais pour services suppl\u00e9mentaires ;\n- Inspection de drain de fondation par cam\u00e9ra : 225 $ + taxes\n- Test de potabilit\u00e9 de l'eau (Microbiologique) : 200 $ + taxes\n- Test d'eau (m\u00e9taux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la pr\u00e9sence d'amiante : 350 $ + taxes\n- Garage d\u00e9tach\u00e9 : (Varie entre 125$ et 250$)\n\nS'il vous pla\u00eet n'h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es!`,
+    attachNote:'📎 Pi\u00e8ces jointes : Convention de service + Norme de pratique (Veuillez les uploader dans Supabase Storage pour l\'envoi automatique)'
+  };
+  if(type==='rapp_logica') return {
+    subj:'Voici votre rapport d\'inspection',
+    body:`Bonjour,\n\nMerci d'avoir choisi Logica Inspection en b\u00e2timent. Il nous fait plaisir de vous faire parvenir votre rapport d'inspection.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n'h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici \ud83d\udc49 ${googleLinkLogica}\n\nSi vous avez des questions concernant votre rapport d'inspection, n'h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur et il se fera un plaisir de r\u00e9pondre \u00e0 vos questions.\n\nBien \u00e0 vous,`,
+    attachNote:'📎 Pi\u00e8ce jointe : Rapport d\'inspection (t\u00e9l\u00e9vers\u00e9 dans les documents du dossier)'
+  };
+  if(type==='conf_geq_inspection') return {
+    subj:'Confirmation d\'inspection',
+    body:`Bonjour,\n\nF\u00e9licitation et merci de confier \u00e0 GEQ \u2013 B\u00e2timent Conseil la d\u00e9licate t\u00e2che d'inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : ${dateStr}\n2. Heure : ${heureStr}\n3. Adresse : ${adresse}\n4. Nom de votre inspecteur : ${techNom}\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l'inspection qui seront remplis lors de l'inspection. Nous vous invitons \u00e0 en prendre connaissance.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir par courriel une copie de la D\u00e9claration des Vendeurs (DV) et des rapports d'inspection ant\u00e9rieurs (si disponibles) d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un \u00c9mail distinct et les informations pour virement bancaire sont \u00e9crites au bas de cette derni\u00e8re.\n8. Les frais de l'inspection sont payables le jour m\u00eame de l'inspection.\n9. Frais pour services suppl\u00e9mentaires ;\n- Inspection de drain de fondation par cam\u00e9ra : 195 $ + taxes\n- Test de potabilit\u00e9 de l'eau (Microbiologique) : 200 $ + taxes\n- Test d'eau (m\u00e9taux lourds) : 200 $ + taxes\n- Analyse de vermiculite pour la pr\u00e9sence d'amiante : 350 $ + taxes\n- Garage d\u00e9tach\u00e9 : (Varie entre 75$ et 200$)\n\nS'il vous pla\u00eet n'h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es!`,
+    attachNote:'📎 Pi\u00e8ces jointes : Convention de service + Norme de pratique'
+  };
+  if(type==='conf_geq_expertise') return {
+    subj:'Confirmation d\'expertise technique',
+    body:`Bonjour,\n\nMerci de confier \u00e0 GEQ \u2013 B\u00e2timent Conseil l'investigation de la probl\u00e9matique qui affecte votre propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : ${dateStr}\n2. Heure : ${heureStr}\n3. Adresse : ${adresse}\n4. Nom de votre technicien : ${techNom}\n5. Mandat : ${mandat.type_mandat||''}\n6. Tarifs : 580 + txs (Sans rapport) ou 830 + txs (Avec rapport) - (Si d\u00e9passe 2h de r\u00e9daction ajoutez 150$/h)\n7. Les frais de l'investigation sont payables le jour m\u00eame de notre intervention. (Par virement Interac, D\u00e9bit ou ch\u00e8que)\n8. Frais pour services suppl\u00e9mentaires : Veuillez noter que des frais suppl\u00e9mentaires peuvent s'ajouter dans le cas d'une investigation sur une autre cause ou une autre probl\u00e9matique.\n9. D\u00e9lais de r\u00e9daction de rapport : Un maximum de 5 jours ouvrables est allou\u00e9 pour la r\u00e9daction du rapport.\n\nS'il vous pla\u00eet n'h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es!`,
+    attachNote:''
+  };
+  if(type==='rapp_geq_expertise') return {
+    subj:'Rapport d\'expertise technique',
+    body:`Bonjour, tel que convenu vous trouverez en pi\u00e8ce jointe votre rapport d'investigation.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n'h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici \ud83d\udc49 ${googleLinkGeq}\n\nNous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire en restant disponible pour toute question ou \u00e9claircissement suppl\u00e9mentaire.\n\nMerci !`,
+    attachNote:'📎 Pi\u00e8ce jointe : Rapport d\'expertise (t\u00e9l\u00e9vers\u00e9 dans les documents)'
+  };
+  if(type==='rapp_geq_analyse') return {
+    subj:'R\u00e9sultat d\'analyse de qualit\u00e9 de l\'air fongique',
+    body:`Bonjour,\nvous trouverez ci-joint les certificats d'analyse des tests de qualit\u00e9 de l'air fongique. N'h\u00e9sitez pas \u00e0 communiquer avec nous pour toute question. De plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n'h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici \ud83d\udc49 ${googleLinkGeq}\n\nMerci !`,
+    attachNote:'📎 Pi\u00e8ce jointe : R\u00e9sultats d\'analyse (t\u00e9l\u00e9vers\u00e9s dans les documents)'
+  };
+  return null;
+}
+
+function openEmailModal(type){
+  currentEmailType=type;
+  const content=getEmailContent(type);
+  if(!content) return;
+  document.getElementById('modal-email-title').textContent=content.subj;
+  document.getElementById('m-to').value=mandat.client_email||'';
+  document.getElementById('m-subj').value=content.subj;
+  document.getElementById('m-body').value=content.body;
+  document.getElementById('m-attach-info').textContent=content.attachNote||'';
+
+  // Gmail status
+  const token=localStorage.getItem('portail_gmail_token');
+  const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
+  const bar=document.getElementById('gmail-bar');
+  if(token&&Date.now()<expiry){
+    const email=localStorage.getItem('portail_gmail_email')||'';
+    bar.style.display='flex';
+    document.getElementById('gmail-status').textContent=`Gmail: ${email}`;
+    bar.querySelector('.btn-gc').textContent='Changer';
+  } else {
+    bar.style.display='flex';
+    document.getElementById('gmail-status').textContent='Gmail non connect\u00e9';
+    bar.querySelector('.btn-gc').textContent='Connecter Gmail';
+  }
+  document.getElementById('modal-email').style.display='flex';
+}
+
+function closeEmailModal(){document.getElementById('modal-email').style.display='none';}
+
+function connectGmail(){
+  const client=google.accounts.oauth2.initTokenClient({
+    client_id:GC_ID,
+    scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly',
+    callback:async(resp)=>{
+      if(resp.error) return;
+      localStorage.setItem('portail_gmail_token',resp.access_token);
+      localStorage.setItem('portail_gmail_expiry',Date.now()+3500*1000);
+      try{
+        const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile',{
+          headers:{Authorization:'Bearer '+resp.access_token}
+        });
+        const d=await r.json();
+        localStorage.setItem('portail_gmail_email',d.emailAddress||'');
+        document.getElementById('gmail-status').textContent='Gmail: '+d.emailAddress;
+      }catch(e){}
+      document.getElementById('gmail-bar').querySelector('.btn-gc').textContent='Changer';
+    }
+  });
+  client.requestAccessToken();
+}
+
+async function sendEmail(){
+  const token=localStorage.getItem('portail_gmail_token');
+  const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
+  if(!token||Date.now()>=expiry){toast('Veuillez d\'abord connecter Gmail','err');return;}
+  const to=document.getElementById('m-to').value.trim();
+  const subj=document.getElementById('m-subj').value.trim();
+  const body=document.getElementById('m-body').value.trim();
+  if(!to){toast('Adresse courriel requise','err');return;}
+
+  toast('Envoi en cours...');
+  const mime=[
+    'Content-Type: text/plain; charset="UTF-8"',
+    'MIME-Version: 1.0',
+    `To: ${to}`,
+    `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subj)))}?=`,
+    '',body
+  ].join('\r\n');
+
+  const encoded=btoa(unescape(encodeURIComponent(mime))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+  const resp=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify({raw:encoded})
+  });
+
+  if(resp.ok){
+    toast('Courriel envoy\u00e9 ✓');
+    closeEmailModal();
+    // Marquer statut selon le type
+    const field=currentEmailType.includes('conf')?'statut_confirmation_envoyee':'statut_rapport_envoye';
+    const btnId=currentEmailType.includes('conf')?'st-conf':'st-rapp';
+    if(mandat){
+      await sb.from('mandats').update({[field]:true}).eq('id',mandat.id);
+      mandat[field]=true;
+      setStBtn(btnId,true);
+    }
+    renderEmails();
+  } else {
+    const err=await resp.json();
+    toast('Erreur: '+(err.error?.message||'Erreur inconnue'),'err');
+  }
+}
+
+function openListing(){
+  const url=document.getElementById('f-listing').value;
+  if(url) window.open(url,'_blank');
+}
+
+function money(n){
+  return new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD',minimumFractionDigits:2}).format(n||0);
+}
+
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.background=type==='err'?'#c62828':'#1a1a2e';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>
