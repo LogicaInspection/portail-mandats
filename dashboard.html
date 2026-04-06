@@ -103,10 +103,7 @@ select.filter:focus { border-color: #1a1a2e; }
 .badge-geq    { background: #fdecea; color: #b71c1c; }
 
 .statuts { display: flex; gap: 8px; }
-.s-dot {
-  display: flex; align-items: center; gap: 3px;
-  font-size: 11px; color: #999;
-}
+.s-dot { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #999; }
 .dot { width: 7px; height: 7px; border-radius: 50%; }
 .dot-green  { background: #4caf50; }
 .dot-orange { background: #ff9800; }
@@ -115,7 +112,6 @@ select.filter:focus { border-color: #1a1a2e; }
 .empty { text-align: center; padding: 56px 20px; color: #bbb; }
 .empty div { font-size: 40px; margin-bottom: 12px; }
 
-/* Modal nouveau mandat */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.4);
   display: flex; align-items: center; justify-content: center; z-index: 1000;
@@ -154,7 +150,6 @@ select.filter:focus { border-color: #1a1a2e; }
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="header-left">
     <img src="https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg" alt="GEQ">
@@ -166,78 +161,72 @@ select.filter:focus { border-color: #1a1a2e; }
       <div class="user-avatar" id="user-avatar">?</div>
       <span id="user-name">...</span>
     </div>
-    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    <button class="btn-logout" onclick="logout()">D&eacute;connexion</button>
   </div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
-
-  <!-- TABS -->
   <div class="tabs">
     <button class="tab active" data-tab="tous" onclick="setTab('tous')">Tous</button>
-    <button class="tab" data-tab="logica" onclick="setTab('logica')">🏠 Logica</button>
-    <button class="tab" data-tab="geq" onclick="setTab('geq')">🏢 GEQ</button>
-    <button class="tab" id="tab-fdp" style="display:none" onclick="goToFDP()">📊 Fonds de prévoyance</button>
+    <button class="tab" data-tab="logica" onclick="setTab('logica')">&#127968; Logica</button>
+    <button class="tab" data-tab="geq" onclick="setTab('geq')">&#127970; GEQ</button>
+    <button class="tab" id="tab-fdp" style="display:none" onclick="goToFDP()">&#128202; Fonds de pr&eacute;voyance</button>
   </div>
 
-  <!-- STATS GESTIONNAIRE -->
   <div class="stats-row" id="stats-gest" style="display:none">
     <div class="stat-card">
       <div class="stat-label">Mandats ce mois</div>
-      <div class="stat-value" id="s-mois">—</div>
-      <div class="stat-sub" id="s-total">— au total</div>
+      <div class="stat-value" id="s-mois">&mdash;</div>
+      <div class="stat-sub" id="s-total">&mdash; au total</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Rapports en attente</div>
-      <div class="stat-value" id="s-rapports">—</div>
+      <div class="stat-value" id="s-rapports">&mdash;</div>
       <div class="stat-sub">à envoyer</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Non payés</div>
-      <div class="stat-value" id="s-nonpaye">—</div>
+      <div class="stat-label">Non pay&eacute;s</div>
+      <div class="stat-value" id="s-nonpaye">&mdash;</div>
       <div class="stat-sub">factures ouvertes</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Revenus ce mois</div>
-      <div class="stat-value" id="s-revenus">—</div>
+      <div class="stat-value" id="s-revenus">&mdash;</div>
       <div class="stat-sub">total TTC</div>
     </div>
   </div>
 
-  <!-- STATS TECHNICIEN -->
   <div class="stats-row" id="stats-tech" style="display:none">
     <div class="stat-card">
-      <div class="stat-label">Mandats cette année</div>
-      <div class="stat-value" id="t-annee">—</div>
-      <div class="stat-sub" id="t-mois-sub">— ce mois</div>
+      <div class="stat-label">Mandats cette ann&eacute;e</div>
+      <div class="stat-value" id="t-annee">&mdash;</div>
+      <div class="stat-sub" id="t-mois-sub">&mdash; ce mois</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Logica</div>
-      <div class="stat-value" id="t-logica">—</div>
+      <div class="stat-value" id="t-logica">&mdash;</div>
       <div class="stat-sub">inspections</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">GEQ</div>
-      <div class="stat-value" id="t-geq">—</div>
+      <div class="stat-value" id="t-geq">&mdash;</div>
       <div class="stat-sub">mandats</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Mes commissions</div>
-      <div class="stat-value" id="t-comm">—</div>
-      <div class="stat-sub">cette année</div>
+      <div class="stat-value" id="t-comm">&mdash;</div>
+      <div class="stat-sub">cette ann&eacute;e</div>
     </div>
   </div>
 
-  <!-- TOOLBAR -->
   <div class="toolbar">
-    <input type="text" class="search-input" id="search" placeholder="🔍  Rechercher client, adresse..." oninput="filterMandats()">
+    <input type="text" class="search-input" id="search" placeholder="&#128269;  Rechercher client, adresse..." oninput="filterMandats()">
     <select class="filter" id="f-statut" onchange="filterMandats()">
       <option value="">Tous les statuts</option>
-      <option value="nonpaye">Non payé</option>
-      <option value="paye">Payé</option>
-      <option value="rapport_pending">Rapport à envoyer</option>
-      <option value="confirmation_pending">Confirmation à envoyer</option>
+      <option value="nonpaye">Non pay&eacute;</option>
+      <option value="paye">Pay&eacute;</option>
+      <option value="rapport_pending">Rapport &agrave; envoyer</option>
+      <option value="confirmation_pending">Confirmation &agrave; envoyer</option>
     </select>
     <select class="filter" id="f-tech" style="display:none" onchange="filterMandats()">
       <option value="">Tous les techniciens</option>
@@ -247,26 +236,23 @@ select.filter:focus { border-color: #1a1a2e; }
     </button>
   </div>
 
-  <!-- TABLE -->
   <div class="table-wrap" id="table-wrap">
-    <div class="empty"><div>⏳</div><p>Chargement des mandats...</p></div>
+    <div class="empty"><div>&#9203;</div><p>Chargement des mandats...</p></div>
   </div>
-
 </div>
 
-<!-- MODAL NOUVEAU MANDAT -->
 <div class="modal-overlay" id="modal-new" style="display:none" onclick="hideModal(event)">
   <div class="modal">
     <h2>Nouveau mandat</h2>
     <p>Pour quelle compagnie ?</p>
     <div class="modal-btns">
       <div class="btn-logica" onclick="goNewMandat('logica')">
-        <div class="modal-comp-title" style="color:#1565c0">🏠 Logica</div>
-        <div class="modal-comp-sub">Inspection pré-achat</div>
+        <div class="modal-comp-title" style="color:#1565c0">&#127968; Logica</div>
+        <div class="modal-comp-sub">Inspection pr&eacute;-achat</div>
       </div>
       <div class="btn-geq" onclick="goNewMandat('geq')">
-        <div class="modal-comp-title" style="color:#b71c1c">🏢 GEQ</div>
-        <div class="modal-comp-sub">Expertise & services</div>
+        <div class="modal-comp-title" style="color:#b71c1c">&#127970; GEQ</div>
+        <div class="modal-comp-sub">Expertise &amp; services</div>
       </div>
     </div>
     <button class="btn-cancel-modal" onclick="document.getElementById('modal-new').style.display='none'">Annuler</button>
@@ -277,41 +263,38 @@ select.filter:focus { border-color: #1a1a2e; }
 <script>
 const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let profile = null;
 let allMandats = [];
 let currentTab = 'tous';
 
 (async () => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
 
-  const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+  const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
   if (!p) { window.location.href = 'index.html'; return; }
   profile = p;
 
   const hasAccess =
-    (p.role === 'gestionnaire' && p.dashboard_access) ||
-    p.role === 'secretaire' ||
-    (p.role === 'technicien' && p.dashboard_access);
+    profile.role === 'gestionnaire' ||
+    profile.role === 'secretaire' ||
+    (profile.role === 'technicien' && profile.dashboard_access === true);
   if (!hasAccess) { window.location.href = 'index.html'; return; }
 
   const initiales = ((p.prenom||'')[0] + (p.nom||'')[0]).toUpperCase();
   document.getElementById('user-avatar').textContent = initiales;
   document.getElementById('user-name').textContent = `${p.prenom} ${p.nom}`;
 
-  // FDP tab : gestionnaire ou technicien Jacob/Alain
   if (p.role === 'gestionnaire' || p.role === 'technicien') {
     document.getElementById('tab-fdp').style.display = 'block';
   }
 
-  // Bouton nouveau : gestionnaire + secrétaire
   if (p.role === 'gestionnaire' || p.role === 'secretaire') {
     document.getElementById('btn-new').style.display = 'flex';
   }
 
-  // Stats et filtre tech pour gestionnaire
   if (p.role === 'gestionnaire') {
     document.getElementById('stats-gest').style.display = 'grid';
     document.getElementById('f-tech').style.display = 'block';
@@ -324,7 +307,7 @@ let currentTab = 'tous';
 })();
 
 async function loadTechs() {
-  const { data } = await supabase
+  const { data } = await sb
     .from('profiles')
     .select('id, nom, prenom')
     .eq('role', 'technicien')
@@ -340,14 +323,14 @@ async function loadTechs() {
 }
 
 async function loadMandats() {
-  document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>⏳</div><p>Chargement...</p></div>';
-  const { data, error } = await supabase
+  document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9203;</div><p>Chargement...</p></div>';
+  const { data, error } = await sb
     .from('mandats')
     .select('*, technicien:profiles!mandats_technicien_id_fkey(id, nom, prenom)')
     .order('date_mandat', { ascending: false, nullsFirst: false });
 
   if (error) {
-    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>⚠️</div><p>Erreur de chargement</p></div>';
+    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9888;&#65039;</div><p>Erreur de chargement</p></div>';
     return;
   }
   allMandats = data || [];
@@ -413,7 +396,7 @@ function renderTable(list) {
   const cols = isGest ? 'cols-gest' : 'cols-tech';
 
   if (!list.length) {
-    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>📋</div><p>Aucun mandat trouvé</p></div>';
+    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#128203;</div><p>Aucun mandat trouv&eacute;</p></div>';
     return;
   }
 
@@ -424,9 +407,9 @@ function renderTable(list) {
   </div>`;
 
   list.forEach(m => {
-    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA') : '—';
+    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA') : '&mdash;';
     const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
-    const tech = m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : '—';
+    const tech = m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : '&mdash;';
     const badge = m.compagnie === 'logica'
       ? '<span class="badge badge-logica">Logica</span>'
       : '<span class="badge badge-geq">GEQ</span>';
@@ -444,7 +427,7 @@ function renderTable(list) {
         <div style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:2px">${m.client_nom}</div>
         <div style="font-size:12px;color:#999">${m.client_telephone||''}</div>
       </div>
-      <div style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.adresse||'—'}</div>
+      <div style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.adresse||'&mdash;'}</div>
       <div>
         ${badge}
         <div style="font-size:11px;color:#999;margin-top:4px">${m.type_mandat||''}</div>
@@ -452,10 +435,10 @@ function renderTable(list) {
       <div style="font-size:13px;color:#555">${tech}</div>
       <div class="statuts">
         <div class="s-dot"><div class="dot ${dFact}"></div>Fact.</div>
-        <div class="s-dot"><div class="dot ${dPaye}"></div>Payé</div>
+        <div class="s-dot"><div class="dot ${dPaye}"></div>Pay&eacute;</div>
         <div class="s-dot"><div class="dot ${dRapp}"></div>Rapp.</div>
       </div>
-      ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '—'}</div>` : ''}
+      ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</div>` : ''}
     </div>`;
   });
 
@@ -475,7 +458,7 @@ function goToFDP() {
   window.location.href = 'https://geq-suivi-app.vercel.app/dashboard.html';
 }
 async function logout() {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   window.location.href = 'index.html';
 }
 function money(n) {
