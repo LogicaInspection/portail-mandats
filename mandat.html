@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandat — Portail</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#222;}
+.header{background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:60px;position:sticky;top:0;z-index:100;}
+.btn-back{background:rgba(255,255,255,0.12);border:none;color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;}
+.btn-back:hover{background:rgba(255,255,255,0.22);}
+.hcenter{display:flex;align-items:center;gap:10px;}
+#htitle{font-size:15px;font-weight:600;}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-logica{background:#1565c0;}
+.badge-geq{background:#b71c1c;}
+.hright{display:flex;gap:8px;}
+.btn-save{background:#4caf50;border:none;color:white;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;}
+.btn-save:hover{background:#43a047;}
+.btn-del{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:white;padding:9px 14px;border-radius:8px;cursor:pointer;font-size:13px;}
+.btn-del:hover{background:#c62828;border-color:#c62828;}
+.content{max-width:900px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:18px;}
+.sec{background:white;border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.07);}
+.sec-title{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:6px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.s2{grid-column:span 2;}
+.fg.s3{grid-column:span 3;}
+label{font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.4px;}
+input,select,textarea{padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;color:#222;background:white;outline:none;transition:border-color 0.2s;font-family:inherit;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:#1a1a2e;}
+input[readonly]{background:#f8f9fa;color:#888;}
+textarea{resize:vertical;min-height:75px;}
+.link-input{display:flex;gap:6px;}
+.link-input input{flex:1;}
+.btn-link{padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:9px;background:white;cursor:pointer;font-size:13px;color:#1565c0;white-space:nowrap;}
+.btn-link:hover{background:#e3f0ff;}
+
+/* STATUTS */
+.statuts-grid{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-st{display:flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;border:2px solid #e5e7eb;background:white;font-size:13px;font-weight:600;color:#999;cursor:pointer;transition:all 0.2s;}
+.btn-st.on{border-color:#4caf50;background:#f1f8e9;color:#2e7d32;}
+.btn-st .ck{font-size:15px;}
+.paye-section{margin-top:16px;display:none;}
+.paye-section.show{display:block;}
+.par-row,.mode-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.btn-par,.btn-mode{padding:7px 14px;border:1.5px solid #e5e7eb;border-radius:8px;background:white;font-size:13px;cursor:pointer;transition:all 0.2s;color:#555;}
+.btn-par.on{border-color:#1a1a2e;background:#1a1a2e;color:white;}
+.btn-mode.on{border-color:#1565c0;background:#e3f0ff;color:#1565c0;}
+
+/* FINANCES */
+.fin-table{width:100%;border-collapse:collapse;margin-bottom:4px;}
+.fin-table th{background:#f8f9fa;padding:8px 10px;text-align:left;font-size:11px;color:#999;font-weight:700;text-transform:uppercase;}
+.fin-table td{padding:8px 10px;border-bottom:1px solid #f3f3f3;font-size:14px;vertical-align:middle;}
+.fin-table tr:last-child td{border:none;}
+.fin-total td{font-weight:700;font-size:15px;background:#f0f4ff;}
+.fin-comm td{color:#1565c0;font-weight:600;}
+.fin-tax td{color:#888;font-size:13px;}
+.fin-input{width:100px;padding:6px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;text-align:right;}
+.fin-input:focus{border-color:#1a1a2e;outline:none;}
+.fin-calc{font-weight:600;color:#333;}
+
+/* EXTRAS */
+.extras-list{display:flex;flex-direction:column;gap:2px;}
+.extra-row{display:grid;grid-template-columns:28px 1fr 100px 100px 32px;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid #f8f8f8;}
+.extra-row:last-child{border:none;}
+.extra-check{width:17px;height:17px;cursor:pointer;accent-color:#1a1a2e;}
+.extra-name{font-size:13px;color:#333;}
+.fin-input-sm{width:100%;padding:5px 8px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;text-align:right;}
+.fin-input-sm:focus{border-color:#1a1a2e;outline:none;}
+.btn-rm{padding:3px 7px;border:none;border-radius:6px;background:#fff0f0;color:#e53935;cursor:pointer;font-size:13px;}
+.btn-add-extra{margin-top:10px;padding:7px 14px;border:1.5px dashed #ccc;border-radius:8px;background:none;color:#888;font-size:13px;cursor:pointer;}
+.btn-add-extra:hover{border-color:#1a1a2e;color:#1a1a2e;}
+
+/* DOCS */
+.doc-section{display:flex;flex-direction:column;gap:14px;}
+.doc-block{}
+.doc-block-title{font-size:13px;font-weight:700;color:#555;margin-bottom:8px;}
+.doc-drop{border:2px dashed #e5e7eb;border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;font-size:13px;color:#aaa;}
+.doc-drop:hover{border-color:#1a1a2e;background:#f8f9fa;color:#555;}
+.doc-drop.has{border-style:solid;border-color:#4caf50;background:#f1f8e9;}
+.doc-file{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#f8f9fa;border-radius:8px;margin-bottom:5px;}
+.doc-fn{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-dl{padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;background:white;font-size:12px;cursor:pointer;color:#1565c0;}
+.btn-dl:hover{background:#e3f0ff;}
+.btn-deldoc{padding:5px 8px;border:none;border-radius:6px;background:#fff0f0;color:#e53935;cursor:pointer;font-size:12px;}
+input[type=file]{display:none;}
+
+/* EMAILS */
+.email-list{display:flex;flex-direction:column;gap:8px;}
+.btn-email{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid #e5e7eb;border-radius:10px;background:white;cursor:pointer;transition:all 0.2s;text-align:left;width:100%;}
+.btn-email:hover{border-color:#1a1a2e;background:#f8f9fa;}
+.btn-email.sent{border-color:#4caf50;background:#f1f8e9;}
+.ei{font-size:20px;}
+.et{font-size:14px;font-weight:600;color:#1a1a2e;}
+.es{font-size:12px;color:#999;margin-top:2px;}
+
+/* MODAL EMAIL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:20px;overflow-y:auto;}
+.modal{background:white;border-radius:16px;padding:30px;width:100%;max-width:620px;margin:auto;}
+.modal h2{font-size:17px;color:#1a1a2e;margin-bottom:18px;}
+.mfield{margin-bottom:13px;}
+.mfield label{display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:5px;}
+.mfield input,.mfield textarea{width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:13px;outline:none;font-family:inherit;}
+.mfield input:focus,.mfield textarea:focus{border-color:#1a1a2e;}
+.mfield textarea{min-height:260px;line-height:1.6;}
+.mfooter{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;}
+.btn-send{padding:11px 22px;background:#1a1a2e;color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-send:hover{background:#2d2d4e;}
+.btn-cancel{padding:11px 16px;border:1.5px solid #e5e7eb;border-radius:9px;background:white;color:#666;font-size:14px;cursor:pointer;}
+.gmail-bar{padding:10px 14px;background:#f0f7ff;border:1px solid #90caf9;border-radius:9px;font-size:13px;color:#1565c0;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}
+.btn-gc{padding:6px 14px;background:#1565c0;color:white;border:none;border-radius:7px;font-size:12px;cursor:pointer;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:12px 22px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+@media(max-width:600px){
+  .grid2,.grid3{grid-template-columns:1fr;}
+  .fg.s2,.fg.s3{grid-column:span 1;}
+  .extra-row{grid-template-columns:28px 1fr 80px;}
+  .extra-row .comm-col,.extra-row .del-col{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="btn-back" onclick="window.location.href='dashboard.html'">← Retour</button>
+  <div class="hcenter">
+    <span id="htitle">Nouveau mandat</span>
+    <span id="hbadge" class="badge" style="display:none"></span>
+  </div>
+  <div class="hright">
+    <button id="btn-del" class="btn-del" style="display:none" onclick="deleteMandat()">🗑 Supprimer</button>
+    <button class="btn-save" onclick="saveMandat()">💾 Sauvegarder</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- INFOS CLIENT -->
+  <div class="sec">
+    <div class="sec-title">👤 Informations client</div>
+    <div class="grid2">
+      <div class="fg"><label>Compagnie</label>
+        <select id="f-compagnie" onchange="onCompagnieChange()">
+          <option value="logica">🏠 Logica Inspection</option>
+          <option value="geq">🏢 GEQ – Bâtiment Conseil</option>
+        </select>
+      </div>
+      <div class="fg" id="fg-type-geq" style="display:none"><label>Type de mandat</label>
+        <select id="f-type-mandat">
+          <option value="Test de qualit\u00e9 de l'air fongique">Test de qualit\u00e9 de l'air fongique</option>
+          <option value="Test d'air Fibre d'Amiante">Test d'air Fibre d'Amiante</option>
+          <option value="Biotape">Biotape</option>
+          <option value="\u00c9chantillonnage M\u00e9rule">\u00c9chantillonnage M\u00e9rule</option>
+          <option value="Expertise technique (avec rapport)">Expertise technique (avec rapport)</option>
+          <option value="Expertise technique (sans rapport)">Expertise technique (sans rapport)</option>
+          <option value="Pr\u00e9l\u00e8vement Amiante">Pr\u00e9l\u00e8vement Amiante</option>
+          <option value="Peinture plomb">Peinture plomb</option>
+          <option value="Inspection parties communes">Inspection parties communes</option>
+          <option value="R\u00e9daction carnet / \u00e9tude">R\u00e9daction carnet / \u00e9tude</option>
+          <option value="\u00c9chantillonnage eau">\u00c9chantillonnage eau</option>
+          <option value="Inspection drain de fondation">Inspection drain de fondation</option>
+          <option value="Inspection b\u00e2timent (pr\u00e9-achat GEQ)">Inspection b\u00e2timent (pr\u00e9-achat GEQ)</option>
+        </select>
+      </div>
+      <div class="fg s2"><label>Nom du client *</label><input id="f-client-nom" type="text" placeholder="Prénom Nom"></div>
+      <div class="fg"><label>T\u00e9l\u00e9phone</label><input id="f-client-tel" type="tel" placeholder="418-000-0000"></div>
+      <div class="fg"><label>Courriel</label><input id="f-client-email" type="email" placeholder="client@email.com"></div>
+      <div class="fg s2"><label>Adresse du mandat</label><input id="f-adresse" type="text" placeholder="123 rue Exemple, Ville, QC"></div>
+
+      <!-- LOGICA ONLY -->
+      <div class="fg logica-only"><label>Nom du courtier acheteur</label><input id="f-courtier" type="text" placeholder="Prénom Nom"></div>
+      <div class="fg logica-only"><label>R\u00e9f\u00e9r\u00e9 par</label><input id="f-reference" type="text" placeholder="Qui vous a r\u00e9f\u00e9r\u00e9 ?"></div>
+      <div class="fg s2 logica-only">
+        <label>Lien listing (fiche de vente)</label>
+        <div class="link-input">
+          <input id="f-listing" type="url" placeholder="https://centris.ca/...">
+          <button class="btn-link" onclick="openListing()">🔗 Ouvrir</button>
+        </div>
+      </div>
+      <div class="fg logica-only"><label>Type de b\u00e2timent</label>
+        <select id="f-type-batiment">
+          <option value="">— S\u00e9lectionner —</option>
+          <option>Plain-Pied (Bungalow)</option>
+          <option>Maison \u00e0 \u00e9tage (Cottage)</option>
+          <option>Jumel\u00e9</option>
+          <option>Jumel\u00e9 \u00e0 \u00e9tage</option>
+          <option>Maison en rang\u00e9</option>
+          <option>Maison en rang\u00e9 \u00e0 \u00e9tage</option>
+          <option>Duplex</option><option>Triplex</option>
+          <option>Quadruplex</option><option>5 plex</option><option>6 plex</option>
+          <option>Maison mobile</option><option>Split level</option><option>Condo</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANIFICATION -->
+  <div class="sec">
+    <div class="sec-title">📅 Planification</div>
+    <div class="grid3">
+      <div class="fg"><label>Date</label><input id="f-date" type="date"></div>
+      <div class="fg"><label>Heure</label><input id="f-heure" type="time"></div>
+      <div class="fg"><label>Technicien assign\u00e9</label>
+        <select id="f-tech">
+          <option value="">— S\u00e9lectionner —</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANCES (gestionnaire seulement) -->
+  <div class="sec" id="sec-finances">
+    <div class="sec-title">💰 Finances</div>
+    <table class="fin-table">
+      <thead><tr>
+        <th>Service</th><th style="text-align:right">Prix client</th>
+        <th style="text-align:right" class="comm-col-h">Commission tech</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>Prix de base</td>
+          <td style="text-align:right"><input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()"></td>
+          <td style="text-align:right" class="comm-col"><input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- EXTRAS -->
+    <div style="margin:12px 0 4px"><label style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.4px;">Services suppl\u00e9mentaires</label></div>
+    <div class="extras-list" id="extras-list"></div>
+    <div class="grid2" id="extras-header" style="padding:6px 4px;display:none;">
+      <div></div>
+    </div>
+    <button class="btn-add-extra geq-only" style="display:none" onclick="addExtra()">+ Ajouter un service</button>
+
+    <!-- TRANSPORT -->
+    <table class="fin-table" style="margin-top:12px;">
+      <tbody>
+        <tr>
+          <td>Transport</td>
+          <td style="text-align:right"><input class="fin-input" id="transport" type="number" min="0" step="0.01" value="0" oninput="recalc()"></td>
+          <td style="text-align:right" class="comm-col"><span class="fin-calc" id="transport-comm">0,00 $</span><br><span style="font-size:11px;color:#999">100% auto</span></td>
+        </tr>
+        <tr class="fin-tax"><td>Sous-total</td><td style="text-align:right" colspan="2"><span id="sous-total">0,00 $</span></td></tr>
+        <tr class="fin-tax"><td>TPS (5%)</td><td style="text-align:right" colspan="2"><span id="tps-val">0,00 $</span></td></tr>
+        <tr class="fin-tax"><td>TVQ (9,975%)</td><td style="text-align:right" colspan="2"><span id="tvq-val">0,00 $</span></td></tr>
+        <tr class="fin-total"><td>Total TTC</td><td style="text-align:right" colspan="2"><span id="total-ttc">0,00 $</span></td></tr>
+        <tr class="fin-comm"><td>💼 Total commission tech</td><td style="text-align:right" colspan="2"><span id="total-comm">0,00 $</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COMMISSION TECH (technicien seulement) -->
+  <div class="sec" id="sec-comm-tech" style="display:none">
+    <div class="sec-title">💼 Ma commission</div>
+    <div style="font-size:28px;font-weight:700;color:#1565c0" id="tech-comm-val">—</div>
+    <div style="font-size:13px;color:#999;margin-top:4px">Commission pour ce mandat</div>
+  </div>
+
+  <!-- STATUTS + PAIEMENT -->
+  <div class="sec">
+    <div class="sec-title">✅ Statuts</div>
+    <div class="statuts-grid">
+      <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
+        <span class="ck">○</span> Confirmation envoy\u00e9e
+      </button>
+      <button class="btn-st" id="st-fact" onclick="toggleSt('statut_facture_envoyee','st-fact')">
+        <span class="ck">○</span> Facture envoy\u00e9e
+      </button>
+      <button class="btn-st" id="st-paye" onclick="togglePaye()">
+        <span class="ck">○</span> Pay\u00e9
+      </button>
+      <button class="btn-st" id="st-rapp" onclick="toggleSt('statut_rapport_envoye','st-rapp')">
+        <span class="ck">○</span> Rapport / Analyse envoy\u00e9
+      </button>
+    </div>
+
+    <div class="paye-section" id="paye-section">
+      <div style="margin-top:14px">
+        <label style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;">Pay\u00e9 par</label>
+        <div class="par-row" id="par-row">
+          <button class="btn-par" id="par-client" onclick="setPar('client')">👤 <span id="par-client-nom">Client</span></button>
+          <button class="btn-par" id="par-autre" onclick="setPar('autre')">Autre...</button>
+        </div>
+        <input type="text" id="par-autre-input" style="display:none;margin-top:8px;max-width:280px;" placeholder="Nom de la personne" oninput="setParAutre(this.value)">
+      </div>
+      <div style="margin-top:14px">
+        <label style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;">Mode de paiement</label>
+        <div class="mode-row">
+          <button class="btn-mode" onclick="setMode('comptant')">Comptant</button>
+          <button class="btn-mode" onclick="setMode('virement')">Virement Interac</button>
+          <button class="btn-mode" onclick="setMode('carte')">Carte</button>
+          <button class="btn-mode" onclick="setMode('debit')">D\u00e9bit</button>
+          <button class="btn-mode" onclick="setMode('cheque')">Ch\u00e8que</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTS -->
+  <div class="sec" id="sec-docs" style="display:none">
+    <div class="sec-title">📄 Documents</div>
+    <div class="doc-section" id="doc-section"></div>
+  </div>
+
+  <!-- EMAILS -->
+  <div class="sec" id="sec-emails" style="display:none">
+    <div class="sec-title">✉️ Courriels</div>
+    <div class="email-list" id="email-list"></div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="sec">
+    <div class="sec-title">📝 Notes internes</div>
+    <textarea id="f-notes" placeholder="Notes visibles seulement par l'\u00e9quipe..."></textarea>
+  </div>
+
+</div>
+
+<!-- MODAL EMAIL -->
+<div class="ov" id="modal-email" style="display:none">
+  <div class="modal">
+    <h2 id="modal-email-title">Envoyer un courriel</h2>
+    <div class="gmail-bar" id="gmail-bar" style="display:none">
+      <span id="gmail-status">Gmail non connect\u00e9</span>
+      <button class="btn-gc" onclick="connectGmail()">Connecter Gmail</button>
+    </div>
+    <div class="mfield"><label>Destinataire</label><input id="m-to" type="email"></div>
+    <div class="mfield"><label>Sujet</label><input id="m-subj" type="text"></div>
+    <div class="mfield"><label>Message</label><textarea id="m-body"></textarea></div>
+    <div id="m-attach-info" style="font-size:12px;color:#888;margin-bottom:10px;"></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeEmailModal()">Annuler</button>
+      <button class="btn-send" onclick="sendEmail()">📤 Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+const SB_URL='https://mosgioiumzsewbzsydeh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+const GC_ID='706969065285-u6arf7jjof2t2sso4am0i8uaj6t167bk.apps.googleusercontent.com';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+
+let profile=null, mandat=null, extras=[], docs=[], isNew=false;
+let currentEmailType=null, currentEmailAttachPaths=[];
+
+const LOGICA_EXTRAS_DEFAULT=[
+  {service_nom:"Analyse d'eau microbiologique",prix:195,commission:50,actif:false},
+  {service_nom:"Analyse eau m\u00e9taux",prix:250,commission:70,actif:false},
+  {service_nom:"Inspection drain de fondation (pendant inspection)",prix:225,commission:100,actif:false},
+  {service_nom:"Inspection drain de fondation (avec d\u00e9placement)",prix:395,commission:175,actif:false},
+  {service_nom:"Analyse vermiculite (amiante)",prix:350,commission:100,actif:false},
+  {service_nom:"Inspection garage d\u00e9tach\u00e9",prix:0,commission:0,actif:false},
+];
+
+// INIT
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='index.html';return;}
+  const {data:p}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  if(!p){window.location.href='index.html';return;}
+  profile=p;
+
+  const params=new URLSearchParams(location.search);
+  const id=params.get('id');
+  const mode=params.get('mode');
+  const comp=params.get('compagnie');
+
+  // Load techniciens dropdown
+  const {data:techs}=await sb.from('profiles').select('id,nom,prenom').eq('role','technicien').eq('dashboard_access',true).order('nom');
+  const tsel=document.getElementById('f-tech');
+  (techs||[]).forEach(t=>{
+    const o=document.createElement('option');
+    o.value=t.id; o.textContent=`${t.prenom} ${t.nom}`;
+    tsel.appendChild(o);
+  });
+
+  if(id){
+    // EDIT MODE
+    isNew=false;
+    const {data:m}=await sb.from('mandats').select('*').eq('id',id).single();
+    if(!m){toast('Mandat introuvable','err');return;}
+    mandat=m;
+    const {data:ex}=await sb.from('mandat_extras').select('*').eq('mandat_id',id).order('created_at');
+    extras=ex||[];
+    const {data:dc}=await sb.from('mandat_documents').select('*').eq('mandat_id',id).order('uploaded_at');
+    docs=dc||[];
+    fillForm();
+    document.getElementById('sec-docs').style.display='block';
+    document.getElementById('sec-emails').style.display='block';
+    if(profile.role==='gestionnaire') document.getElementById('btn-del').style.display='flex';
+  } else {
+    // NEW MODE
+    isNew=true;
+    document.getElementById('f-compagnie').value=comp||'logica';
+    if(profile.role==='technicien'){
+      document.getElementById('f-tech').value=profile.id;
+    }
+    if((comp||'logica')==='logica'){
+      extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
+    }
+    onCompagnieChange();
+  }
+
+  // Role visibility
+  const isGest=profile.role==='gestionnaire';
+  const isTech=profile.role==='technicien';
+  const isSec=profile.role==='secretaire';
+  if(!isGest&&!isSec) document.getElementById('sec-finances').style.display='none';
+  if(isTech) document.getElementById('sec-comm-tech').style.display='block';
+  document.querySelectorAll('.comm-col').forEach(el=>el.style.display=isGest?'':'none');
+  document.querySelectorAll('.comm-col-h').forEach(el=>el.style.display=isGest?'':'none');
+
+  renderExtras();
+  renderDocs();
+  renderEmails();
+  updateBadge();
+})();
+
+function fillForm(){
+  const m=mandat;
+  document.getElementById('f-compagnie').value=m.compagnie||'logica';
+  document.getElementById('f-client-nom').value=m.client_nom||'';
+  document.getElementById('f-client-tel').value=m.client_telephone||'';
+  document.getElementById('f-client-email').value=m.client_email
