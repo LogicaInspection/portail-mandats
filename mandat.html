@@ -37,8 +37,6 @@ textarea{resize:vertical;min-height:75px;}
 .link-input input{flex:1;}
 .btn-link{padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:9px;background:white;cursor:pointer;font-size:13px;color:#1565c0;white-space:nowrap;}
 .btn-link:hover{background:#e3f0ff;}
-
-/* STATUTS */
 .statuts-grid{display:flex;gap:10px;flex-wrap:wrap;}
 .btn-st{display:flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;border:2px solid #e5e7eb;background:white;font-size:13px;font-weight:600;color:#999;cursor:pointer;transition:all 0.2s;}
 .btn-st.on{border-color:#4caf50;background:#f1f8e9;color:#2e7d32;}
@@ -49,8 +47,6 @@ textarea{resize:vertical;min-height:75px;}
 .btn-par,.btn-mode{padding:7px 14px;border:1.5px solid #e5e7eb;border-radius:8px;background:white;font-size:13px;cursor:pointer;transition:all 0.2s;color:#555;}
 .btn-par.on{border-color:#1a1a2e;background:#1a1a2e;color:white;}
 .btn-mode.on{border-color:#1565c0;background:#e3f0ff;color:#1565c0;}
-
-/* FINANCES */
 .fin-table{width:100%;border-collapse:collapse;margin-bottom:4px;}
 .fin-table th{background:#f8f9fa;padding:8px 10px;text-align:left;font-size:11px;color:#999;font-weight:700;text-transform:uppercase;}
 .fin-table td{padding:8px 10px;border-bottom:1px solid #f3f3f3;font-size:14px;vertical-align:middle;}
@@ -61,8 +57,6 @@ textarea{resize:vertical;min-height:75px;}
 .fin-input{width:100px;padding:6px 10px;border:1.5px solid #e5e7eb;border-radius:7px;font-size:13px;text-align:right;}
 .fin-input:focus{border-color:#1a1a2e;outline:none;}
 .fin-calc{font-weight:600;color:#333;}
-
-/* EXTRAS */
 .extras-list{display:flex;flex-direction:column;gap:2px;}
 .extra-row{display:grid;grid-template-columns:28px 1fr 100px 100px 32px;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid #f8f8f8;}
 .extra-row:last-child{border:none;}
@@ -73,22 +67,16 @@ textarea{resize:vertical;min-height:75px;}
 .btn-rm{padding:3px 7px;border:none;border-radius:6px;background:#fff0f0;color:#e53935;cursor:pointer;font-size:13px;}
 .btn-add-extra{margin-top:10px;padding:7px 14px;border:1.5px dashed #ccc;border-radius:8px;background:none;color:#888;font-size:13px;cursor:pointer;}
 .btn-add-extra:hover{border-color:#1a1a2e;color:#1a1a2e;}
-
-/* DOCS */
 .doc-section{display:flex;flex-direction:column;gap:14px;}
-.doc-block{}
 .doc-block-title{font-size:13px;font-weight:700;color:#555;margin-bottom:8px;}
 .doc-drop{border:2px dashed #e5e7eb;border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;font-size:13px;color:#aaa;}
 .doc-drop:hover{border-color:#1a1a2e;background:#f8f9fa;color:#555;}
-.doc-drop.has{border-style:solid;border-color:#4caf50;background:#f1f8e9;}
 .doc-file{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#f8f9fa;border-radius:8px;margin-bottom:5px;}
 .doc-fn{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn-dl{padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;background:white;font-size:12px;cursor:pointer;color:#1565c0;}
 .btn-dl:hover{background:#e3f0ff;}
 .btn-deldoc{padding:5px 8px;border:none;border-radius:6px;background:#fff0f0;color:#e53935;cursor:pointer;font-size:12px;}
 input[type=file]{display:none;}
-
-/* EMAILS */
 .email-list{display:flex;flex-direction:column;gap:8px;}
 .btn-email{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid #e5e7eb;border-radius:10px;background:white;cursor:pointer;transition:all 0.2s;text-align:left;width:100%;}
 .btn-email:hover{border-color:#1a1a2e;background:#f8f9fa;}
@@ -96,8 +84,6 @@ input[type=file]{display:none;}
 .ei{font-size:20px;}
 .et{font-size:14px;font-weight:600;color:#1a1a2e;}
 .es{font-size:12px;color:#999;margin-top:2px;}
-
-/* MODAL EMAIL */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:20px;overflow-y:auto;}
 .modal{background:white;border-radius:16px;padding:30px;width:100%;max-width:620px;margin:auto;}
 .modal h2{font-size:17px;color:#1a1a2e;margin-bottom:18px;}
@@ -112,86 +98,79 @@ input[type=file]{display:none;}
 .btn-cancel{padding:11px 16px;border:1.5px solid #e5e7eb;border-radius:9px;background:white;color:#666;font-size:14px;cursor:pointer;}
 .gmail-bar{padding:10px 14px;background:#f0f7ff;border:1px solid #90caf9;border-radius:9px;font-size:13px;color:#1565c0;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}
 .btn-gc{padding:6px 14px;background:#1565c0;color:white;border:none;border-radius:7px;font-size:12px;cursor:pointer;}
-
-/* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:12px 22px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
 .toast.show{opacity:1;}
-
 @media(max-width:600px){
   .grid2,.grid3{grid-template-columns:1fr;}
   .fg.s2,.fg.s3{grid-column:span 1;}
   .extra-row{grid-template-columns:28px 1fr 80px;}
-  .extra-row .comm-col,.extra-row .del-col{display:none;}
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <button class="btn-back" onclick="window.location.href='dashboard.html'">← Retour</button>
+  <button class="btn-back" onclick="window.location.href='dashboard.html'">&#8592; Retour</button>
   <div class="hcenter">
     <span id="htitle">Nouveau mandat</span>
     <span id="hbadge" class="badge" style="display:none"></span>
   </div>
   <div class="hright">
-    <button id="btn-del" class="btn-del" style="display:none" onclick="deleteMandat()">🗑 Supprimer</button>
-    <button class="btn-save" onclick="saveMandat()">💾 Sauvegarder</button>
+    <button id="btn-del" class="btn-del" style="display:none" onclick="deleteMandat()">&#128465; Supprimer</button>
+    <button class="btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
   </div>
 </div>
 
 <div class="content">
 
-  <!-- INFOS CLIENT -->
   <div class="sec">
-    <div class="sec-title">👤 Informations client</div>
+    <div class="sec-title">&#128100; Informations client</div>
     <div class="grid2">
       <div class="fg"><label>Compagnie</label>
         <select id="f-compagnie" onchange="onCompagnieChange()">
-          <option value="logica">🏠 Logica Inspection</option>
-          <option value="geq">🏢 GEQ – Bâtiment Conseil</option>
+          <option value="logica">&#127968; Logica Inspection</option>
+          <option value="geq">&#127970; GEQ &ndash; B&acirc;timent Conseil</option>
         </select>
       </div>
       <div class="fg" id="fg-type-geq" style="display:none"><label>Type de mandat</label>
         <select id="f-type-mandat">
-          <option value="Test de qualit\u00e9 de l'air fongique">Test de qualit\u00e9 de l'air fongique</option>
+          <option value="Test de qualit&eacute; de l'air fongique">Test de qualit&eacute; de l'air fongique</option>
           <option value="Test d'air Fibre d'Amiante">Test d'air Fibre d'Amiante</option>
           <option value="Biotape">Biotape</option>
-          <option value="\u00c9chantillonnage M\u00e9rule">\u00c9chantillonnage M\u00e9rule</option>
+          <option value="Echantillonnage Merule">Echantillonnage M&eacute;rule</option>
           <option value="Expertise technique (avec rapport)">Expertise technique (avec rapport)</option>
           <option value="Expertise technique (sans rapport)">Expertise technique (sans rapport)</option>
-          <option value="Pr\u00e9l\u00e8vement Amiante">Pr\u00e9l\u00e8vement Amiante</option>
+          <option value="Prelevement Amiante">Pr&eacute;l&egrave;vement Amiante</option>
           <option value="Peinture plomb">Peinture plomb</option>
           <option value="Inspection parties communes">Inspection parties communes</option>
-          <option value="R\u00e9daction carnet / \u00e9tude">R\u00e9daction carnet / \u00e9tude</option>
-          <option value="\u00c9chantillonnage eau">\u00c9chantillonnage eau</option>
+          <option value="Redaction carnet etude">R&eacute;daction carnet / &eacute;tude</option>
+          <option value="Echantillonnage eau">Echantillonnage eau</option>
           <option value="Inspection drain de fondation">Inspection drain de fondation</option>
-          <option value="Inspection b\u00e2timent (pr\u00e9-achat GEQ)">Inspection b\u00e2timent (pr\u00e9-achat GEQ)</option>
+          <option value="Inspection batiment pre-achat GEQ">Inspection b&acirc;timent (pr&eacute;-achat GEQ)</option>
         </select>
       </div>
-      <div class="fg s2"><label>Nom du client *</label><input id="f-client-nom" type="text" placeholder="Prénom Nom"></div>
-      <div class="fg"><label>T\u00e9l\u00e9phone</label><input id="f-client-tel" type="tel" placeholder="418-000-0000"></div>
+      <div class="fg s2"><label>Nom du client *</label><input id="f-client-nom" type="text" placeholder="Pr&eacute;nom Nom"></div>
+      <div class="fg"><label>T&eacute;l&eacute;phone</label><input id="f-client-tel" type="tel" placeholder="418-000-0000"></div>
       <div class="fg"><label>Courriel</label><input id="f-client-email" type="email" placeholder="client@email.com"></div>
       <div class="fg s2"><label>Adresse du mandat</label><input id="f-adresse" type="text" placeholder="123 rue Exemple, Ville, QC"></div>
-
-      <!-- LOGICA ONLY -->
-      <div class="fg logica-only"><label>Nom du courtier acheteur</label><input id="f-courtier" type="text" placeholder="Prénom Nom"></div>
-      <div class="fg logica-only"><label>R\u00e9f\u00e9r\u00e9 par</label><input id="f-reference" type="text" placeholder="Qui vous a r\u00e9f\u00e9r\u00e9 ?"></div>
+      <div class="fg logica-only"><label>Nom du courtier acheteur</label><input id="f-courtier" type="text" placeholder="Pr&eacute;nom Nom"></div>
+      <div class="fg logica-only"><label>R&eacute;f&eacute;r&eacute; par</label><input id="f-reference" type="text" placeholder="Qui vous a r&eacute;f&eacute;r&eacute; ?"></div>
       <div class="fg s2 logica-only">
         <label>Lien listing (fiche de vente)</label>
         <div class="link-input">
           <input id="f-listing" type="url" placeholder="https://centris.ca/...">
-          <button class="btn-link" onclick="openListing()">🔗 Ouvrir</button>
+          <button class="btn-link" onclick="openListing()">&#128279; Ouvrir</button>
         </div>
       </div>
-      <div class="fg logica-only"><label>Type de b\u00e2timent</label>
+      <div class="fg logica-only"><label>Type de b&acirc;timent</label>
         <select id="f-type-batiment">
-          <option value="">— S\u00e9lectionner —</option>
+          <option value="">&#8212; S&eacute;lectionner &#8212;</option>
           <option>Plain-Pied (Bungalow)</option>
-          <option>Maison \u00e0 \u00e9tage (Cottage)</option>
-          <option>Jumel\u00e9</option>
-          <option>Jumel\u00e9 \u00e0 \u00e9tage</option>
-          <option>Maison en rang\u00e9</option>
-          <option>Maison en rang\u00e9 \u00e0 \u00e9tage</option>
+          <option>Maison &agrave; &eacute;tage (Cottage)</option>
+          <option>Jumel&eacute;</option>
+          <option>Jumel&eacute; &agrave; &eacute;tage</option>
+          <option>Maison en rang&eacute;</option>
+          <option>Maison en rang&eacute; &agrave; &eacute;tage</option>
           <option>Duplex</option><option>Triplex</option>
           <option>Quadruplex</option><option>5 plex</option><option>6 plex</option>
           <option>Maison mobile</option><option>Split level</option><option>Condo</option>
@@ -200,26 +179,23 @@ input[type=file]{display:none;}
     </div>
   </div>
 
-  <!-- PLANIFICATION -->
   <div class="sec">
-    <div class="sec-title">📅 Planification</div>
+    <div class="sec-title">&#128197; Planification</div>
     <div class="grid3">
       <div class="fg"><label>Date</label><input id="f-date" type="date"></div>
       <div class="fg"><label>Heure</label><input id="f-heure" type="time"></div>
-      <div class="fg"><label>Technicien assign\u00e9</label>
-        <select id="f-tech">
-          <option value="">— S\u00e9lectionner —</option>
-        </select>
+      <div class="fg"><label>Technicien assign&eacute;</label>
+        <select id="f-tech"><option value="">&#8212; S&eacute;lectionner &#8212;</option></select>
       </div>
     </div>
   </div>
 
-  <!-- FINANCES (gestionnaire seulement) -->
   <div class="sec" id="sec-finances">
-    <div class="sec-title">💰 Finances</div>
+    <div class="sec-title">&#128176; Finances</div>
     <table class="fin-table">
       <thead><tr>
-        <th>Service</th><th style="text-align:right">Prix client</th>
+        <th>Service</th>
+        <th style="text-align:right">Prix client</th>
         <th style="text-align:right" class="comm-col-h">Commission tech</th>
       </tr></thead>
       <tbody>
@@ -231,15 +207,10 @@ input[type=file]{display:none;}
       </tbody>
     </table>
 
-    <!-- EXTRAS -->
-    <div style="margin:12px 0 4px"><label style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.4px;">Services suppl\u00e9mentaires</label></div>
+    <div style="margin:12px 0 4px"><label>Services suppl&eacute;mentaires</label></div>
     <div class="extras-list" id="extras-list"></div>
-    <div class="grid2" id="extras-header" style="padding:6px 4px;display:none;">
-      <div></div>
-    </div>
     <button class="btn-add-extra geq-only" style="display:none" onclick="addExtra()">+ Ajouter un service</button>
 
-    <!-- TRANSPORT -->
     <table class="fin-table" style="margin-top:12px;">
       <tbody>
         <tr>
@@ -251,84 +222,78 @@ input[type=file]{display:none;}
         <tr class="fin-tax"><td>TPS (5%)</td><td style="text-align:right" colspan="2"><span id="tps-val">0,00 $</span></td></tr>
         <tr class="fin-tax"><td>TVQ (9,975%)</td><td style="text-align:right" colspan="2"><span id="tvq-val">0,00 $</span></td></tr>
         <tr class="fin-total"><td>Total TTC</td><td style="text-align:right" colspan="2"><span id="total-ttc">0,00 $</span></td></tr>
-        <tr class="fin-comm"><td>💼 Total commission tech</td><td style="text-align:right" colspan="2"><span id="total-comm">0,00 $</span></td></tr>
+        <tr class="fin-comm"><td>&#128188; Total commission tech</td><td style="text-align:right" colspan="2"><span id="total-comm">0,00 $</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- COMMISSION TECH (technicien seulement) -->
   <div class="sec" id="sec-comm-tech" style="display:none">
-    <div class="sec-title">💼 Ma commission</div>
-    <div style="font-size:28px;font-weight:700;color:#1565c0" id="tech-comm-val">—</div>
+    <div class="sec-title">&#128188; Ma commission</div>
+    <div style="font-size:28px;font-weight:700;color:#1565c0" id="tech-comm-val">&mdash;</div>
     <div style="font-size:13px;color:#999;margin-top:4px">Commission pour ce mandat</div>
   </div>
 
-  <!-- STATUTS + PAIEMENT -->
   <div class="sec">
-    <div class="sec-title">✅ Statuts</div>
+    <div class="sec-title">&#9989; Statuts</div>
     <div class="statuts-grid">
       <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
-        <span class="ck">○</span> Confirmation envoy\u00e9e
+        <span class="ck">&#9675;</span> Confirmation envoy&eacute;e
       </button>
       <button class="btn-st" id="st-fact" onclick="toggleSt('statut_facture_envoyee','st-fact')">
-        <span class="ck">○</span> Facture envoy\u00e9e
+        <span class="ck">&#9675;</span> Facture envoy&eacute;e
       </button>
       <button class="btn-st" id="st-paye" onclick="togglePaye()">
-        <span class="ck">○</span> Pay\u00e9
+        <span class="ck">&#9675;</span> Pay&eacute;
       </button>
       <button class="btn-st" id="st-rapp" onclick="toggleSt('statut_rapport_envoye','st-rapp')">
-        <span class="ck">○</span> Rapport / Analyse envoy\u00e9
+        <span class="ck">&#9675;</span> Rapport / Analyse envoy&eacute;
       </button>
     </div>
 
     <div class="paye-section" id="paye-section">
       <div style="margin-top:14px">
-        <label style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;">Pay\u00e9 par</label>
+        <label>Pay&eacute; par</label>
         <div class="par-row" id="par-row">
-          <button class="btn-par" id="par-client" onclick="setPar('client')">👤 <span id="par-client-nom">Client</span></button>
+          <button class="btn-par" id="par-client" onclick="setPar('client')">&#128100; <span id="par-client-nom">Client</span></button>
           <button class="btn-par" id="par-autre" onclick="setPar('autre')">Autre...</button>
         </div>
         <input type="text" id="par-autre-input" style="display:none;margin-top:8px;max-width:280px;" placeholder="Nom de la personne" oninput="setParAutre(this.value)">
       </div>
       <div style="margin-top:14px">
-        <label style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;">Mode de paiement</label>
+        <label>Mode de paiement</label>
         <div class="mode-row">
           <button class="btn-mode" onclick="setMode('comptant')">Comptant</button>
           <button class="btn-mode" onclick="setMode('virement')">Virement Interac</button>
           <button class="btn-mode" onclick="setMode('carte')">Carte</button>
-          <button class="btn-mode" onclick="setMode('debit')">D\u00e9bit</button>
-          <button class="btn-mode" onclick="setMode('cheque')">Ch\u00e8que</button>
+          <button class="btn-mode" onclick="setMode('debit')">D&eacute;bit</button>
+          <button class="btn-mode" onclick="setMode('cheque')">Ch&egrave;que</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- DOCUMENTS -->
   <div class="sec" id="sec-docs" style="display:none">
-    <div class="sec-title">📄 Documents</div>
+    <div class="sec-title">&#128196; Documents</div>
     <div class="doc-section" id="doc-section"></div>
   </div>
 
-  <!-- EMAILS -->
   <div class="sec" id="sec-emails" style="display:none">
-    <div class="sec-title">✉️ Courriels</div>
+    <div class="sec-title">&#9993;&#65039; Courriels</div>
     <div class="email-list" id="email-list"></div>
   </div>
 
-  <!-- NOTES -->
   <div class="sec">
-    <div class="sec-title">📝 Notes internes</div>
-    <textarea id="f-notes" placeholder="Notes visibles seulement par l'\u00e9quipe..."></textarea>
+    <div class="sec-title">&#128221; Notes internes</div>
+    <textarea id="f-notes" placeholder="Notes visibles seulement par l'&eacute;quipe..."></textarea>
   </div>
 
 </div>
 
-<!-- MODAL EMAIL -->
 <div class="ov" id="modal-email" style="display:none">
   <div class="modal">
     <h2 id="modal-email-title">Envoyer un courriel</h2>
     <div class="gmail-bar" id="gmail-bar" style="display:none">
-      <span id="gmail-status">Gmail non connect\u00e9</span>
+      <span id="gmail-status">Gmail non connect&eacute;</span>
       <button class="btn-gc" onclick="connectGmail()">Connecter Gmail</button>
     </div>
     <div class="mfield"><label>Destinataire</label><input id="m-to" type="email"></div>
@@ -337,7 +302,7 @@ input[type=file]{display:none;}
     <div id="m-attach-info" style="font-size:12px;color:#888;margin-bottom:10px;"></div>
     <div class="mfooter">
       <button class="btn-cancel" onclick="closeEmailModal()">Annuler</button>
-      <button class="btn-send" onclick="sendEmail()">📤 Envoyer</button>
+      <button class="btn-send" onclick="sendEmail()">&#128228; Envoyer</button>
     </div>
   </div>
 </div>
@@ -352,19 +317,18 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const GC_ID='706969065285-u6arf7jjof2t2sso4am0i8uaj6t167bk.apps.googleusercontent.com';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 
-let profile=null, mandat=null, extras=[], docs=[], isNew=false;
-let currentEmailType=null, currentEmailAttachPaths=[];
+let profile=null,mandat=null,extras=[],docs=[],isNew=false;
+let currentEmailType=null;
 
 const LOGICA_EXTRAS_DEFAULT=[
   {service_nom:"Analyse d'eau microbiologique",prix:195,commission:50,actif:false},
-  {service_nom:"Analyse eau m\u00e9taux",prix:250,commission:70,actif:false},
+  {service_nom:"Analyse eau metaux",prix:250,commission:70,actif:false},
   {service_nom:"Inspection drain de fondation (pendant inspection)",prix:225,commission:100,actif:false},
-  {service_nom:"Inspection drain de fondation (avec d\u00e9placement)",prix:395,commission:175,actif:false},
+  {service_nom:"Inspection drain de fondation (avec deplacement)",prix:395,commission:175,actif:false},
   {service_nom:"Analyse vermiculite (amiante)",prix:350,commission:100,actif:false},
-  {service_nom:"Inspection garage d\u00e9tach\u00e9",prix:0,commission:0,actif:false},
+  {service_nom:"Inspection garage detache",prix:0,commission:0,actif:false},
 ];
 
-// INIT
 (async()=>{
   const {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.href='index.html';return;}
@@ -374,20 +338,18 @@ const LOGICA_EXTRAS_DEFAULT=[
 
   const params=new URLSearchParams(location.search);
   const id=params.get('id');
-  const mode=params.get('mode');
-  const comp=params.get('compagnie');
+  const comp=params.get('compagnie')||'logica';
 
-  // Load techniciens dropdown
   const {data:techs}=await sb.from('profiles').select('id,nom,prenom').eq('role','technicien').eq('dashboard_access',true).order('nom');
   const tsel=document.getElementById('f-tech');
   (techs||[]).forEach(t=>{
     const o=document.createElement('option');
-    o.value=t.id; o.textContent=`${t.prenom} ${t.nom}`;
+    o.value=t.id;
+    o.textContent=t.prenom+' '+t.nom;
     tsel.appendChild(o);
   });
 
   if(id){
-    // EDIT MODE
     isNew=false;
     const {data:m}=await sb.from('mandats').select('*').eq('id',id).single();
     if(!m){toast('Mandat introuvable','err');return;}
@@ -401,23 +363,16 @@ const LOGICA_EXTRAS_DEFAULT=[
     document.getElementById('sec-emails').style.display='block';
     if(profile.role==='gestionnaire') document.getElementById('btn-del').style.display='flex';
   } else {
-    // NEW MODE
     isNew=true;
-    document.getElementById('f-compagnie').value=comp||'logica';
-    if(profile.role==='technicien'){
-      document.getElementById('f-tech').value=profile.id;
-    }
-    if((comp||'logica')==='logica'){
-      extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
-    }
+    document.getElementById('f-compagnie').value=comp;
+    if(profile.role==='technicien') document.getElementById('f-tech').value=profile.id;
+    if(comp==='logica') extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
     onCompagnieChange();
   }
 
-  // Role visibility
   const isGest=profile.role==='gestionnaire';
   const isTech=profile.role==='technicien';
-  const isSec=profile.role==='secretaire';
-  if(!isGest&&!isSec) document.getElementById('sec-finances').style.display='none';
+  if(!isGest&&profile.role!=='secretaire') document.getElementById('sec-finances').style.display='none';
   if(isTech) document.getElementById('sec-comm-tech').style.display='block';
   document.querySelectorAll('.comm-col').forEach(el=>el.style.display=isGest?'':'none');
   document.querySelectorAll('.comm-col-h').forEach(el=>el.style.display=isGest?'':'none');
@@ -447,8 +402,6 @@ function fillForm(){
   if(m.courtier_nom) document.getElementById('f-courtier').value=m.courtier_nom;
   if(m.reference_client) document.getElementById('f-reference').value=m.reference_client;
   if(m.listing_url) document.getElementById('f-listing').value=m.listing_url;
-
-  // Statuts
   setStBtn('st-conf',m.statut_confirmation_envoyee);
   setStBtn('st-fact',m.statut_facture_envoyee);
   setStBtn('st-paye',m.statut_paye);
@@ -469,20 +422,15 @@ function fillForm(){
     if(m.mode_paiement){
       document.querySelectorAll('.btn-mode').forEach(b=>{
         if(b.textContent.toLowerCase().includes(m.mode_paiement.toLowerCase())||
-           (m.mode_paiement==='virement'&&b.textContent.includes('Interac'))){
+          (m.mode_paiement==='virement'&&b.textContent.includes('Interac'))){
           b.classList.add('on');
         }
       });
     }
   }
-  // Titre
   document.getElementById('htitle').textContent=m.client_nom||'Mandat';
   document.getElementById('par-client-nom').textContent=m.client_nom||'Client';
-
-  // Tech comm
-  if(profile.role==='technicien'){
-    document.getElementById('tech-comm-val').textContent=money(m.commission_totale);
-  }
+  if(profile.role==='technicien') document.getElementById('tech-comm-val').textContent=money(m.commission_totale);
   onCompagnieChange();
   recalc();
 }
@@ -504,27 +452,23 @@ function updateBadge(){
   b.className='badge '+(comp==='logica'?'badge-logica':'badge-geq');
 }
 
-// EXTRAS
 function renderExtras(){
   const list=document.getElementById('extras-list');
   const isGest=profile.role==='gestionnaire';
   list.innerHTML='';
-  if(!extras.length){list.innerHTML='<div style="font-size:13px;color:#bbb;padding:8px 0">Aucun service suppl\u00e9mentaire</div>';return;}
+  if(!extras.length){
+    list.innerHTML='<div style="font-size:13px;color:#bbb;padding:8px 0">Aucun service supplementaire</div>';
+    return;
+  }
   extras.forEach((ex,i)=>{
     const row=document.createElement('div');
     row.className='extra-row';
-    row.innerHTML=`
-      <input type="checkbox" class="extra-check" ${ex.actif?'checked':''} onchange="extraToggle(${i},this.checked)">
-      <span class="extra-name">${ex.service_nom}</span>
-      <input class="fin-input-sm" type="number" min="0" step="0.01" value="${ex.prix||0}" 
-        oninput="extraSetPrix(${i},this.value)" ${!isGest&&profile.role==='secretaire'?'':''}
-        title="Prix client">
-      ${isGest?`<input class="fin-input-sm comm-col" type="number" min="0" step="0.01" value="${ex.commission||0}" 
-        oninput="extraSetComm(${i},this.value)" title="Commission">`:
-        `<span class="comm-col"></span>`}
-      ${profile.role==='gestionnaire'||profile.role==='secretaire'?
-        `<button class="btn-rm del-col" onclick="removeExtra(${i})">✕</button>`:'<span></span>'}
-    `;
+    row.innerHTML=
+      '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)">'+
+      '<span class="extra-name">'+ex.service_nom+'</span>'+
+      '<input class="fin-input-sm" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value)" title="Prix client">'+
+      (isGest?'<input class="fin-input-sm comm-col" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)" title="Commission">':'<span></span>')+
+      ((profile.role==='gestionnaire'||profile.role==='secretaire')?'<button class="btn-rm" onclick="removeExtra('+i+')">&#10005;</button>':'<span></span>');
     list.appendChild(row);
   });
   if(document.getElementById('f-compagnie').value==='geq'){
@@ -542,7 +486,6 @@ function addExtra(){
   renderExtras();
 }
 
-// FINANCES CALC
 function recalc(){
   const base=parseFloat(document.getElementById('prix-base').value)||0;
   const trans=parseFloat(document.getElementById('transport').value)||0;
@@ -563,15 +506,13 @@ function recalcComm(){
   const trans=parseFloat(document.getElementById('transport').value)||0;
   const baseComm=parseFloat(document.getElementById('comm-base').value)||0;
   const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
-  const total=baseComm+extComm+trans;
-  document.getElementById('total-comm').textContent=money(total);
+  document.getElementById('total-comm').textContent=money(baseComm+extComm+trans);
 }
 
-// STATUTS
 function setStBtn(id,val){
   const btn=document.getElementById(id);
   btn.classList.toggle('on',!!val);
-  btn.querySelector('.ck').textContent=val?'✓':'○';
+  btn.querySelector('.ck').textContent=val?'&#10003;':'&#9675;';
 }
 
 async function toggleSt(field,btnId){
@@ -581,8 +522,8 @@ async function toggleSt(field,btnId){
   if(!isNew&&mandat){
     const up={};up[field]=newVal;
     await sb.from('mandats').update(up).eq('id',mandat.id);
-    if(mandat) mandat[field]=newVal;
-    toast(newVal?'Statut activ\u00e9':'Statut d\u00e9sactiv\u00e9');
+    mandat[field]=newVal;
+    toast(newVal?'Statut active':'Statut desactive');
   }
 }
 
@@ -593,8 +534,8 @@ function togglePaye(){
   document.getElementById('paye-section').classList.toggle('show',newVal);
   if(!isNew&&mandat){
     sb.from('mandats').update({statut_paye:newVal}).eq('id',mandat.id);
-    if(mandat) mandat.statut_paye=newVal;
-    toast(newVal?'Marqu\u00e9 pay\u00e9 ✓':'Statut pay\u00e9 retir\u00e9');
+    mandat.statut_paye=newVal;
+    toast(newVal?'Marque paye':'Statut paye retire');
   }
 }
 
@@ -605,9 +546,7 @@ function setPar(type){
   if(type==='client'){
     document.getElementById('par-client').classList.add('on');
     document.getElementById('par-autre-input').style.display='none';
-    if(!isNew&&mandat){
-      sb.from('mandats').update({paye_par:clientNom}).eq('id',mandat.id);
-    }
+    if(!isNew&&mandat) sb.from('mandats').update({paye_par:clientNom}).eq('id',mandat.id);
   } else {
     document.getElementById('par-autre').classList.add('on');
     document.getElementById('par-autre-input').style.display='block';
@@ -625,12 +564,11 @@ function setMode(mode){
   if(!isNew&&mandat) sb.from('mandats').update({mode_paiement:mode}).eq('id',mandat.id);
 }
 
-// SAVE
 async function saveMandat(){
   const nom=document.getElementById('f-client-nom').value.trim();
   if(!nom){toast('Le nom du client est requis','err');return;}
   const comp=document.getElementById('f-compagnie').value;
-  const typeMand=comp==='logica'?'Inspection pr\u00e9-achat':document.getElementById('f-type-mandat').value;
+  const typeMand=comp==='logica'?'Inspection pre-achat':document.getElementById('f-type-mandat').value;
   const base=parseFloat(document.getElementById('prix-base').value)||0;
   const trans=parseFloat(document.getElementById('transport').value)||0;
   const commBase=parseFloat(document.getElementById('comm-base').value)||0;
@@ -641,15 +579,11 @@ async function saveMandat(){
   const tvq=st*0.09975;
   const ttc=st+tps+tvq;
   const commTot=commBase+extComm+trans;
-
   const techId=document.getElementById('f-tech').value||null;
   const {data:{session}}=await sb.auth.getSession();
 
   const payload={
-    compagnie:comp,
-    type_mandat:typeMand,
-    technicien_id:techId,
-    created_by:isNew?session.user.id:undefined,
+    compagnie:comp,type_mandat:typeMand,technicien_id:techId,
     date_mandat:document.getElementById('f-date').value||null,
     heure_mandat:document.getElementById('f-heure').value||null,
     client_nom:nom,
@@ -660,73 +594,59 @@ async function saveMandat(){
     reference_client:document.getElementById('f-reference').value||null,
     listing_url:document.getElementById('f-listing').value||null,
     type_batiment:document.getElementById('f-type-batiment').value||null,
-    prix_base:base,
-    transport_montant:trans,
-    commission_manuelle:commBase,
-    sous_total:st,
-    tps:tps,
-    tvq:tvq,
-    total_ttc:ttc,
-    commission_totale:commTot,
+    prix_base:base,transport_montant:trans,commission_manuelle:commBase,
+    sous_total:st,tps:tps,tvq:tvq,total_ttc:ttc,commission_totale:commTot,
     notes:document.getElementById('f-notes').value||null,
   };
-  if(isNew) delete payload.created_by;
 
-  let savedId;
   if(isNew){
     const {data,error}=await sb.from('mandats').insert({...payload,created_by:session.user.id}).select().single();
     if(error){toast('Erreur: '+error.message,'err');return;}
-    savedId=data.id;
     mandat=data;
-    // Save extras
     if(extras.length){
-      const exInsert=extras.map(e=>({mandat_id:savedId,service_nom:e.service_nom,prix:e.prix,commission:e.commission,actif:e.actif}));
-      const {data:exData}=await sb.from('mandat_extras').insert(exInsert).select();
-      extras=exData||extras;
+      const exI=extras.map(e=>({mandat_id:data.id,service_nom:e.service_nom,prix:e.prix,commission:e.commission,actif:e.actif}));
+      const {data:exD}=await sb.from('mandat_extras').insert(exI).select();
+      extras=exD||extras;
     }
     isNew=false;
-    toast('Mandat cr\u00e9\u00e9 ✓');
-    history.replaceState(null,'',`?id=${savedId}`);
+    toast('Mandat cree !');
+    history.replaceState(null,'','?id='+data.id);
     document.getElementById('htitle').textContent=nom;
-    document.getElementById('btn-del').style.display=profile.role==='gestionnaire'?'flex':'none';
+    if(profile.role==='gestionnaire') document.getElementById('btn-del').style.display='flex';
     document.getElementById('sec-docs').style.display='block';
     document.getElementById('sec-emails').style.display='block';
-    renderDocs();
-    renderEmails();
+    renderDocs();renderEmails();
   } else {
     const {error}=await sb.from('mandats').update(payload).eq('id',mandat.id);
     if(error){toast('Erreur: '+error.message,'err');return;}
     mandat={...mandat,...payload};
-    // Update extras
     await sb.from('mandat_extras').delete().eq('mandat_id',mandat.id);
     if(extras.length){
-      const exInsert=extras.map(e=>({mandat_id:mandat.id,service_nom:e.service_nom,prix:e.prix,commission:e.commission,actif:e.actif}));
-      const {data:exData}=await sb.from('mandat_extras').insert(exInsert).select();
-      extras=exData||extras;
+      const exI=extras.map(e=>({mandat_id:mandat.id,service_nom:e.service_nom,prix:e.prix,commission:e.commission,actif:e.actif}));
+      const {data:exD}=await sb.from('mandat_extras').insert(exI).select();
+      extras=exD||extras;
     }
-    toast('Sauvegard\u00e9 ✓');
+    toast('Sauvegarde !');
   }
   document.getElementById('par-client-nom').textContent=nom;
   if(profile.role==='technicien') document.getElementById('tech-comm-val').textContent=money(commTot);
 }
 
-// DELETE
 async function deleteMandat(){
-  if(!confirm('Supprimer ce mandat ? Cette action est irr\u00e9versible.')) return;
+  if(!confirm('Supprimer ce mandat ? Cette action est irreversible.')) return;
   await sb.from('mandats').delete().eq('id',mandat.id);
   window.location.href='dashboard.html';
 }
 
-// DOCS
 const DOC_TYPES_LOGICA=[
-  {key:'rapport_inspection',label:'📋 Rapport d\'inspection'},
-  {key:'declaration_vendeur',label:'📜 D\u00e9claration du vendeur'},
-  {key:'autre',label:'📎 Autres documents'},
+  {key:'rapport_inspection',label:'Rapport d\'inspection'},
+  {key:'declaration_vendeur',label:'Declaration du vendeur'},
+  {key:'autre',label:'Autres documents'},
 ];
 const DOC_TYPES_GEQ=[
-  {key:'rapport',label:'📋 Rapport'},
-  {key:'resultat_analyse',label:'🧪 R\u00e9sultats d\'analyse'},
-  {key:'autre',label:'📎 Autres documents'},
+  {key:'rapport',label:'Rapport'},
+  {key:'resultat_analyse',label:'Resultats d\'analyse'},
+  {key:'autre',label:'Autres documents'},
 ];
 
 function renderDocs(){
@@ -738,37 +658,31 @@ function renderDocs(){
     const typeDocs=docs.filter(d=>d.type_document===t.key);
     const block=document.createElement('div');
     block.className='doc-block';
-    let html=`<div class="doc-block-title">${t.label}</div>`;
+    let html='<div class="doc-block-title">'+t.label+'</div>';
     typeDocs.forEach(d=>{
-      html+=`<div class="doc-file">
-        <span class="doc-fn">📄 ${d.nom_fichier}</span>
-        <button class="btn-dl" onclick="downloadDoc('${d.storage_path}','${d.nom_fichier}')">⬇ T\u00e9l\u00e9charger</button>
-        ${profile.role==='gestionnaire'||profile.role==='secretaire'?
-          `<button class="btn-deldoc" onclick="deleteDoc('${d.id}','${d.storage_path}')">✕</button>`:''}
-      </div>`;
+      html+='<div class="doc-file">'+
+        '<span class="doc-fn">&#128196; '+d.nom_fichier+'</span>'+
+        '<button class="btn-dl" onclick="downloadDoc(\''+d.storage_path+'\',\''+d.nom_fichier+'\')">&#8595; Telecharger</button>'+
+        ((profile.role==='gestionnaire'||profile.role==='secretaire')?
+          '<button class="btn-deldoc" onclick="deleteDoc(\''+d.id+'\',\''+d.storage_path+'\')">&#10005;</button>':'')+
+        '</div>';
     });
-    if(profile.role!=='technicien'||typeDocs.length===0){
-      html+=`<div class="doc-drop" onclick="triggerUpload('${t.key}')">
-        ＋ T\u00e9l\u00e9verser un fichier
-        <input type="file" id="file-${t.key}" onchange="uploadDoc('${t.key}',this)">
-      </div>`;
-    }
+    html+='<div class="doc-drop" onclick="triggerUpload(\''+t.key+'\')">+ Televerser un fichier'+
+      '<input type="file" id="file-'+t.key+'" onchange="uploadDoc(\''+t.key+'\',this)"></div>';
     block.innerHTML=html;
     sec.appendChild(block);
   });
 }
 
-function triggerUpload(key){
-  document.getElementById('file-'+key).click();
-}
+function triggerUpload(key){document.getElementById('file-'+key).click();}
 
 async function uploadDoc(key,input){
   if(!input.files[0]||!mandat) return;
   const file=input.files[0];
-  const path=`${mandat.id}/${key}_${Date.now()}_${file.name}`;
-  toast('T\u00e9l\u00e9versement en cours...');
+  const path=mandat.id+'/'+key+'_'+Date.now()+'_'+file.name;
+  toast('Telechargement en cours...');
   const {error}=await sb.storage.from('mandat-documents').upload(path,file);
-  if(error){toast('Erreur upload: '+error.message,'err');return;}
+  if(error){toast('Erreur: '+error.message,'err');return;}
   const {data:{session}}=await sb.auth.getSession();
   const {data:docData}=await sb.from('mandat_documents').insert({
     mandat_id:mandat.id,type_document:key,
@@ -777,15 +691,12 @@ async function uploadDoc(key,input){
   }).select().single();
   docs.push(docData);
   renderDocs();
-  toast('Fichier t\u00e9l\u00e9vers\u00e9 ✓');
+  toast('Fichier televerse !');
 }
 
 async function downloadDoc(path,nom){
   const {data}=await sb.storage.from('mandat-documents').createSignedUrl(path,300);
-  if(data){
-    const a=document.createElement('a');
-    a.href=data.signedUrl;a.download=nom;a.click();
-  }
+  if(data){const a=document.createElement('a');a.href=data.signedUrl;a.download=nom;a.click();}
 }
 
 async function deleteDoc(id,path){
@@ -794,28 +705,30 @@ async function deleteDoc(id,path){
   await sb.from('mandat_documents').delete().eq('id',id);
   docs=docs.filter(d=>d.id!==id);
   renderDocs();
-  toast('Fichier supprim\u00e9');
+  toast('Fichier supprime');
 }
 
-// EMAILS
 function renderEmails(){
   const comp=mandat?mandat.compagnie:document.getElementById('f-compagnie').value;
   const list=document.getElementById('email-list');
   list.innerHTML='';
   const btns=comp==='logica'?[
-    {type:'conf_logica',icon:'📧',title:'Confirmation d\'inspection',sub:'Convention de service + Norme de pratique en pi\u00e8ces jointes',field:'statut_confirmation_envoyee'},
-    {type:'rapp_logica',icon:'📋',title:'Voici votre rapport d\'inspection',sub:'Rapport d\'inspection en pi\u00e8ce jointe',field:'statut_rapport_envoye'},
+    {type:'conf_logica',icon:'&#128231;',title:'Confirmation d\'inspection',sub:'Convention de service + Norme de pratique en pieces jointes',field:'statut_confirmation_envoyee'},
+    {type:'rapp_logica',icon:'&#128203;',title:'Voici votre rapport d\'inspection',sub:'Rapport d\'inspection en piece jointe',field:'statut_rapport_envoye'},
   ]:[
-    {type:'conf_geq_inspection',icon:'📧',title:'Confirmation d\'inspection GEQ',sub:'Convention + Norme en pi\u00e8ces jointes',field:'statut_confirmation_envoyee'},
-    {type:'conf_geq_expertise',icon:'📧',title:'Confirmation d\'expertise technique',sub:'',field:'statut_confirmation_envoyee'},
-    {type:'rapp_geq_expertise',icon:'📋',title:'Rapport d\'expertise technique',sub:'Rapport en pi\u00e8ce jointe',field:'statut_rapport_envoye'},
-    {type:'rapp_geq_analyse',icon:'🧪',title:'R\u00e9sultats d\'analyse de qualit\u00e9 de l\'air fongique',sub:'R\u00e9sultats en pi\u00e8ce jointe',field:'statut_rapport_envoye'},
+    {type:'conf_geq_inspection',icon:'&#128231;',title:'Confirmation d\'inspection GEQ',sub:'Convention + Norme en pieces jointes',field:'statut_confirmation_envoyee'},
+    {type:'conf_geq_expertise',icon:'&#128231;',title:'Confirmation d\'expertise technique',sub:'',field:'statut_confirmation_envoyee'},
+    {type:'rapp_geq_expertise',icon:'&#128203;',title:'Rapport d\'expertise technique',sub:'Rapport en piece jointe',field:'statut_rapport_envoye'},
+    {type:'rapp_geq_analyse',icon:'&#9878;&#65039;',title:'Resultats d\'analyse de qualite de l\'air fongique',sub:'Resultats en piece jointe',field:'statut_rapport_envoye'},
   ];
   btns.forEach(b=>{
     const sent=mandat&&mandat[b.field];
     const btn=document.createElement('button');
     btn.className='btn-email'+(sent?' sent':'');
-    btn.innerHTML=`<span class="ei">${b.icon}</span><div class="email-info"><div class="et">${b.title}</div><div class="es">${b.sub||''}</div></div>${sent?'<span style="margin-left:auto;font-size:12px;color:#4caf50">✓ Envoy\u00e9</span>':''}`;
+    btn.innerHTML=
+      '<span class="ei">'+b.icon+'</span>'+
+      '<div><div class="et">'+b.title+'</div><div class="es">'+b.sub+'</div></div>'+
+      (sent?'<span style="margin-left:auto;font-size:12px;color:#4caf50">&#10003; Envoye</span>':'');
     btn.onclick=()=>openEmailModal(b.type);
     list.appendChild(btn);
   });
@@ -823,45 +736,43 @@ function renderEmails(){
 
 function getEmailContent(type){
   if(!mandat) return null;
-  const dateStr=mandat.date_mandat?new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'[DATE \u00e0 confirmer]';
-  const heureStr=mandat.heure_mandat?mandat.heure_mandat.substring(0,5):'[HEURE \u00e0 confirmer]';
+  const dateStr=mandat.date_mandat?new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'[DATE a confirmer]';
+  const heureStr=mandat.heure_mandat?mandat.heure_mandat.substring(0,5):'[HEURE a confirmer]';
   const adresse=mandat.adresse||'[ADRESSE]';
-  const googleLinkGeq=profile.google_review_url_geq||'https://g.page/r/CcwF17qG5ZPEEBM/review';
-  const googleLinkLogica=profile.google_review_url_logica||'https://g.page/r/Cc71RgXYNZtdEBM/review';
-
-  // Nom du tech
+  const googleGeq=profile.google_review_url_geq||'https://g.page/r/CcwF17qG5ZPEEBM/review';
+  const googleLogica=profile.google_review_url_logica||'https://g.page/r/Cc71RgXYNZtdEBM/review';
   const techSelect=document.getElementById('f-tech');
-  const techNom=techSelect.options[techSelect.selectedIndex]?.text||`${profile.prenom} ${profile.nom}`;
+  const techNom=techSelect.options[techSelect.selectedIndex]&&techSelect.selectedIndex>0?techSelect.options[techSelect.selectedIndex].text:profile.prenom+' '+profile.nom;
 
   if(type==='conf_logica') return {
     subj:'Confirmation d\'inspection',
-    body:`Bonjour,\n\nF\u00e9licitation et merci de confier \u00e0 Logica Inspection en b\u00e2timent la d\u00e9licate t\u00e2che d'inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : ${dateStr}\n2. Heure : ${heureStr}\n3. Adresse : ${adresse}\n4. Nom de votre inspecteur : ${techNom}\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l'inspection qui seront remplis lors de l'inspection. Nous vous invitons \u00e0 en prendre connaissance.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir par courriel une copie de la D\u00e9claration des Vendeurs (DV), la fiche de vente et des rapports d'inspection ant\u00e9rieurs (si disponibles et moins de 5 ans) d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un \u00c9mail distinct et les informations pour virement bancaire sont \u00e9crites au bas de cette derni\u00e8re.\n8. Les frais de l'inspection sont payables le jour m\u00eame de l'inspection.\n9. Frais pour services suppl\u00e9mentaires ;\n- Inspection de drain de fondation par cam\u00e9ra : 225 $ + taxes\n- Test de potabilit\u00e9 de l'eau (Microbiologique) : 200 $ + taxes\n- Test d'eau (m\u00e9taux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la pr\u00e9sence d'amiante : 350 $ + taxes\n- Garage d\u00e9tach\u00e9 : (Varie entre 125$ et 250$)\n\nS'il vous pla\u00eet n'h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es!`,
-    attachNote:'📎 Pi\u00e8ces jointes : Convention de service + Norme de pratique (Veuillez les uploader dans Supabase Storage pour l\'envoi automatique)'
+    body:'Bonjour,\n\nFelicitation et merci de confier a Logica Inspection en batiment la delicate tache d\'inspecter votre nouvelle propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs a l\'inspection qui seront remplis lors de l\'inspection. Nous vous invitons a en prendre connaissance.\n6. De votre cote, nous vous demandons de nous faire parvenir par courriel une copie de la Declaration des Vendeurs (DV), la fiche de vente et des rapports d\'inspection anterieurs (si disponibles et moins de 5 ans) des que possible.\n7. La facture sera envoyee dans un Email distinct et les informations pour virement bancaire sont ecrites au bas de cette derniere.\n8. Les frais de l\'inspection sont payables le jour meme de l\'inspection.\n9. Frais pour services supplementaires ;\n- Inspection de drain de fondation par camera : 225 $ + taxes\n- Test de potabilite de l\'eau (Microbiologique) : 200 $ + taxes\n- Test d\'eau (metaux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la presence d\'amiante : 350 $ + taxes\n- Garage detache : (Varie entre 125$ et 250$)\n\nS\'il vous plait n\'hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
+    attachNote:'Pieces jointes : Convention de service + Norme de pratique'
   };
   if(type==='rapp_logica') return {
     subj:'Voici votre rapport d\'inspection',
-    body:`Bonjour,\n\nMerci d'avoir choisi Logica Inspection en b\u00e2timent. Il nous fait plaisir de vous faire parvenir votre rapport d'inspection.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n'h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici \ud83d\udc49 ${googleLinkLogica}\n\nSi vous avez des questions concernant votre rapport d'inspection, n'h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur et il se fera un plaisir de r\u00e9pondre \u00e0 vos questions.\n\nBien \u00e0 vous,`,
-    attachNote:'📎 Pi\u00e8ce jointe : Rapport d\'inspection (t\u00e9l\u00e9vers\u00e9 dans les documents du dossier)'
+    body:'Bonjour,\n\nMerci d\'avoir choisi Logica Inspection en batiment. Il nous fait plaisir de vous faire parvenir votre rapport d\'inspection.\n\nDe plus, si vous avez ete satisfait par notre service, n\'hesitez pas a nous laisser un commentaire sur notre page en cliquant ici : '+googleLogica+'\n\nSi vous avez des questions concernant votre rapport d\'inspection, n\'hesitez pas a communiquer avec votre inspecteur et il se fera un plaisir de repondre a vos questions.\n\nBien a vous,',
+    attachNote:'Piece jointe : Rapport d\'inspection'
   };
   if(type==='conf_geq_inspection') return {
     subj:'Confirmation d\'inspection',
-    body:`Bonjour,\n\nF\u00e9licitation et merci de confier \u00e0 GEQ \u2013 B\u00e2timent Conseil la d\u00e9licate t\u00e2che d'inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : ${dateStr}\n2. Heure : ${heureStr}\n3. Adresse : ${adresse}\n4. Nom de votre inspecteur : ${techNom}\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l'inspection qui seront remplis lors de l'inspection. Nous vous invitons \u00e0 en prendre connaissance.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir par courriel une copie de la D\u00e9claration des Vendeurs (DV) et des rapports d'inspection ant\u00e9rieurs (si disponibles) d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un \u00c9mail distinct et les informations pour virement bancaire sont \u00e9crites au bas de cette derni\u00e8re.\n8. Les frais de l'inspection sont payables le jour m\u00eame de l'inspection.\n9. Frais pour services suppl\u00e9mentaires ;\n- Inspection de drain de fondation par cam\u00e9ra : 195 $ + taxes\n- Test de potabilit\u00e9 de l'eau (Microbiologique) : 200 $ + taxes\n- Test d'eau (m\u00e9taux lourds) : 200 $ + taxes\n- Analyse de vermiculite pour la pr\u00e9sence d'amiante : 350 $ + taxes\n- Garage d\u00e9tach\u00e9 : (Varie entre 75$ et 200$)\n\nS'il vous pla\u00eet n'h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es!`,
-    attachNote:'📎 Pi\u00e8ces jointes : Convention de service + Norme de pratique'
+    body:'Bonjour,\n\nFelicitation et merci de confier a GEQ - Batiment Conseil la delicate tache d\'inspecter votre nouvelle propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs a l\'inspection.\n6. De votre cote, nous vous demandons de nous faire parvenir une copie de la Declaration des Vendeurs (DV) et des rapports d\'inspection anterieurs des que possible.\n7. La facture sera envoyee dans un Email distinct.\n8. Les frais de l\'inspection sont payables le jour meme.\n\nS\'il vous plait n\'hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
+    attachNote:'Pieces jointes : Convention de service + Norme de pratique'
   };
   if(type==='conf_geq_expertise') return {
     subj:'Confirmation d\'expertise technique',
-    body:`Bonjour,\n\nMerci de confier \u00e0 GEQ \u2013 B\u00e2timent Conseil l'investigation de la probl\u00e9matique qui affecte votre propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : ${dateStr}\n2. Heure : ${heureStr}\n3. Adresse : ${adresse}\n4. Nom de votre technicien : ${techNom}\n5. Mandat : ${mandat.type_mandat||''}\n6. Tarifs : 580 + txs (Sans rapport) ou 830 + txs (Avec rapport) - (Si d\u00e9passe 2h de r\u00e9daction ajoutez 150$/h)\n7. Les frais de l'investigation sont payables le jour m\u00eame de notre intervention. (Par virement Interac, D\u00e9bit ou ch\u00e8que)\n8. Frais pour services suppl\u00e9mentaires : Veuillez noter que des frais suppl\u00e9mentaires peuvent s'ajouter dans le cas d'une investigation sur une autre cause ou une autre probl\u00e9matique.\n9. D\u00e9lais de r\u00e9daction de rapport : Un maximum de 5 jours ouvrables est allou\u00e9 pour la r\u00e9daction du rapport.\n\nS'il vous pla\u00eet n'h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es!`,
+    body:'Bonjour,\n\nMerci de confier a GEQ - Batiment Conseil l\'investigation de la problematique qui affecte votre propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre technicien : '+techNom+'\n5. Mandat : '+(mandat.type_mandat||'')+'\n6. Tarifs : 580 + txs (Sans rapport) ou 830 + txs (Avec rapport)\n7. Les frais sont payables le jour meme. (Par virement Interac, Debit ou cheque)\n\nS\'il vous plait n\'hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
     attachNote:''
   };
   if(type==='rapp_geq_expertise') return {
     subj:'Rapport d\'expertise technique',
-    body:`Bonjour, tel que convenu vous trouverez en pi\u00e8ce jointe votre rapport d'investigation.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n'h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici \ud83d\udc49 ${googleLinkGeq}\n\nNous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire en restant disponible pour toute question ou \u00e9claircissement suppl\u00e9mentaire.\n\nMerci !`,
-    attachNote:'📎 Pi\u00e8ce jointe : Rapport d\'expertise (t\u00e9l\u00e9vers\u00e9 dans les documents)'
+    body:'Bonjour, tel que convenu vous trouverez en piece jointe votre rapport d\'investigation.\n\nDe plus, si vous avez ete satisfait par notre service, n\'hesitez pas a nous laisser un commentaire sur notre page en cliquant ici : '+googleGeq+'\n\nNous vous remercions de votre confiance et reiterons notre engagement a vous satisfaire.\n\nMerci !',
+    attachNote:'Piece jointe : Rapport d\'expertise'
   };
   if(type==='rapp_geq_analyse') return {
-    subj:'R\u00e9sultat d\'analyse de qualit\u00e9 de l\'air fongique',
-    body:`Bonjour,\nvous trouverez ci-joint les certificats d'analyse des tests de qualit\u00e9 de l'air fongique. N'h\u00e9sitez pas \u00e0 communiquer avec nous pour toute question. De plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n'h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici \ud83d\udc49 ${googleLinkGeq}\n\nMerci !`,
-    attachNote:'📎 Pi\u00e8ce jointe : R\u00e9sultats d\'analyse (t\u00e9l\u00e9vers\u00e9s dans les documents)'
+    subj:'Resultat d\'analyse de qualite de l\'air fongique',
+    body:'Bonjour,\nvous trouverez ci-joint les certificats d\'analyse des tests de qualite de l\'air fongique. N\'hesitez pas a communiquer avec nous pour toute question. De plus, si vous avez ete satisfait par notre service, n\'hesitez pas a nous laisser un commentaire : '+googleGeq+'\n\nMerci !',
+    attachNote:'Piece jointe : Resultats d\'analyse'
   };
   return null;
 }
@@ -875,19 +786,16 @@ function openEmailModal(type){
   document.getElementById('m-subj').value=content.subj;
   document.getElementById('m-body').value=content.body;
   document.getElementById('m-attach-info').textContent=content.attachNote||'';
-
-  // Gmail status
   const token=localStorage.getItem('portail_gmail_token');
   const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
   const bar=document.getElementById('gmail-bar');
+  bar.style.display='flex';
   if(token&&Date.now()<expiry){
     const email=localStorage.getItem('portail_gmail_email')||'';
-    bar.style.display='flex';
-    document.getElementById('gmail-status').textContent=`Gmail: ${email}`;
+    document.getElementById('gmail-status').textContent='Gmail: '+email;
     bar.querySelector('.btn-gc').textContent='Changer';
   } else {
-    bar.style.display='flex';
-    document.getElementById('gmail-status').textContent='Gmail non connect\u00e9';
+    document.getElementById('gmail-status').textContent='Gmail non connecte';
     bar.querySelector('.btn-gc').textContent='Connecter Gmail';
   }
   document.getElementById('modal-email').style.display='flex';
@@ -904,9 +812,7 @@ function connectGmail(){
       localStorage.setItem('portail_gmail_token',resp.access_token);
       localStorage.setItem('portail_gmail_expiry',Date.now()+3500*1000);
       try{
-        const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile',{
-          headers:{Authorization:'Bearer '+resp.access_token}
-        });
+        const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile',{headers:{Authorization:'Bearer '+resp.access_token}});
         const d=await r.json();
         localStorage.setItem('portail_gmail_email',d.emailAddress||'');
         document.getElementById('gmail-status').textContent='Gmail: '+d.emailAddress;
@@ -920,33 +826,22 @@ function connectGmail(){
 async function sendEmail(){
   const token=localStorage.getItem('portail_gmail_token');
   const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
-  if(!token||Date.now()>=expiry){toast('Veuillez d\'abord connecter Gmail','err');return;}
+  if(!token||Date.now()>=expiry){toast('Veuillez connecter Gmail','err');return;}
   const to=document.getElementById('m-to').value.trim();
   const subj=document.getElementById('m-subj').value.trim();
   const body=document.getElementById('m-body').value.trim();
   if(!to){toast('Adresse courriel requise','err');return;}
-
   toast('Envoi en cours...');
-  const mime=[
-    'Content-Type: text/plain; charset="UTF-8"',
-    'MIME-Version: 1.0',
-    `To: ${to}`,
-    `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subj)))}?=`,
-    '',body
-  ].join('\r\n');
-
+  const mime=['Content-Type: text/plain; charset="UTF-8"','MIME-Version: 1.0','To: '+to,'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=','',body].join('\r\n');
   const encoded=btoa(unescape(encodeURIComponent(mime))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-
   const resp=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{
     method:'POST',
     headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
     body:JSON.stringify({raw:encoded})
   });
-
   if(resp.ok){
-    toast('Courriel envoy\u00e9 ✓');
+    toast('Courriel envoye !');
     closeEmailModal();
-    // Marquer statut selon le type
     const field=currentEmailType.includes('conf')?'statut_confirmation_envoyee':'statut_rapport_envoye';
     const btnId=currentEmailType.includes('conf')?'st-conf':'st-rapp';
     if(mandat){
