@@ -14,23 +14,25 @@
       min-height: 100vh;
       padding: 1.5rem 1rem;
     }
-    .container { max-width: 1100px; margin: 0 auto; }
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    /* HEADER */
     .header {
       background: white;
       border-radius: 12px;
       padding: 1.25rem 1.5rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
       flex-wrap: wrap;
       gap: 12px;
     }
     .header-info .label { font-size: 12px; color: #6e6e73; margin-bottom: 2px; }
-    .header-info .name { font-size: 15px; font-weight: 500; }
+    .header-info .name { font-size: 16px; font-weight: 600; }
     .header-info .role { font-size: 12px; color: #6e6e73; margin-top: 2px; }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .btn {
       background: white;
       border: 1px solid #d2d2d7;
@@ -44,64 +46,156 @@
       transition: all 0.15s;
     }
     .btn:hover { background: #f5f5f7; }
-    .btn-small { padding: 6px 10px; font-size: 12px; }
-    .tabs {
+    .btn-primary {
+      background: #1a1a2e;
+      color: white;
+      border-color: #1a1a2e;
+    }
+    .btn-primary:hover { background: #2d2d4e; }
+
+    /* SECTION MES DEMANDES EN COURS */
+    .section-mes {
       background: white;
-      border-radius: 10px;
-      padding: 4px;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .section-mes-header {
       display: flex;
-      gap: 2px;
-    }
-    .tab {
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      color: #6e6e73;
-      background: transparent;
-      border: none;
-      font-family: inherit;
-    }
-    .tab.active {
-      background: #f5f5f7;
-      color: #1d1d1f;
-    }
-    .section-header {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin: 1.5rem 0 0.75rem;
-      padding: 0 0.25rem;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid #f0f0f0;
     }
-    .section-header h2 { font-size: 17px; font-weight: 600; }
-    .section-header .count { font-size: 13px; color: #6e6e73; }
+    .section-mes-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    .section-mes-title .emoji { font-size: 22px; }
+    .section-count {
+      background: #1a1a2e;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* SECTIONS LOGICA ET GEQ */
+    .section-company {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-top: 5px solid;
+    }
+    .section-company.logica { border-top-color: #5DCAA5; }
+    .section-company.geq { border-top-color: #b71c1c; }
+
+    .section-company-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .section-company-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .section-company-title img {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+    }
+    .section-company-title .text-part {
+      display: flex;
+      flex-direction: column;
+    }
+    .section-company-title .compname {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .section-company.logica .compname { color: #1D9E75; }
+    .section-company.geq .compname { color: #b71c1c; }
+    .section-company-title .subname {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+    .section-company-count {
+      padding: 4px 14px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+    }
+    .section-company.logica .section-company-count { background: #5DCAA5; }
+    .section-company.geq .section-company-count { background: #b71c1c; }
+
+    /* GRILLE DE CARTES */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
     }
+
+    /* CARTE */
     .card {
       background: white;
       border: 1px solid #e5e5e7;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 14px 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
       cursor: pointer;
       transition: all 0.15s;
+      position: relative;
+      border-left: 4px solid #e5e5e7;
     }
-    .card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: #d2d2d7; }
+    .card.logica { border-left-color: #5DCAA5; }
+    .card.geq { border-left-color: #b71c1c; }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
     .card.reserved {
-      border-color: #378add;
-      background: linear-gradient(to right, #e6f1fb 0%, white 8%);
+      background: linear-gradient(to right, #e6f7f1 0%, white 30%);
+      border-left-width: 6px;
     }
     .card-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
+      gap: 8px;
     }
-    .card-num { font-size: 11px; color: #6e6e73; font-family: monospace; }
+    .card-num {
+      font-size: 11px;
+      color: #6e6e73;
+      font-family: monospace;
+      font-weight: 600;
+    }
+    .badge-company {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-company.logica { background: #e6f7f1; color: #1D9E75; }
+    .badge-company.geq { background: #fdecea; color: #b71c1c; }
+
     .badge {
       font-size: 11px;
       padding: 2px 8px;
@@ -111,12 +205,13 @@
     .badge-urgente { background: #fcebeb; color: #a32d2d; }
     .badge-prioritaire { background: #faeeda; color: #854f0b; }
     .badge-normale { background: #f1efe8; color: #5f5e5a; }
-    .badge-reserved { background: #e6f1fb; color: #185fa5; }
+    .badge-reserved { background: #e6f7f1; color: #1D9E75; }
     .badge-statut { background: #e1f5ee; color: #0f6e56; }
     .badge-message { background: #faeeda; color: #854f0b; }
     .badge-assignee { background: #f1efe8; color: #5f5e5a; }
     .badge-soumission { background: #eeedfe; color: #3c3489; }
-    .card-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+
+    .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #1a1a2e; }
     .card-addr { font-size: 12px; color: #6e6e73; margin-bottom: 6px; }
     .card-meta { font-size: 11px; color: #999; margin-bottom: 10px; }
     .card-actions {
@@ -128,10 +223,10 @@
     }
     .card-actions.two { grid-template-columns: 1fr 1fr; }
     .btn-card {
-      padding: 7px 10px;
-      border-radius: 7px;
+      padding: 8px 10px;
+      border-radius: 6px;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       border: 1px solid #d2d2d7;
       background: white;
       cursor: pointer;
@@ -139,20 +234,32 @@
     }
     .btn-card:hover { background: #f5f5f7; }
     .btn-card-primary {
-      background: #0071e3;
+      background: #1a1a2e;
       color: white;
-      border-color: #0071e3;
+      border-color: #1a1a2e;
     }
-    .btn-card-primary:hover { background: #0058b0; }
+    .btn-card-primary:hover { background: #2d2d4e; }
+    .btn-card-logica {
+      background: #5DCAA5;
+      color: white;
+      border-color: #5DCAA5;
+    }
+    .btn-card-logica:hover { background: #1D9E75; border-color: #1D9E75; }
+    .btn-card-geq {
+      background: #b71c1c;
+      color: white;
+      border-color: #b71c1c;
+    }
+    .btn-card-geq:hover { background: #8e1414; border-color: #8e1414; }
+
     .empty-state {
       text-align: center;
-      padding: 2rem 1rem;
+      padding: 1.5rem 1rem;
       color: #999;
-      font-size: 14px;
-      background: white;
-      border-radius: 12px;
-      border: 1px dashed #d2d2d7;
+      font-size: 13px;
+      font-style: italic;
     }
+
     .loading { text-align: center; padding: 3rem; color: #6e6e73; }
     .error-box {
       background: #fcebeb;
@@ -162,6 +269,13 @@
       color: #a32d2d;
       font-size: 14px;
       margin: 1rem 0;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem 0.75rem; }
+      .section-mes, .section-company { padding: 1rem; }
+      .section-company-title img { height: 36px; }
+      .cards-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -176,12 +290,14 @@
     var SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
 
+    var LOGO_LOGICA = 'https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/LOGICA_Verti_Coul.jpg';
+    var LOGO_GEQ = 'https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg';
+
     var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var currentUser = null;
     var currentProfil = null;
     var parametres = {};
-    var viewMode = 'logica';
 
     function escapeHtml(str) {
       if (str === null || str === undefined) return '';
@@ -240,10 +356,6 @@
           }
         }
 
-        if (currentProfil.compagnies && currentProfil.compagnies.length > 0) {
-          viewMode = currentProfil.compagnies[0];
-        }
-
         await renderBoard();
 
       } catch (err) {
@@ -255,20 +367,38 @@
     async function renderBoard() {
       var app = document.getElementById('app');
       var estAlain = currentProfil.region === 'estrie';
+      var compagnies = currentProfil.compagnies || [];
 
       var demandesActives = await chargerMesDemandesActives();
-      var demandesDispo = await chargerDemandesDisponibles(estAlain);
+      var dispoLogica = [];
+      var dispoGeq = [];
 
-      var compagnies = currentProfil.compagnies || [];
-      var afficheOngletsCompagnies = compagnies.length > 1 && !estAlain;
-
-      var rangCourant = viewMode === 'logica' ? currentProfil.rang_logica : currentProfil.rang_geq;
-      var roleTxt = currentProfil.role === 'gestionnaire' ? 'Gestionnaire' : 'Technicien';
-      if (rangCourant === 'senior') roleTxt = 'Senior ' + viewMode.toUpperCase();
-      if (estAlain) roleTxt = 'Technicien Estrie';
+      if (estAlain) {
+        // Alain : tout est "disponible" puisqu'il reçoit direct
+        var alainResult = await db.from('demandes')
+          .select('*')
+          .eq('destination', 'alain_direct')
+          .eq('statut', 'nouvelle')
+          .order('cree_le', { ascending: false });
+        if (alainResult.data) {
+          for (var i = 0; i < alainResult.data.length; i++) {
+            if (alainResult.data[i].compagnie === 'logica') dispoLogica.push(alainResult.data[i]);
+            else dispoGeq.push(alainResult.data[i]);
+          }
+        }
+      } else {
+        if (compagnies.indexOf('logica') !== -1) {
+          dispoLogica = await chargerDisponibles('logica');
+        }
+        if (compagnies.indexOf('geq') !== -1) {
+          dispoGeq = await chargerDisponibles('geq');
+        }
+      }
 
       var nomAffiche = getNomComplet(currentProfil);
+      var roleTxt = construireRoleTxt();
 
+      // HEADER
       var headerHtml = 
         '<div class="header">' +
           '<div class="header-info">' +
@@ -278,47 +408,106 @@
           '</div>' +
           '<div class="header-actions">';
 
-      if (afficheOngletsCompagnies) {
-        headerHtml += '<div class="tabs">' +
-          (compagnies.indexOf('logica') !== -1 ? '<button class="tab ' + (viewMode === 'logica' ? 'active' : '') + '" onclick="switchView(\'logica\')">Logica</button>' : '') +
-          (compagnies.indexOf('geq') !== -1 ? '<button class="tab ' + (viewMode === 'geq' ? 'active' : '') + '" onclick="switchView(\'geq\')">GEQ</button>' : '') +
-        '</div>';
-      }
-
       if (currentProfil.role === 'gestionnaire' || currentProfil.role === 'secretaire') {
-        headerHtml += '<a href="assistante.html" class="btn btn-small">+ Saisir une demande</a>';
+        headerHtml += '<a href="assistante.html" class="btn btn-primary">+ Saisir une demande</a>';
       }
-      headerHtml += '<a href="dashboard.html" class="btn btn-small">Dashboard</a>' +
-          '<button class="btn btn-small" onclick="doLogout()">D\u00e9connexion</button>' +
+      headerHtml += 
+            '<a href="dashboard.html" class="btn">Dashboard</a>' +
+            '<button class="btn" onclick="doLogout()">D\u00e9connexion</button>' +
           '</div>' +
         '</div>';
 
-      var mesHtml = '<div class="section-header"><h2>Mes demandes en cours</h2><span class="count">' + demandesActives.length + ' active' + (demandesActives.length > 1 ? 's' : '') + '</span></div>';
+      // SECTION MES DEMANDES EN COURS
+      var mesHtml = 
+        '<div class="section-mes">' +
+          '<div class="section-mes-header">' +
+            '<div class="section-mes-title">' +
+              '<span class="emoji">\ud83d\udd25</span>' +
+              '<span>Mes demandes en cours</span>' +
+            '</div>' +
+            '<span class="section-count">' + demandesActives.length + '</span>' +
+          '</div>';
+
       if (demandesActives.length === 0) {
-        mesHtml += '<div class="empty-state">Aucune demande en cours.</div>';
+        mesHtml += '<div class="empty-state">Aucune demande en cours. Prends-en une ci-dessous.</div>';
       } else {
         mesHtml += '<div class="cards-grid">';
-        for (var i = 0; i < demandesActives.length; i++) {
-          mesHtml += cardMesDemandes(demandesActives[i]);
+        for (var a = 0; a < demandesActives.length; a++) {
+          mesHtml += cardMesDemandes(demandesActives[a]);
         }
         mesHtml += '</div>';
       }
+      mesHtml += '</div>';
 
-      var dispoHtml = '';
-      if (!estAlain) {
-        dispoHtml = '<div class="section-header"><h2>Demandes disponibles</h2><span class="count">' + demandesDispo.length + ' dans le pool</span></div>';
-        if (demandesDispo.length === 0) {
-          dispoHtml += '<div class="empty-state">Aucune demande disponible pour toi en ce moment.</div>';
+      // SECTION LOGICA
+      var logicaHtml = '';
+      if (compagnies.indexOf('logica') !== -1) {
+        logicaHtml = 
+          '<div class="section-company logica">' +
+            '<div class="section-company-header">' +
+              '<div class="section-company-title">' +
+                '<img src="' + LOGO_LOGICA + '" alt="Logica" onerror="this.style.display=\'none\'">' +
+                '<div class="text-part">' +
+                  '<span class="compname">Logica</span>' +
+                  '<span class="subname">Inspection pr\u00e9-achat</span>' +
+                '</div>' +
+              '</div>' +
+              '<span class="section-company-count">' + dispoLogica.length + ' disponible' + (dispoLogica.length > 1 ? 's' : '') + '</span>' +
+            '</div>';
+
+        if (dispoLogica.length === 0) {
+          logicaHtml += '<div class="empty-state">Aucune demande Logica disponible.</div>';
         } else {
-          dispoHtml += '<div class="cards-grid">';
-          for (var j = 0; j < demandesDispo.length; j++) {
-            dispoHtml += cardDemandeDispo(demandesDispo[j]);
+          logicaHtml += '<div class="cards-grid">';
+          for (var l = 0; l < dispoLogica.length; l++) {
+            logicaHtml += cardDemandeDispo(dispoLogica[l]);
           }
-          dispoHtml += '</div>';
+          logicaHtml += '</div>';
         }
+        logicaHtml += '</div>';
       }
 
-      app.innerHTML = headerHtml + mesHtml + dispoHtml;
+      // SECTION GEQ
+      var geqHtml = '';
+      if (compagnies.indexOf('geq') !== -1) {
+        geqHtml = 
+          '<div class="section-company geq">' +
+            '<div class="section-company-header">' +
+              '<div class="section-company-title">' +
+                '<img src="' + LOGO_GEQ + '" alt="GEQ" onerror="this.style.display=\'none\'">' +
+                '<div class="text-part">' +
+                  '<span class="compname">GEQ</span>' +
+                  '<span class="subname">Expertise b\u00e2timent</span>' +
+                '</div>' +
+              '</div>' +
+              '<span class="section-company-count">' + dispoGeq.length + ' disponible' + (dispoGeq.length > 1 ? 's' : '') + '</span>' +
+            '</div>';
+
+        if (dispoGeq.length === 0) {
+          geqHtml += '<div class="empty-state">Aucune demande GEQ disponible.</div>';
+        } else {
+          geqHtml += '<div class="cards-grid">';
+          for (var g = 0; g < dispoGeq.length; g++) {
+            geqHtml += cardDemandeDispo(dispoGeq[g]);
+          }
+          geqHtml += '</div>';
+        }
+        geqHtml += '</div>';
+      }
+
+      app.innerHTML = headerHtml + mesHtml + logicaHtml + geqHtml;
+    }
+
+    function construireRoleTxt() {
+      if (currentProfil.region === 'estrie') return 'Technicien Estrie';
+      if (currentProfil.role === 'gestionnaire') return 'Gestionnaire';
+      if (currentProfil.role === 'secretaire') return 'Assistante';
+      var parts = [];
+      if (currentProfil.rang_logica === 'senior') parts.push('Senior Logica');
+      else if (currentProfil.rang_logica === 'second') parts.push('Logica');
+      if (currentProfil.rang_geq === 'senior') parts.push('Senior GEQ');
+      else if (currentProfil.rang_geq === 'second') parts.push('GEQ');
+      return parts.length > 0 ? parts.join(' \u00b7 ') : 'Technicien';
     }
 
     async function chargerMesDemandesActives() {
@@ -330,20 +519,11 @@
       return result.data || [];
     }
 
-    async function chargerDemandesDisponibles(estAlain) {
-      if (estAlain) {
-        var resultAlain = await db.from('demandes')
-          .select('*')
-          .eq('destination', 'alain_direct')
-          .eq('statut', 'nouvelle')
-          .order('cree_le', { ascending: false });
-        return resultAlain.data || [];
-      }
-
+    async function chargerDisponibles(compagnie) {
       var result = await db.from('demandes')
         .select('*')
         .eq('destination', 'board')
-        .eq('compagnie', viewMode)
+        .eq('compagnie', compagnie)
         .eq('statut', 'nouvelle')
         .order('cree_le', { ascending: false });
 
@@ -352,55 +532,56 @@
       var visibles = [];
       for (var i = 0; i < result.data.length; i++) {
         var d = result.data[i];
-        if (peutVoirDemande(d)) visibles.push(d);
+        if (peutVoirDemande(d, compagnie)) visibles.push(d);
       }
       return visibles;
     }
 
-    function peutVoirDemande(demande) {
-      var rang = viewMode === 'logica' ? currentProfil.rang_logica : currentProfil.rang_geq;
+    function peutVoirDemande(demande, compagnie) {
+      var rang = compagnie === 'logica' ? currentProfil.rang_logica : currentProfil.rang_geq;
       var age = hoursSince(demande.cree_le);
       var liberationAuto = parseFloat(parametres.liberation_automatique_heures || 4);
-      var fenetreSenior = viewMode === 'logica' 
+      var fenetreSenior = compagnie === 'logica' 
         ? parseFloat(parametres.fenetre_priorite_senior_logica_heures || 1)
         : parseFloat(parametres.fenetre_priorite_senior_geq_heures || 4);
 
       if (age >= liberationAuto) return true;
       if (demande.libere_par_senior) return true;
       if (rang === 'senior') return true;
-
       if (rang === 'second') {
         if (age >= fenetreSenior) return true;
         return false;
       }
-
       return true;
     }
 
     function cardMesDemandes(d) {
       var statutBadge = badgeStatut(d.statut);
       var lastAction = texteLastAction(d);
+      var compClass = d.compagnie;
+      var compLabel = d.compagnie === 'logica' ? 'LOGICA' : 'GEQ';
 
-      return '<div class="card" onclick="goToDetail(\'' + d.id + '\')">' +
+      return '<div class="card ' + compClass + '" onclick="goToDetail(\'' + d.id + '\')">' +
         '<div class="card-top">' +
           '<span class="card-num">' + escapeHtml(d.numero) + '</span>' +
-          statutBadge +
+          '<span class="badge-company ' + compClass + '">' + compLabel + '</span>' +
         '</div>' +
         '<div class="card-title">' + escapeHtml(d.client_nom) + '</div>' +
         '<div class="card-addr">' + escapeHtml(d.adresse_batiment) + '</div>' +
         '<div class="card-meta">' + lastAction + '</div>' +
+        '<div style="margin-top:6px">' + statutBadge + '</div>' +
       '</div>';
     }
 
     function cardDemandeDispo(d) {
-      var rang = viewMode === 'logica' ? currentProfil.rang_logica : currentProfil.rang_geq;
+      var rang = d.compagnie === 'logica' ? currentProfil.rang_logica : currentProfil.rang_geq;
       var age = hoursSince(d.cree_le);
-      var fenetreSenior = viewMode === 'logica' 
+      var fenetreSenior = d.compagnie === 'logica' 
         ? parseFloat(parametres.fenetre_priorite_senior_logica_heures || 1)
         : parseFloat(parametres.fenetre_priorite_senior_geq_heures || 4);
 
       var estReservee = (rang === 'senior' && age < fenetreSenior && !d.libere_par_senior);
-      var cardClass = estReservee ? 'card reserved' : 'card';
+      var cardClass = 'card ' + d.compagnie + (estReservee ? ' reserved' : '');
 
       var topBadge;
       if (estReservee) {
@@ -415,6 +596,7 @@
 
       var typeTxt = texteTypeService(d.type_service);
       var ageTxt = timeSince(d.cree_le);
+      var btnClass = d.compagnie === 'logica' ? 'btn-card-logica' : 'btn-card-geq';
 
       var html = '<div class="' + cardClass + '" onclick="goToDetail(\'' + d.id + '\')">' +
         '<div class="card-top">' +
@@ -427,12 +609,12 @@
 
       if (estReservee) {
         html += '<div class="card-actions two" onclick="event.stopPropagation()">' +
-          '<button class="btn-card btn-card-primary" onclick="prendreDemande(\'' + d.id + '\')">Je la prends</button>' +
+          '<button class="btn-card ' + btnClass + '" onclick="prendreDemande(\'' + d.id + '\')">Je la prends</button>' +
           '<button class="btn-card" onclick="libererDemande(\'' + d.id + '\')">Lib\u00e9rer</button>' +
         '</div>';
       } else {
         html += '<div class="card-actions" onclick="event.stopPropagation()">' +
-          '<button class="btn-card btn-card-primary" onclick="prendreDemande(\'' + d.id + '\')">Je la prends</button>' +
+          '<button class="btn-card ' + btnClass + '" onclick="prendreDemande(\'' + d.id + '\')">Je la prends</button>' +
         '</div>';
       }
 
@@ -520,11 +702,6 @@
       }
     }
 
-    function switchView(compagnie) {
-      viewMode = compagnie;
-      renderBoard();
-    }
-
     function goToDetail(id) {
       window.location.href = 'demande.html?id=' + id;
     }
@@ -534,7 +711,6 @@
       window.location.href = 'index.html';
     }
 
-    window.switchView = switchView;
     window.prendreDemande = prendreDemande;
     window.libererDemande = libererDemande;
     window.goToDetail = goToDetail;
