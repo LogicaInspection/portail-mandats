@@ -598,7 +598,29 @@ const LOGICA_EXTRAS_DEFAULT=[
     document.getElementById('frais-lab-section').style.display='block';
     document.getElementById('profit-row').style.display='flex';
   }
-
+// === ASSISTANTE : cacher les commissions ===
+  if(profile.role==='secretaire'){
+    // Cacher commission tech (base)
+    var commBaseInput = document.getElementById('comm-base');
+    if(commBaseInput){
+      var commBaseRow = commBaseInput.closest('.fin-row');
+      if(commBaseRow) commBaseRow.style.display = 'none';
+    }
+    // Cacher commission tech totale
+    var totalCommEl = document.getElementById('total-comm');
+    if(totalCommEl){
+      var totalCommRow = totalCommEl.closest('.fin-row');
+      if(totalCommRow) totalCommRow.style.display = 'none';
+    }
+    // Cacher bonus non-carte
+    var bonusRow = document.getElementById('bonus-row');
+    if(bonusRow) bonusRow.style.display = 'none';
+    // Cacher section frais de lab (s'il apparait)
+    var fraisLabSection = document.getElementById('frais-lab-section');
+    if(fraisLabSection) fraisLabSection.style.display = 'none';
+    // Ajouter une classe au body pour masquer via CSS les colonnes commission dans les extras
+    document.body.classList.add('role-secretaire');
+  }
   document.getElementById('final-progress').style.display='block';
   renderExtras();
   renderDocs();
