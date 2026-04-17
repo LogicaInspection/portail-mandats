@@ -133,3 +133,114 @@
       var app = document.getElementById('app');
 
       try {
+        var sessionResult = await db.auth.getSession();
+        var session = sessionResult.data.session;
+
+        if (!session) {
+          app.innerHTML = '<div class="error">Non connect\u00e9. <a href="index.html">Se connecter</a></div>';
+          return;
+        }
+
+        currentUser = session.user;
+
+        var profilResult = await db
+          .from('tech_profils')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (profilResult.error) {
+          app.innerHTML = 
+            '<div class="error">' +
+              '<p>Erreur lors du chargement du profil.</p>' +
+              '<div class="debug-box">User ID: ' + session.user.id + '<br>Email: ' + session.user.email + '<br>Erreur: ' + escapeHtml(JSON.stringify(profilResult.error)) + '</div>' +
+              '<p style="margin-top:1rem"><a href="dashboard.html">Retour au dashboard</a></p>' +
+            '</div>';
+          return;
+        }
+
+        currentProfil = profilResult.data;
+
+        if (currentProfil.role !== 'assistante' && currentProfil.role !== 'gestionnaire') {
+          app.innerHTML = 
+            '<div class="access-denied">' +
+              '<h2>Acc\u00e8s non autoris\u00e9</h2>' +
+              '<p>Cette page est r\u00e9serv\u00e9e aux assistantes et gestionnaires.</p>' +
+              '<p>Votre r\u00f4le actuel : <strong>' + escapeHtml(currentProfil.role) + '</strong></p>' +
+              '<a href="dashboard.html" class="btn-back">Retour au dashboard</a>' +
+            '</div>';
+          return;
+        }
+
+        renderPage();
+
+      } catch (err) {
+        app.innerHTML = '<div class="error">Erreur inattendue : ' + escapeHtml(err.message) + '</div>';
+        console.error(err);
+      }
+    }
+
+    function renderPage() {
+      var app = document.getElementById('app');
+      app.innerHTML = 
+        '<div class="header">' +
+          '<div class="header-info">' +
+            '<div class="label">Connect\u00e9 comme</div>' +
+            '<div class="name">' + escapeHtml(currentProfil.nom_complet) + '</div>' +
+          '</div>' +
+          '<div>' +
+            '<a href="dashboard.html" class="btn-back">Dashboard</a>' +
+            '<button class="btn-logout" onclick="doLogout()">Se d\u00e9connecter</button>' +
+          '</div>' +
+        '</div>' +
+        '<h1>Nouvelle demande</h1>' +
+        '<p class="subtitle">Choisis le type de demande que le client souhaite</p>' +
+        '<div class="choices">' +
+          '<button class="choice-btn" onclick="goTo(\'logica\')">' +
+            '<div class="choice-icon logica">L</div>' +
+            '<div class="choice-text">' +
+              '<div class="title">Inspection pr\u00e9-achat (Logica)</div>' +
+              '<div class="desc">Pour un client qui veut faire inspecter un b\u00e2timent avant achat</div>' +
+            '</div>' +
+          '</button>' +
+          '<button class="choice-btn" onclick="goTo(\'geq\')">' +
+            '<div class="choice-icon geq">G</div>' +
+            '<div class="choice-text">' +
+              '<div class="title">Expertise b\u00e2timent (GEQ)</div>' +
+              '<div class="desc">Moisissure, infiltration d\'eau, amiante, m\u00e9rule, humidit\u00e9, qualit\u00e9 de l\'air</div>' +
+            '</div>' +
+          '</button>' +
+          '<button class="choice-btn" onclick="goTo(\'fonds\')">' +
+            '<div class="choice-icon fonds">F</div>' +
+            '<div class="choice-text">' +
+              '<div class="title">\u00c9tude de fonds de pr\u00e9voyance (GEQ)</div>' +
+              '<div class="desc">Pour un syndicat de copropri\u00e9t\u00e9</div>' +
+            '</div>' +
+          '</button>' +
+        '</div>';
+    }
+
+    function goTo(type) {
+      window.location.href = 'nouvelle-demande.html?type=' + type;
+    }
+
+    async function doLogout() {
+      await db.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      var s = String(str);
+      var div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    window.doLogout = doLogout;
+    window.goTo = goTo;
+
+    init();
+  </script>
+</body>
+</html>
