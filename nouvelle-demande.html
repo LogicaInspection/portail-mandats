@@ -268,7 +268,7 @@
 
         currentUser = session.user;
 
-        var profilResult = await db.from('tech_profils').select('*').eq('user_id', session.user.id).single();
+        var profilResult = await db.from('profiles').select('*').eq('id', session.user.id).single();
         if (profilResult.error) {
           app.innerHTML = '<div class="error-box">Erreur profil. <a href="dashboard.html">Dashboard</a></div>';
           return;
@@ -276,7 +276,7 @@
 
         currentProfil = profilResult.data;
 
-        if (currentProfil.role !== 'assistante' && currentProfil.role !== 'gestionnaire') {
+        if (currentProfil.role !== 'secretaire' && currentProfil.role !== 'gestionnaire') {
           app.innerHTML = '<div class="error-box">Acc\u00e8s non autoris\u00e9.</div>';
           return;
         }
@@ -290,6 +290,7 @@
 
     function renderForm() {
       var app = document.getElementById('app');
+      var nomAffiche = (currentProfil.prenom || '') + ' ' + (currentProfil.nom || '');
       var titre, soustitre;
       if (typeDemande === 'logica') {
         titre = 'Nouvelle demande Logica';
@@ -306,7 +307,7 @@
         '<div class="header">' +
           '<div class="header-info">' +
             '<div class="label">Saisie par</div>' +
-            '<div class="name">' + escapeHtml(currentProfil.nom_complet) + '</div>' +
+            '<div class="name">' + escapeHtml(nomAffiche.trim()) + '</div>' +
           '</div>' +
           '<a href="assistante.html" class="btn-back">&larr; Retour</a>' +
         '</div>' +
@@ -640,13 +641,11 @@
           cree_par: currentUser.id
         };
 
-        // Notes assistante ajoutées à la description (précédées d'un marqueur)
         var notesAssist = getValue('notes_assistante');
         if (notesAssist) {
           demande.description = (demande.description ? demande.description + '\n\n' : '') + '[Notes assistante] ' + notesAssist;
         }
 
-        // Champs spécifiques Logica
         if (typeDemande === 'logica') {
           demande.type_batiment = formState.type_batiment || null;
           demande.annee_construction = getValue('annee_construction') ? parseInt(getValue('annee_construction')) : null;
@@ -655,12 +654,10 @@
           demande.courtier_telephone = getValue('courtier_telephone') || null;
         }
 
-        // Champs spécifiques GEQ
         if (typeDemande === 'geq') {
           demande.annee_construction = getValue('annee_construction') ? parseInt(getValue('annee_construction')) : null;
         }
 
-        // Champs spécifiques Fonds de prévoyance
         if (typeDemande === 'fonds') {
           demande.syndicat_nom = getValue('syndicat_nom');
           demande.syndicat_type = formState.syndicat_type || null;
@@ -677,7 +674,6 @@
 
         demande.destination = calculerDestination(demande.compagnie, demande.region, demande.type_service);
 
-        // Validations minimales
         if (!demande.client_nom) throw new Error('Le nom du client est obligatoire.');
         if (!demande.client_telephone) throw new Error('Le t\u00e9l\u00e9phone est obligatoire.');
         if (!demande.adresse_batiment) throw new Error('L\'adresse du b\u00e2timent est obligatoire.');
