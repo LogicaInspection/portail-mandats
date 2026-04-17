@@ -100,17 +100,6 @@
     }
     .access-denied h2 { color: #856404; margin-bottom: 8px; font-size: 18px; }
     .access-denied p { color: #856404; font-size: 14px; margin-bottom: 1rem; }
-    .debug-box {
-      background: #f0f0f0;
-      border: 1px solid #ddd;
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 12px;
-      margin-top: 1rem;
-      word-break: break-all;
-      text-align: left;
-    }
   </style>
 </head>
 <body>
@@ -144,24 +133,25 @@
         currentUser = session.user;
 
         var profilResult = await db
-          .from('tech_profils')
+          .from('profiles')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('id', session.user.id)
           .single();
 
         if (profilResult.error) {
           app.innerHTML = 
             '<div class="error">' +
               '<p>Erreur lors du chargement du profil.</p>' +
-              '<div class="debug-box">User ID: ' + session.user.id + '<br>Email: ' + session.user.email + '<br>Erreur: ' + escapeHtml(JSON.stringify(profilResult.error)) + '</div>' +
               '<p style="margin-top:1rem"><a href="dashboard.html">Retour au dashboard</a></p>' +
             '</div>';
+          console.error('Erreur profil:', profilResult.error);
           return;
         }
 
         currentProfil = profilResult.data;
 
-        if (currentProfil.role !== 'assistante' && currentProfil.role !== 'gestionnaire') {
+        // Autoriser : secretaire, gestionnaire
+        if (currentProfil.role !== 'secretaire' && currentProfil.role !== 'gestionnaire') {
           app.innerHTML = 
             '<div class="access-denied">' +
               '<h2>Acc\u00e8s non autoris\u00e9</h2>' +
@@ -182,11 +172,13 @@
 
     function renderPage() {
       var app = document.getElementById('app');
+      var nomAffiche = (currentProfil.prenom || '') + ' ' + (currentProfil.nom || '');
+      
       app.innerHTML = 
         '<div class="header">' +
           '<div class="header-info">' +
             '<div class="label">Connect\u00e9 comme</div>' +
-            '<div class="name">' + escapeHtml(currentProfil.nom_complet) + '</div>' +
+            '<div class="name">' + escapeHtml(nomAffiche.trim()) + '</div>' +
           '</div>' +
           '<div>' +
             '<a href="dashboard.html" class="btn-back">Dashboard</a>' +
@@ -231,9 +223,8 @@
 
     function escapeHtml(str) {
       if (str === null || str === undefined) return '';
-      var s = String(str);
       var div = document.createElement('div');
-      div.textContent = s;
+      div.textContent = String(str);
       return div.innerHTML;
     }
 
