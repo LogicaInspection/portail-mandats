@@ -14,7 +14,7 @@
       min-height: 100vh;
       padding: 2rem 1rem;
     }
-    .container { max-width: 720px; margin: 0 auto; }
+    .container { max-width: 820px; margin: 0 auto; }
     .header {
       background: white;
       border-radius: 12px;
@@ -51,13 +51,32 @@
     }
     .btn-back:hover { background: #f5f5f7; }
     h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
-    .subtitle { font-size: 15px; color: #6e6e73; margin-bottom: 2rem; }
-    .choices { display: grid; gap: 1rem; }
+    .subtitle { font-size: 15px; color: #6e6e73; margin-bottom: 1.5rem; }
+    
+    /* SECTIONS */
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: #6e6e73;
+      margin: 1.5rem 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .choices { display: grid; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .choices.row-2 { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 600px) {
+      .choices.row-2 { grid-template-columns: 1fr; }
+    }
+    
     .choice-btn {
       background: white;
       border: 2px solid transparent;
       border-radius: 12px;
-      padding: 1.5rem 1.75rem;
+      padding: 1.25rem 1.5rem;
       cursor: pointer;
       text-align: left;
       font-family: inherit;
@@ -73,18 +92,80 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
+    .choice-btn.mandat:hover { border-color: #1a1a2e; }
+    
     .choice-icon {
-      width: 48px; height: 48px;
+      width: 46px; height: 46px;
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px; font-weight: 600;
+      font-size: 22px; font-weight: 600;
       flex-shrink: 0;
     }
-    .choice-icon.logica { background: #e6f1fb; color: #185fa5; }
-    .choice-icon.geq { background: #e1f5ee; color: #0f6e56; }
+    .choice-icon.logica { background: #e6f7f1; color: #1D9E75; }
+    .choice-icon.geq { background: #fdecea; color: #b71c1c; }
     .choice-icon.fonds { background: #eeedfe; color: #534ab7; }
-    .choice-text .title { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
-    .choice-text .desc { font-size: 13px; color: #6e6e73; }
+    .choice-icon.mandat-logica { background: #5DCAA5; color: white; }
+    .choice-icon.mandat-geq { background: #b71c1c; color: white; }
+    
+    .choice-text .title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .choice-text .desc { font-size: 12px; color: #6e6e73; }
+    
+    /* RECENTES */
+    .recent-list {
+      background: white;
+      border-radius: 12px;
+      padding: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .recent-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 8px;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .recent-item:hover { background: #f5f5f7; }
+    .recent-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .recent-dot.demande { background: #378add; }
+    .recent-dot.mandat { background: #97c459; }
+    .recent-content { flex: 1; min-width: 0; }
+    .recent-title {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .recent-meta {
+      font-size: 11px;
+      color: #6e6e73;
+      margin-top: 2px;
+    }
+    .recent-type {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .recent-type.demande { background: #e6f1fb; color: #185fa5; }
+    .recent-type.mandat { background: #eaf3de; color: #3b6d11; }
+    .empty-recent {
+      padding: 1rem;
+      text-align: center;
+      color: #999;
+      font-size: 13px;
+      font-style: italic;
+    }
+    
     .loading, .error {
       text-align: center;
       padding: 3rem 1rem;
@@ -132,37 +213,26 @@
 
         currentUser = session.user;
 
-        var profilResult = await db
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
+        var profilResult = await db.from('profiles').select('*').eq('id', session.user.id).single();
         if (profilResult.error) {
-          app.innerHTML = 
-            '<div class="error">' +
-              '<p>Erreur lors du chargement du profil.</p>' +
-              '<p style="margin-top:1rem"><a href="dashboard.html">Retour au dashboard</a></p>' +
-            '</div>';
+          app.innerHTML = '<div class="error"><p>Erreur lors du chargement du profil.</p><p style="margin-top:1rem"><a href="dashboard.html">Retour au dashboard</a></p></div>';
           console.error('Erreur profil:', profilResult.error);
           return;
         }
 
         currentProfil = profilResult.data;
 
-        // Autoriser : secretaire, gestionnaire
         if (currentProfil.role !== 'secretaire' && currentProfil.role !== 'gestionnaire') {
           app.innerHTML = 
             '<div class="access-denied">' +
               '<h2>Acc\u00e8s non autoris\u00e9</h2>' +
               '<p>Cette page est r\u00e9serv\u00e9e aux assistantes et gestionnaires.</p>' +
-              '<p>Votre r\u00f4le actuel : <strong>' + escapeHtml(currentProfil.role) + '</strong></p>' +
               '<a href="dashboard.html" class="btn-back">Retour au dashboard</a>' +
             '</div>';
           return;
         }
 
-        renderPage();
+        await renderPage();
 
       } catch (err) {
         app.innerHTML = '<div class="error">Erreur inattendue : ' + escapeHtml(err.message) + '</div>';
@@ -170,50 +240,162 @@
       }
     }
 
-    function renderPage() {
+    async function renderPage() {
       var app = document.getElementById('app');
-      var nomAffiche = (currentProfil.prenom || '') + ' ' + (currentProfil.nom || '');
+      var nomAffiche = ((currentProfil.prenom || '') + ' ' + (currentProfil.nom || '')).trim();
+      
+      // Charger les récentes
+      var recentes = await chargerRecentes();
       
       app.innerHTML = 
         '<div class="header">' +
           '<div class="header-info">' +
             '<div class="label">Connect\u00e9 comme</div>' +
-            '<div class="name">' + escapeHtml(nomAffiche.trim()) + '</div>' +
+            '<div class="name">' + escapeHtml(nomAffiche) + '</div>' +
           '</div>' +
           '<div>' +
             '<a href="dashboard.html" class="btn-back">Dashboard</a>' +
             '<button class="btn-logout" onclick="doLogout()">Se d\u00e9connecter</button>' +
           '</div>' +
         '</div>' +
-        '<h1>Nouvelle demande</h1>' +
-        '<p class="subtitle">Choisis le type de demande que le client souhaite</p>' +
+        '<h1>Nouvelle saisie</h1>' +
+        '<p class="subtitle">Choisis le type selon la situation du client</p>' +
+        
+        '<div class="section-label">\ud83d\udccb Demande (client \u00e0 rappeler)</div>' +
         '<div class="choices">' +
-          '<button class="choice-btn" onclick="goTo(\'logica\')">' +
+          '<button class="choice-btn" onclick="goToDemande(\'logica\')">' +
             '<div class="choice-icon logica">L</div>' +
             '<div class="choice-text">' +
-              '<div class="title">Inspection pr\u00e9-achat (Logica)</div>' +
-              '<div class="desc">Pour un client qui veut faire inspecter un b\u00e2timent avant achat</div>' +
+              '<div class="title">Demande Logica (inspection pr\u00e9-achat)</div>' +
+              '<div class="desc">Le tech rappellera le client pour valider et soumettre un prix</div>' +
             '</div>' +
           '</button>' +
-          '<button class="choice-btn" onclick="goTo(\'geq\')">' +
+          '<button class="choice-btn" onclick="goToDemande(\'geq\')">' +
             '<div class="choice-icon geq">G</div>' +
             '<div class="choice-text">' +
-              '<div class="title">Expertise b\u00e2timent (GEQ)</div>' +
-              '<div class="desc">Moisissure, infiltration d\'eau, amiante, m\u00e9rule, humidit\u00e9, qualit\u00e9 de l\'air</div>' +
+              '<div class="title">Demande GEQ (expertise)</div>' +
+              '<div class="desc">Moisissure, infiltration, amiante, m\u00e9rule, humidit\u00e9, qualit\u00e9 de l\'air</div>' +
             '</div>' +
           '</button>' +
-          '<button class="choice-btn" onclick="goTo(\'fonds\')">' +
+          '<button class="choice-btn" onclick="goToDemande(\'fonds\')">' +
             '<div class="choice-icon fonds">F</div>' +
             '<div class="choice-text">' +
-              '<div class="title">\u00c9tude de fonds de pr\u00e9voyance (GEQ)</div>' +
-              '<div class="desc">Pour un syndicat de copropri\u00e9t\u00e9</div>' +
+              '<div class="title">Fonds de pr\u00e9voyance</div>' +
+              '<div class="desc">Pour syndicat de copropri\u00e9t\u00e9</div>' +
             '</div>' +
           '</button>' +
-        '</div>';
+        '</div>' +
+        
+        '<div class="section-label">\ud83d\udcc5 Mandat direct (client d\u00e9j\u00e0 book\u00e9 au t\u00e9l\u00e9phone)</div>' +
+        '<div class="choices row-2">' +
+          '<button class="choice-btn mandat" onclick="goToMandat(\'logica\')">' +
+            '<div class="choice-icon mandat-logica">L</div>' +
+            '<div class="choice-text">' +
+              '<div class="title">Mandat Logica</div>' +
+              '<div class="desc">Inspection pr\u00e9-achat confirm\u00e9e</div>' +
+            '</div>' +
+          '</button>' +
+          '<button class="choice-btn mandat" onclick="goToMandat(\'geq\')">' +
+            '<div class="choice-icon mandat-geq">G</div>' +
+            '<div class="choice-text">' +
+              '<div class="title">Mandat GEQ</div>' +
+              '<div class="desc">Expertise confirm\u00e9e</div>' +
+            '</div>' +
+          '</button>' +
+        '</div>' +
+        
+        '<div class="section-label">\ud83d\udd52 Mes derni\u00e8res saisies</div>' +
+        renderRecentes(recentes);
     }
 
-    function goTo(type) {
+    async function chargerRecentes() {
+      // Demandes créées par moi (derniers 5)
+      var demandesResult = await db.from('demandes')
+        .select('id, numero, client_nom, compagnie, statut, cree_le')
+        .eq('cree_par', currentUser.id)
+        .order('cree_le', { ascending: false })
+        .limit(5);
+
+      // Mandats créés par moi (derniers 5)
+      var mandatsResult = await db.from('mandats')
+        .select('id, client_nom, compagnie, type_mandat, created_at')
+        .eq('created_by', currentUser.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      var toutes = [];
+      
+      if (demandesResult.data) {
+        for (var i = 0; i < demandesResult.data.length; i++) {
+          var d = demandesResult.data[i];
+          toutes.push({
+            type: 'demande',
+            id: d.id,
+            titre: d.client_nom + ' (' + d.numero + ')',
+            meta: (d.compagnie === 'logica' ? 'Logica' : 'GEQ') + ' \u00b7 ' + d.statut,
+            date: new Date(d.cree_le)
+          });
+        }
+      }
+
+      if (mandatsResult.data) {
+        for (var j = 0; j < mandatsResult.data.length; j++) {
+          var m = mandatsResult.data[j];
+          toutes.push({
+            type: 'mandat',
+            id: m.id,
+            titre: m.client_nom,
+            meta: (m.compagnie === 'logica' ? 'Logica' : 'GEQ') + ' \u00b7 ' + (m.type_mandat || ''),
+            date: new Date(m.created_at)
+          });
+        }
+      }
+
+      // Trier par date décroissante et prendre 5
+      toutes.sort(function(a, b) { return b.date - a.date; });
+      return toutes.slice(0, 5);
+    }
+
+    function renderRecentes(recentes) {
+      if (recentes.length === 0) {
+        return '<div class="recent-list"><div class="empty-recent">Aucune saisie r\u00e9cente</div></div>';
+      }
+
+      var html = '<div class="recent-list">';
+      for (var i = 0; i < recentes.length; i++) {
+        var r = recentes[i];
+        var link = r.type === 'demande' ? 'demande.html?id=' + r.id : 'mandat.html?id=' + r.id;
+        html += '<div class="recent-item" onclick="window.location.href=\'' + link + '\'">' +
+          '<div class="recent-dot ' + r.type + '"></div>' +
+          '<div class="recent-content">' +
+            '<div class="recent-title">' + escapeHtml(r.titre) + '</div>' +
+            '<div class="recent-meta">' + escapeHtml(r.meta) + ' \u00b7 ' + timeSince(r.date) + '</div>' +
+          '</div>' +
+          '<span class="recent-type ' + r.type + '">' + r.type + '</span>' +
+        '</div>';
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function timeSince(date) {
+      var diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if (diff < 60) return 'il y a quelques secondes';
+      var mins = Math.floor(diff / 60);
+      if (mins < 60) return 'il y a ' + mins + ' min';
+      var hours = Math.floor(mins / 60);
+      if (hours < 24) return 'il y a ' + hours + 'h';
+      var days = Math.floor(hours / 24);
+      if (days === 1) return 'hier';
+      return 'il y a ' + days + 'j';
+    }
+
+    function goToDemande(type) {
       window.location.href = 'nouvelle-demande.html?type=' + type;
+    }
+
+    function goToMandat(compagnie) {
+      window.location.href = 'mandat.html?mode=new&compagnie=' + compagnie;
     }
 
     async function doLogout() {
@@ -229,7 +411,8 @@
     }
 
     window.doLogout = doLogout;
-    window.goTo = goTo;
+    window.goToDemande = goToDemande;
+    window.goToMandat = goToMandat;
 
     init();
   </script>
