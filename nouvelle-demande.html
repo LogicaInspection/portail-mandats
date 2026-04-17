@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nouvelle demande - Groupe Expert</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    .header {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .header-info .label { font-size: 13px; color: #6e6e73; margin-bottom: 4px; }
+    .header-info .name { font-size: 16px; font-weight: 500; }
+    .btn-back {
+      background: transparent;
+      border: 1px solid #d2d2d7;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #1d1d1f;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-back:hover { background: #f5f5f7; }
+    h1 { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+    .subtitle { font-size: 14px; color: #6e6e73; margin-bottom: 2rem; }
+    .card {
+      background: white;
+      border: 1px solid #e5e5e7;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .card h2 { font-size: 17px; font-weight: 600; margin-bottom: 1rem; }
+    .field { margin-bottom: 1rem; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: #6e6e73;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .field label .req { color: #c62828; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d2d2d7;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+      color: #1d1d1f;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: #0071e3;
+    }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) {
+      .row-2, .row-3 { grid-template-columns: 1fr; }
+    }
+    .option-grid { display: grid; gap: 8px; }
+    .option-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .option-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .option-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+    @media (max-width: 600px) {
+      .option-grid.cols-3, .option-grid.cols-5 { grid-template-columns: 1fr 1fr; }
+    }
+    .option-btn {
+      background: white;
+      border: 1px solid #d2d2d7;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .option-btn:hover { border-color: #0071e3; }
+    .option-btn.selected {
+      border: 2px solid #0071e3;
+      background: #e6f1fb;
+      color: #185fa5;
+      font-weight: 500;
+    }
+    .option-btn .sub { font-size: 11px; color: #6e6e73; margin-top: 2px; }
+    .option-btn.selected .sub { color: #185fa5; }
+    .doublon-warning {
+      background: #fff8e1;
+      border: 1px solid #ffc107;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #856404;
+      margin-top: 8px;
+      display: none;
+    }
+    .doublon-warning.visible { display: block; }
+    .info-banner {
+      background: #e6f1fb;
+      border: 1px solid #b5d4f4;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #185fa5;
+      margin: 1rem 0;
+    }
+    .danger-banner {
+      background: #fcebeb;
+      border: 1px solid #f09595;
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin: 1rem 0;
+    }
+    .danger-banner label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #a32d2d;
+      font-weight: 500;
+    }
+    .danger-banner input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .danger-banner .desc {
+      font-size: 12px;
+      color: #a32d2d;
+      margin-top: 4px;
+      margin-left: 32px;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 12px;
+      margin-top: 1rem;
+    }
+    .btn-cancel {
+      background: white;
+      border: 1px solid #d2d2d7;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1d1d1f;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-cancel:hover { background: #f5f5f7; }
+    .btn-submit {
+      background: #0071e3;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-submit:hover { background: #0058b0; }
+    .btn-submit:disabled { background: #8dbfea; cursor: not-allowed; }
+    .loading { text-align: center; padding: 3rem; color: #6e6e73; }
+    .success-box {
+      background: #e1f5ee;
+      border: 1px solid #5dcaa5;
+      padding: 2rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .success-box h2 { color: #0f6e56; margin-bottom: 8px; font-size: 22px; }
+    .success-box p { color: #0f6e56; font-size: 14px; margin-bottom: 1.5rem; }
+    .success-box .numero {
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: 600;
+      background: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      display: inline-block;
+      margin: 1rem 0;
+    }
+    .error-box {
+      background: #fcebeb;
+      border: 1px solid #f09595;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      color: #a32d2d;
+      font-size: 14px;
+      margin-bottom: 1rem;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <div class="loading">Chargement...</div>
+    </div>
+  </div>
+
+  <script>
+    var SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+
+    var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    var currentUser = null;
+    var currentProfil = null;
+    var typeDemande = null;
+    var formState = {};
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      var div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
+    function getUrlParam(name) {
+      var match = window.location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+      return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    async function init() {
+      var app = document.getElementById('app');
+      typeDemande = getUrlParam('type');
+
+      if (!typeDemande || ['logica','geq','fonds'].indexOf(typeDemande) === -1) {
+        app.innerHTML = '<div class="error-box">Type de demande invalide. <a href="assistante.html">Retour</a></div>';
+        return;
+      }
+
+      try {
+        var sessionResult = await db.auth.getSession();
+        var session = sessionResult.data.session;
+
+        if (!session) {
+          app.innerHTML = '<div class="error-box">Non connect\u00e9. <a href="index.html">Se connecter</a></div>';
+          return;
+        }
+
+        currentUser = session.user;
+
+        var profilResult = await db.from('tech_profils').select('*').eq('user_id', session.user.id).single();
+        if (profilResult.error) {
+          app.innerHTML = '<div class="error-box">Erreur profil. <a href="dashboard.html">Dashboard</a></div>';
+          return;
+        }
+
+        currentProfil = profilResult.data;
+
+        if (currentProfil.role !== 'assistante' && currentProfil.role !== 'gestionnaire') {
+          app.innerHTML = '<div class="error-box">Acc\u00e8s non autoris\u00e9.</div>';
+          return;
+        }
+
+        renderForm();
+      } catch (err) {
+        app.innerHTML = '<div class="error-box">Erreur: ' + escapeHtml(err.message) + '</div>';
+        console.error(err);
+      }
+    }
+
+    function renderForm() {
+      var app = document.getElementById('app');
+      var titre, soustitre;
+      if (typeDemande === 'logica') {
+        titre = 'Nouvelle demande Logica';
+        soustitre = 'Inspection pr\u00e9-achat de b\u00e2timent';
+      } else if (typeDemande === 'geq') {
+        titre = 'Nouvelle demande GEQ';
+        soustitre = 'Expertise b\u00e2timent \u00b7 Qualit\u00e9 de l\'air \u00b7 Analyses';
+      } else {
+        titre = 'Nouvelle demande GEQ - Fonds de pr\u00e9voyance';
+        soustitre = 'Pour syndicat de copropri\u00e9t\u00e9';
+      }
+
+      var html = 
+        '<div class="header">' +
+          '<div class="header-info">' +
+            '<div class="label">Saisie par</div>' +
+            '<div class="name">' + escapeHtml(currentProfil.nom_complet) + '</div>' +
+          '</div>' +
+          '<a href="assistante.html" class="btn-back">&larr; Retour</a>' +
+        '</div>' +
+        '<h1>' + titre + '</h1>' +
+        '<p class="subtitle">' + soustitre + '</p>' +
+        '<div id="form-content"></div>';
+
+      app.innerHTML = html;
+
+      if (typeDemande === 'logica') renderFormLogica();
+      else if (typeDemande === 'geq') renderFormGeq();
+      else renderFormFonds();
+    }
+
+    function sectionServicesGeq() {
+      var services = [
+        { val: 'air_fongique', titre: 'Test qualit\u00e9 de l\'air fongique', sub: 'D\u00e9tection moisissures' },
+        { val: 'infiltration_eau', titre: 'Expertise infiltration d\'eau', sub: 'Identifier la source' },
+        { val: 'moisissure', titre: 'Expertise moisissure', sub: '\u00c9valuation visuelle' },
+        { val: 'humidite', titre: 'Probl\u00e8me d\'humidit\u00e9 \u00e9lev\u00e9e', sub: 'Diagnostic humidit\u00e9' },
+        { val: 'amiante', titre: '\u00c9chantillonnage amiante', sub: 'Analyse de mat\u00e9riaux' },
+        { val: 'merule', titre: 'Analyse m\u00e9rule pleureuse', sub: 'Identification champignon' }
+      ];
+      var html = '<div class="card"><h2>Type de service <span class="req">*</span></h2><div class="option-grid cols-2" id="services-grid">';
+      for (var i = 0; i < services.length; i++) {
+        html += '<button type="button" class="option-btn" data-val="' + services[i].val + '" onclick="selectService(this)">' +
+          '<div>' + services[i].titre + '</div><div class="sub">' + services[i].sub + '</div></button>';
+      }
+      html += '</div></div>';
+      return html;
+    }
+
+    function sectionClient(labelNom) {
+      labelNom = labelNom || 'Nom complet';
+      return '<div class="card">' +
+        '<h2>Informations du client</h2>' +
+        '<div class="field"><label>' + labelNom + ' <span class="req">*</span></label><input type="text" id="client_nom" placeholder="Ex: Jean Tremblay"></div>' +
+        '<div class="row-2">' +
+          '<div class="field"><label>T\u00e9l\u00e9phone <span class="req">*</span></label><input type="tel" id="client_telephone" placeholder="418-555-1234" onblur="checkDoublon()"></div>' +
+          '<div class="field"><label>Courriel</label><input type="email" id="client_courriel" placeholder="jean@example.com"></div>' +
+        '</div>' +
+        '<div id="doublon-alert" class="doublon-warning"></div>' +
+        '<div class="field"><label>Adresse compl\u00e8te du b\u00e2timent <span class="req">*</span></label><input type="text" id="adresse_batiment" placeholder="1234 rue Saint-Jean, Qu\u00e9bec"></div>' +
+      '</div>';
+    }
+
+    function sectionContact() {
+      return '<div class="card">' +
+        '<h2>Pr\u00e9f\u00e9rences de contact</h2>' +
+        '<div class="field">' +
+          '<label>Moyen de contact pr\u00e9f\u00e9r\u00e9</label>' +
+          '<div class="option-grid cols-3">' +
+            '<button type="button" class="option-btn" data-val="telephone" onclick="selectOption(this, \'contact_moyen\')">T\u00e9l\u00e9phone</button>' +
+            '<button type="button" class="option-btn" data-val="courriel" onclick="selectOption(this, \'contact_moyen\')">Courriel</button>' +
+            '<button type="button" class="option-btn" data-val="texto" onclick="selectOption(this, \'contact_moyen\')">Texto</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Meilleur moment pour le contacter</label>' +
+          '<div class="option-grid cols-5">' +
+            '<button type="button" class="option-btn" data-val="matinee" onclick="selectOption(this, \'contact_moment\')">Matin\u00e9e</button>' +
+            '<button type="button" class="option-btn" data-val="apres_midi" onclick="selectOption(this, \'contact_moment\')">Apr\u00e8s-midi</button>' +
+            '<button type="button" class="option-btn" data-val="soir" onclick="selectOption(this, \'contact_moment\')">Soir</button>' +
+            '<button type="button" class="option-btn" data-val="weekend" onclick="selectOption(this, \'contact_moment\')">Weekend</button>' +
+            '<button type="button" class="option-btn" data-val="nimporte" onclick="selectOption(this, \'contact_moment\')">N\'importe</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function sectionDetailsGlobal() {
+      return '<div class="card">' +
+        '<h2>D\u00e9tails de la demande</h2>' +
+        '<div class="field">' +
+          '<label>Niveau d\'urgence <span class="req">*</span></label>' +
+          '<select id="urgence">' +
+            '<option value="normale">Normale</option>' +
+            '<option value="prioritaire">Prioritaire</option>' +
+            '<option value="urgente">Urgente</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Notes / contexte du client</label>' +
+          '<textarea id="description" placeholder="Informations que le client a partag\u00e9es au t\u00e9l\u00e9phone..."></textarea>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Notes internes de l\'assistante</label>' +
+          '<textarea id="notes_assistante" placeholder="Tes propres observations (parle vite, accent, pressante, etc.) - visibles par les techs"></textarea>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Comment nous ont-ils trouv\u00e9s ?</label>' +
+          '<select id="source">' +
+            '<option value="google">Recherche Google</option>' +
+            '<option value="reference">R\u00e9f\u00e9rence (bouche \u00e0 oreille)</option>' +
+            '<option value="site_web">Site web</option>' +
+            '<option value="courtier">Courtier immobilier</option>' +
+            '<option value="notaire">Notaire</option>' +
+            '<option value="ancien_client">Ancien client</option>' +
+            '<option value="autre">Autre</option>' +
+            '<option value="inconnu">Ne sait pas</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function renderFormLogica() {
+      var content = document.getElementById('form-content');
+      var html = '';
+      html += sectionClient('Nom du client acheteur');
+      html += '<div class="card"><h2>B\u00e2timent \u00e0 inspecter</h2>';
+      html += '<div class="field"><label>R\u00e9gion <span class="req">*</span></label>' +
+        '<div class="option-grid cols-3" id="region-grid">' +
+          '<button type="button" class="option-btn selected" data-val="quebec" onclick="selectOption(this, \'region\')">Qu\u00e9bec / L\u00e9vis</button>' +
+          '<button type="button" class="option-btn" data-val="estrie" onclick="selectOption(this, \'region\')">Estrie / Sherbrooke</button>' +
+          '<button type="button" class="option-btn" data-val="autre" onclick="selectOption(this, \'region\')">Autre</button>' +
+        '</div></div>';
+      html += '<div class="field"><label>Type de b\u00e2timent <span class="req">*</span></label>' +
+        '<div class="option-grid cols-3">' +
+          '<button type="button" class="option-btn" data-val="unifamiliale" onclick="selectOption(this, \'type_batiment\')">Unifamiliale</button>' +
+          '<button type="button" class="option-btn" data-val="duplex" onclick="selectOption(this, \'type_batiment\')">Duplex</button>' +
+          '<button type="button" class="option-btn" data-val="triplex" onclick="selectOption(this, \'type_batiment\')">Triplex</button>' +
+          '<button type="button" class="option-btn" data-val="condo" onclick="selectOption(this, \'type_batiment\')">Condo</button>' +
+          '<button type="button" class="option-btn" data-val="chalet" onclick="selectOption(this, \'type_batiment\')">Chalet</button>' +
+          '<button type="button" class="option-btn" data-val="autre" onclick="selectOption(this, \'type_batiment\')">Autre</button>' +
+        '</div></div>';
+      html += '<div class="field"><label>Ann\u00e9e de construction</label><input type="number" id="annee_construction" placeholder="Ex: 1998"></div>';
+      html += '</div>';
+      html += '<div class="card"><h2>D\u00e9lai pour l\'inspection</h2>' +
+        '<div class="field"><label>Date limite indiqu\u00e9e \u00e0 l\'offre d\'achat</label><input type="date" id="date_limite_inspection"></div>' +
+      '</div>';
+      html += '<div class="card"><h2>Courtier immobilier</h2>' +
+        '<div class="row-2">' +
+          '<div class="field"><label>Nom du courtier (optionnel)</label><input type="text" id="courtier_nom" placeholder="Ex: Marie Gagnon, Re/Max"></div>' +
+          '<div class="field"><label>T\u00e9l\u00e9phone du courtier</label><input type="tel" id="courtier_telephone"></div>' +
+        '</div>' +
+      '</div>';
+      html += sectionContact();
+      html += sectionDetailsGlobal();
+      html += '<div id="banner"></div>';
+      html += '<div id="error-display"></div>';
+      html += '<div class="actions">' +
+        '<button class="btn-cancel" onclick="window.location.href=\'assistante.html\'">Annuler</button>' +
+        '<button class="btn-submit" onclick="submitForm()">Soumettre la demande</button>' +
+      '</div>';
+      content.innerHTML = html;
+      formState.region = 'quebec';
+      updateBannerLogica();
+    }
+
+    function renderFormGeq() {
+      var content = document.getElementById('form-content');
+      var html = '';
+      html += sectionServicesGeq();
+      html += sectionClient('Nom complet');
+      html += '<div class="card"><h2>Informations b\u00e2timent</h2>' +
+        '<div class="row-2">' +
+          '<div class="field"><label>Ann\u00e9e de construction</label><input type="number" id="annee_construction" placeholder="Ex: 1998"></div>' +
+          '<div class="field"><label>R\u00e9gion <span class="req">*</span></label>' +
+            '<div class="option-grid cols-3" style="margin-top:0">' +
+              '<button type="button" class="option-btn selected" data-val="quebec" onclick="selectOption(this, \'region\')">Qu\u00e9bec</button>' +
+              '<button type="button" class="option-btn" data-val="estrie" onclick="selectOption(this, \'region\')">Estrie</button>' +
+              '<button type="button" class="option-btn" data-val="autre" onclick="selectOption(this, \'region\')">Autre</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      html += sectionContact();
+      html += sectionDetailsGlobal();
+      html += '<div id="banner"></div>';
+      html += '<div id="error-display"></div>';
+      html += '<div class="actions">' +
+        '<button class="btn-cancel" onclick="window.location.href=\'assistante.html\'">Annuler</button>' +
+        '<button class="btn-submit" onclick="submitForm()">Soumettre la demande</button>' +
+      '</div>';
+      content.innerHTML = html;
+      formState.region = 'quebec';
+      updateBannerGeq();
+    }
+
+    function renderFormFonds() {
+      var content = document.getElementById('form-content');
+      var html = '';
+      html += '<div class="card"><h2>Informations sur le syndicat</h2>' +
+        '<div class="field"><label>Nom du syndicat <span class="req">*</span></label><input type="text" id="syndicat_nom" placeholder="Ex: Syndicat des copropri\u00e9taires Le Belv\u00e9d\u00e8re"></div>' +
+        '<div class="field"><label>Type de syndicat <span class="req">*</span></label>' +
+          '<div class="option-grid cols-3">' +
+            '<button type="button" class="option-btn" data-val="vertical" onclick="selectSyndicatType(this)">Vertical<div class="sub">Un seul b\u00e2timent</div></button>' +
+            '<button type="button" class="option-btn" data-val="horizontal" onclick="selectSyndicatType(this)">Horizontal<div class="sub">Plusieurs b\u00e2timents</div></button>' +
+            '<button type="button" class="option-btn" data-val="ne_sait_pas" onclick="selectSyndicatType(this)">Ne sait pas<div class="sub">\u00c0 valider</div></button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="row-2">' +
+          '<div class="field" id="field-nombre"><label id="label-nombre">Nombre d\'unit\u00e9s</label><input type="number" id="nombre_val" placeholder="Ex: 24"></div>' +
+          '<div class="field"><label>Ann\u00e9e de construction</label><input type="number" id="annee_construction" placeholder="Ex: 1998"></div>' +
+        '</div>' +
+      '</div>';
+      html += '<div class="card"><h2>Responsable qui nous contacte</h2>' +
+        '<div class="field"><label>Nom complet <span class="req">*</span></label><input type="text" id="client_nom" placeholder="Marie Tremblay"></div>' +
+        '<div class="row-2">' +
+          '<div class="field"><label>T\u00e9l\u00e9phone <span class="req">*</span></label><input type="tel" id="client_telephone" placeholder="418-555-1234" onblur="checkDoublon()"></div>' +
+          '<div class="field"><label>Courriel</label><input type="email" id="client_courriel" placeholder="marie@example.com"></div>' +
+        '</div>' +
+        '<div id="doublon-alert" class="doublon-warning"></div>' +
+        '<div class="field"><label>Adresse du b\u00e2timent <span class="req">*</span></label><input type="text" id="adresse_batiment" placeholder="1234 rue Saint-Jean, Qu\u00e9bec"></div>' +
+      '</div>';
+      html += '<div class="danger-banner">' +
+        '<label><input type="checkbox" id="urgence_notaire"><span>Urgence : vente en cours / demande d\'un notaire</span></label>' +
+        '<div class="desc">Cocher si le syndicat a besoin de l\'\u00e9tude rapidement pour une transaction</div>' +
+      '</div>';
+      html += sectionDetailsGlobal();
+      html += '<div class="info-banner">Les demandes de fonds de pr\u00e9voyance sont trait\u00e9es directement par S\u00e9bastien. Une notification sera envoy\u00e9e \u00e0 loi16.expertquebec@gmail.com.</div>';
+      html += '<div id="error-display"></div>';
+      html += '<div class="actions">' +
+        '<button class="btn-cancel" onclick="window.location.href=\'assistante.html\'">Annuler</button>' +
+        '<button class="btn-submit" onclick="submitForm()">Soumettre la demande</button>' +
+      '</div>';
+      content.innerHTML = html;
+      formState.region = 'quebec';
+    }
+
+    function selectOption(btn, field) {
+      var parent = btn.parentElement;
+      var buttons = parent.querySelectorAll('.option-btn');
+      for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('selected');
+      btn.classList.add('selected');
+      formState[field] = btn.getAttribute('data-val');
+      if (field === 'region' && typeDemande === 'logica') updateBannerLogica();
+      if (field === 'region' && typeDemande === 'geq') updateBannerGeq();
+    }
+
+    function selectService(btn) {
+      selectOption(btn, 'type_service');
+    }
+
+    function selectSyndicatType(btn) {
+      selectOption(btn, 'syndicat_type');
+      var label = document.getElementById('label-nombre');
+      var input = document.getElementById('nombre_val');
+      var field = document.getElementById('field-nombre');
+      if (btn.getAttribute('data-val') === 'vertical') {
+        label.textContent = 'Nombre d\'unit\u00e9s';
+        input.placeholder = 'Ex: 24';
+        field.classList.remove('hidden');
+      } else if (btn.getAttribute('data-val') === 'horizontal') {
+        label.textContent = 'Nombre de b\u00e2timents';
+        input.placeholder = 'Ex: 4';
+        field.classList.remove('hidden');
+      } else {
+        field.classList.add('hidden');
+        input.value = '';
+      }
+    }
+
+    function updateBannerLogica() {
+      var banner = document.getElementById('banner');
+      if (!banner) return;
+      if (formState.region === 'estrie') {
+        banner.innerHTML = '<div class="info-banner">Cette demande sera envoy\u00e9e directement \u00e0 <strong>Alain Audet</strong> (technicien Estrie).</div>';
+      } else {
+        banner.innerHTML = '<div class="info-banner">Cette demande sera envoy\u00e9e au <strong>board Logica</strong>. Charles verra la demande en priorit\u00e9 pendant 1h.</div>';
+      }
+    }
+
+    function updateBannerGeq() {
+      var banner = document.getElementById('banner');
+      if (!banner) return;
+      if (formState.region === 'estrie') {
+        banner.innerHTML = '<div class="info-banner">Cette demande sera envoy\u00e9e directement \u00e0 <strong>Alain Audet</strong> (technicien Estrie).</div>';
+      } else {
+        banner.innerHTML = '<div class="info-banner">Cette demande sera envoy\u00e9e au <strong>board GEQ</strong>. Jacob verra la demande en priorit\u00e9 pendant 4h.</div>';
+      }
+    }
+
+    async function checkDoublon() {
+      var tel = document.getElementById('client_telephone').value.trim();
+      var alertBox = document.getElementById('doublon-alert');
+      if (!tel || tel.length < 7) { alertBox.classList.remove('visible'); return; }
+
+      var septJoursPasses = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      var result = await db.from('demandes')
+        .select('numero, client_nom, statut, cree_le')
+        .eq('client_telephone', tel)
+        .gte('cree_le', septJoursPasses)
+        .order('cree_le', { ascending: false })
+        .limit(1);
+
+      if (result.data && result.data.length > 0) {
+        var d = result.data[0];
+        var date = new Date(d.cree_le);
+        var jours = Math.floor((Date.now() - date.getTime()) / (24 * 60 * 60 * 1000));
+        var depuis = jours === 0 ? 'aujourd\'hui' : (jours === 1 ? 'hier' : 'il y a ' + jours + ' jours');
+        alertBox.innerHTML = 'Une demande existe d\u00e9j\u00e0 pour ce num\u00e9ro : <strong>' + escapeHtml(d.client_nom) + '</strong> (' + depuis + ', statut : ' + escapeHtml(d.statut) + '). V\u00e9rifier si c\'est la m\u00eame personne avant de continuer.';
+        alertBox.classList.add('visible');
+      } else {
+        alertBox.classList.remove('visible');
+      }
+    }
+
+    function getValue(id) {
+      var el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    }
+
+    function calculerDestination(compagnie, region, typeService) {
+      if (typeDemande === 'fonds') return 'sebastien_direct';
+      if (region === 'estrie') return 'alain_direct';
+      return 'board';
+    }
+
+    async function submitForm() {
+      var errorBox = document.getElementById('error-display');
+      errorBox.innerHTML = '';
+      var btn = document.querySelector('.btn-submit');
+      btn.disabled = true;
+      btn.textContent = 'Soumission en cours...';
+
+      try {
+        var demande = {
+          compagnie: typeDemande === 'logica' ? 'logica' : 'geq',
+          type_service: typeDemande === 'fonds' ? 'fonds_prevoyance' : (typeDemande === 'logica' ? 'inspection_preachat' : formState.type_service),
+          region: formState.region || 'quebec',
+          urgence: getValue('urgence') || 'normale',
+          client_nom: getValue('client_nom'),
+          client_telephone: getValue('client_telephone'),
+          client_courriel: getValue('client_courriel') || null,
+          adresse_batiment: getValue('adresse_batiment'),
+          description: getValue('description') || null,
+          source: getValue('source') || null,
+          contact_moyen: formState.contact_moyen || null,
+          contact_moment: formState.contact_moment || null,
+          cree_par: currentUser.id
+        };
+
+        // Notes assistante ajoutées à la description (précédées d'un marqueur)
+        var notesAssist = getValue('notes_assistante');
+        if (notesAssist) {
+          demande.description = (demande.description ? demande.description + '\n\n' : '') + '[Notes assistante] ' + notesAssist;
+        }
+
+        // Champs spécifiques Logica
+        if (typeDemande === 'logica') {
+          demande.type_batiment = formState.type_batiment || null;
+          demande.annee_construction = getValue('annee_construction') ? parseInt(getValue('annee_construction')) : null;
+          demande.date_limite_inspection = getValue('date_limite_inspection') || null;
+          demande.courtier_nom = getValue('courtier_nom') || null;
+          demande.courtier_telephone = getValue('courtier_telephone') || null;
+        }
+
+        // Champs spécifiques GEQ
+        if (typeDemande === 'geq') {
+          demande.annee_construction = getValue('annee_construction') ? parseInt(getValue('annee_construction')) : null;
+        }
+
+        // Champs spécifiques Fonds de prévoyance
+        if (typeDemande === 'fonds') {
+          demande.syndicat_nom = getValue('syndicat_nom');
+          demande.syndicat_type = formState.syndicat_type || null;
+          demande.annee_construction = getValue('annee_construction') ? parseInt(getValue('annee_construction')) : null;
+          var nombreVal = getValue('nombre_val');
+          if (nombreVal) {
+            var nombreInt = parseInt(nombreVal);
+            if (formState.syndicat_type === 'vertical') demande.nombre_unites = nombreInt;
+            else if (formState.syndicat_type === 'horizontal') demande.nombre_batiments = nombreInt;
+          }
+          var chkUrgence = document.getElementById('urgence_notaire');
+          if (chkUrgence && chkUrgence.checked) demande.urgence_notaire = true;
+        }
+
+        demande.destination = calculerDestination(demande.compagnie, demande.region, demande.type_service);
+
+        // Validations minimales
+        if (!demande.client_nom) throw new Error('Le nom du client est obligatoire.');
+        if (!demande.client_telephone) throw new Error('Le t\u00e9l\u00e9phone est obligatoire.');
+        if (!demande.adresse_batiment) throw new Error('L\'adresse du b\u00e2timent est obligatoire.');
+        if (typeDemande === 'geq' && !demande.type_service) throw new Error('Le type de service est obligatoire.');
+        if (typeDemande === 'logica' && !demande.type_batiment) throw new Error('Le type de b\u00e2timent est obligatoire.');
+        if (typeDemande === 'fonds' && !demande.syndicat_nom) throw new Error('Le nom du syndicat est obligatoire.');
+        if (typeDemande === 'fonds' && !demande.syndicat_type) throw new Error('Le type de syndicat est obligatoire.');
+
+        var insertResult = await db.from('demandes').insert(demande).select().single();
+
+        if (insertResult.error) throw new Error('Erreur Supabase : ' + insertResult.error.message);
+
+        renderSuccess(insertResult.data);
+
+      } catch (err) {
+        errorBox.innerHTML = '<div class="error-box">' + escapeHtml(err.message) + '</div>';
+        btn.disabled = false;
+        btn.textContent = 'Soumettre la demande';
+        console.error(err);
+      }
+    }
+
+    function renderSuccess(demande) {
+      var app = document.getElementById('app');
+      app.innerHTML = 
+        '<div class="success-box">' +
+          '<h2>Demande cr\u00e9\u00e9e avec succ\u00e8s</h2>' +
+          '<p>La demande a \u00e9t\u00e9 envoy\u00e9e \u00e0 la bonne \u00e9quipe.</p>' +
+          '<div class="numero">' + escapeHtml(demande.numero) + '</div>' +
+          '<p style="margin-top:1.5rem"><a href="assistante.html" class="btn-back">Saisir une autre demande</a></p>' +
+        '</div>';
+    }
+
+    window.selectOption = selectOption;
+    window.selectService = selectService;
+    window.selectSyndicatType = selectSyndicatType;
+    window.checkDoublon = checkDoublon;
+    window.submitForm = submitForm;
+
+    init();
+  </script>
+</body>
+</html>
