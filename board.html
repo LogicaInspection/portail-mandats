@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Board des demandes - Groupe Expert</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      min-height: 100vh;
+      padding: 1.5rem 1rem;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .header {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header-info .label { font-size: 12px; color: #6e6e73; margin-bottom: 2px; }
+    .header-info .name { font-size: 15px; font-weight: 500; }
+    .header-info .role { font-size: 12px; color: #6e6e73; margin-top: 2px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      background: white;
+      border: 1px solid #d2d2d7;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #1d1d1f;
+      cursor: pointer;
+      text-decoration: none;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .btn:hover { background: #f5f5f7; }
+    .btn-primary {
+      background: #0071e3;
+      color: white;
+      border-color: #0071e3;
+    }
+    .btn-primary:hover { background: #0058b0; }
+    .btn-small { padding: 6px 10px; font-size: 12px; }
+    .tabs {
+      background: white;
+      border-radius: 10px;
+      padding: 4px;
+      display: flex;
+      gap: 2px;
+    }
+    .tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #6e6e73;
+      background: transparent;
+      border: none;
+      font-family: inherit;
+    }
+    .tab.active {
+      background: #f5f5f7;
+      color: #1d1d1f;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 1.5rem 0 0.75rem;
+      padding: 0 0.25rem;
+    }
+    .section-header h2 { font-size: 17px; font-weight: 600; }
+    .section-header .count { font-size: 13px; color: #6e6e73; }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e5e5e7;
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: #d2d2d7; }
+    .card.reserved {
+      border-color: #378add;
+      background: linear-gradient(to right, #e6f1fb 0%, white 8%);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .card-num { font-size: 11px; color: #6e6e73; font-family: monospace; }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .badge-urgente { background: #fcebeb; color: #a32d2d; }
+    .badge-prioritaire { background: #faeeda; color: #854f0b; }
+    .badge-normale { background: #f1efe8; color: #5f5e5a; }
+    .badge-reserved { background: #e6f1fb; color: #185fa5; }
+    .badge-statut { background: #e1f5ee; color: #0f6e56; }
+    .badge-message { background: #faeeda; color: #854f0b; }
+    .badge-assignee { background: #f1efe8; color: #5f5e5a; }
+    .badge-soumission { background: #eeedfe; color: #3c3489; }
+    .card-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .card-addr { font-size: 12px; color: #6e6e73; margin-bottom: 6px; }
+    .card-meta { font-size: 11px; color: #999; margin-bottom: 10px; }
+    .card-actions {
+      display: grid;
+      gap: 6px;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 10px;
+      margin-top: 6px;
+    }
+    .card-actions.two { grid-template-columns: 1fr 1fr; }
+    .btn-card {
+      padding: 7px 10px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid #d2d2d7;
+      background: white;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-card:hover { background: #f5f5f7; }
+    .btn-card-primary {
+      background: #0071e3;
+      color: white;
+      border-color: #0071e3;
+    }
+    .btn-card-primary:hover { background: #0058b0; }
+    .btn-card-secondary {
+      background: transparent;
+      color: #6e6e73;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #999;
+      font-size: 14px;
+      background: white;
+      border-radius: 12px;
+      border: 1px dashed #d2d2d7;
+    }
+    .loading { text-align: center; padding: 3rem; color: #6e6e73; }
+    .error-box {
+      background: #fcebeb;
+      border: 1px solid #f09595;
+      padding: 1rem;
+      border-radius: 8px;
+      color: #a32d2d;
+      font-size: 14px;
+      margin: 1rem 0;
+    }
+    .info-note {
+      background: #e6f1fb;
+      border: 1px solid #b5d4f4;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #185fa5;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <div class="loading">Chargement du board...</div>
+    </div>
+  </div>
+
+  <script>
+    var SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+
+    var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    var currentUser = null;
+    var currentProfil = null;
+    var parametres = {};
+    var viewMode = 'logica'; // 'logica' ou 'geq' - pour techs bi-compagnies
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      var div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
+    function timeSince(isoDate) {
+      var now = Date.now();
+      var then = new Date(isoDate).getTime();
+      var diff = Math.floor((now - then) / 1000);
+      if (diff < 60) return 'il y a quelques secondes';
+      var mins = Math.floor(diff / 60);
+      if (mins < 60) return 'il y a ' + mins + ' min';
+      var hours = Math.floor(mins / 60);
+      if (hours < 24) return 'il y a ' + hours + 'h';
+      var days = Math.floor(hours / 24);
+      if (days === 1) return 'hier';
+      return 'il y a ' + days + 'j';
+    }
+
+    function hoursSince(isoDate) {
+      return (Date.now() - new Date(isoDate).getTime()) / (1000 * 60 * 60);
+    }
+
+    async function init() {
+      var app = document.getElementById('app');
+      try {
+        var sessionResult = await db.auth.getSession();
+        if (!sessionResult.data.session) {
+          app.innerHTML = '<div class="error-box">Non connect\u00e9. <a href="index.html">Se connecter</a></div>';
+          return;
+        }
+        currentUser = sessionResult.data.session.user;
+
+        var profilResult = await db.from('tech_profils').select('*').eq('user_id', currentUser.id).single();
+        if (profilResult.error || !profilResult.data) {
+          app.innerHTML = '<div class="error-box">Profil introuvable. Contacter S\u00e9bastien.</div>';
+          return;
+        }
+        currentProfil = profilResult.data;
+
+        var paramsResult = await db.from('parametres').select('*');
+        if (paramsResult.data) {
+          for (var i = 0; i < paramsResult.data.length; i++) {
+            parametres[paramsResult.data[i].cle] = paramsResult.data[i].valeur;
+          }
+        }
+
+        // Définir le mode de vue par défaut selon les compagnies
+        if (currentProfil.compagnies && currentProfil.compagnies.length > 0) {
+          viewMode = currentProfil.compagnies[0];
+        }
+
+        await renderBoard();
+
+      } catch (err) {
+        app.innerHTML = '<div class="error-box">Erreur: ' + escapeHtml(err.message) + '</div>';
+        console.error(err);
+      }
+    }
+
+    async function renderBoard() {
+      var app = document.getElementById('app');
+
+      // Cas spécial : gestionnaire → redirection vers leur vue (pas encore codée)
+      // Pour l'instant on leur laisse voir comme un tech
+      var estAlain = currentProfil.regions && currentProfil.regions.indexOf('estrie') !== -1 && currentProfil.regions.length === 1;
+
+      // Charger les demandes
+      var demandesActives = await chargerMesDemandesActives();
+      var demandesDispo = await chargerDemandesDisponibles(estAlain);
+
+      var compagnies = currentProfil.compagnies || [];
+      var afficheOngletsCompagnies = compagnies.length > 1 && !estAlain;
+
+      var rangCourant = viewMode === 'logica' ? currentProfil.rang_logica : currentProfil.rang_geq;
+      var roleTxt = currentProfil.role === 'gestionnaire' ? 'Gestionnaire' : 'Technicien';
+      if (rangCourant === 'senior') roleTxt = 'Senior ' + viewMode.toUpperCase();
+      if (estAlain) roleTxt = 'Technicien Estrie';
+
+      var headerHtml = 
+        '<div class="header">' +
+          '<div class="header-info">' +
+            '<div class="label">Connect\u00e9 comme</div>' +
+            '<div class="name">' + escapeHtml(currentProfil.nom_complet) + '</div>' +
+            '<div class="role">' + escapeHtml(roleTxt) + '</div>' +
+          '</div>' +
+          '<div class="header-actions">';
+
+      if (afficheOngletsCompagnies) {
+        headerHtml += '<div class="tabs">' +
+          (compagnies.indexOf('logica') !== -1 ? '<button class="tab ' + (viewMode === 'logica' ? 'active' : '') + '" onclick="switchView(\'logica\')">Logica</button>' : '') +
+          (compagnies.indexOf('geq') !== -1 ? '<button class="tab ' + (viewMode === 'geq' ? 'active' : '') + '" onclick="switchView(\'geq\')">GEQ</button>' : '') +
+        '</div>';
+      }
+
+      if (currentProfil.role === 'gestionnaire' || currentProfil.role === 'assistante') {
+        headerHtml += '<a href="assistante.html" class="btn btn-small">+ Saisir une demande</a>';
+      }
+      headerHtml += '<button class="btn btn-small" onclick="doLogout()">D\u00e9connexion</button>' +
+          '</div>' +
+        '</div>';
+
+      // Section Mes demandes en cours
+      var mesHtml = '<div class="section-header"><h2>Mes demandes en cours</h2><span class="count">' + demandesActives.length + ' active' + (demandesActives.length > 1 ? 's' : '') + '</span></div>';
+      if (demandesActives.length === 0) {
+        mesHtml += '<div class="empty-state">Aucune demande en cours. Prends une demande disponible ci-dessous.</div>';
+      } else {
+        mesHtml += '<div class="cards-grid">';
+        for (var i = 0; i < demandesActives.length; i++) {
+          mesHtml += cardMesDemandes(demandesActives[i]);
+        }
+        mesHtml += '</div>';
+      }
+
+      // Section Demandes disponibles (sauf pour Alain qui a tout en "Mes demandes")
+      var dispoHtml = '';
+      if (!estAlain) {
+        dispoHtml = '<div class="section-header"><h2>Demandes disponibles</h2><span class="count">' + demandesDispo.length + ' dans le pool</span></div>';
+        if (demandesDispo.length === 0) {
+          dispoHtml += '<div class="empty-state">Aucune demande disponible pour toi en ce moment.</div>';
+        } else {
+          dispoHtml += '<div class="cards-grid">';
+          for (var j = 0; j < demandesDispo.length; j++) {
+            dispoHtml += cardDemandeDispo(demandesDispo[j]);
+          }
+          dispoHtml += '</div>';
+        }
+      }
+
+      app.innerHTML = headerHtml + mesHtml + dispoHtml;
+    }
+
+    async function chargerMesDemandesActives() {
+      var result = await db.from('demandes')
+        .select('*')
+        .eq('tech_assigne_id', currentUser.id)
+        .in('statut', ['assignee','client_contacte','message_laisse','soumission_envoyee'])
+        .order('assigne_le', { ascending: false });
+      return result.data || [];
+    }
+
+    async function chargerDemandesDisponibles(estAlain) {
+      if (estAlain) {
+        // Alain voit ses demandes alain_direct encore non assignées ou celles qu'il a prises
+        var resultAlain = await db.from('demandes')
+          .select('*')
+          .eq('destination', 'alain_direct')
+          .eq('statut', 'nouvelle')
+          .order('cree_le', { ascending: false });
+        return resultAlain.data || [];
+      }
+
+      // Pour les autres techs : demandes board, compagnie active
+      var result = await db.from('demandes')
+        .select('*')
+        .eq('destination', 'board')
+        .eq('compagnie', viewMode)
+        .eq('statut', 'nouvelle')
+        .order('cree_le', { ascending: false });
+
+      if (!result.data) return [];
+
+      // Appliquer la logique d'équité
+      var visibles = [];
+      for (var i = 0; i < result.data.length; i++) {
+        var d = result.data[i];
+        if (peutVoirDemande(d)) visibles.push(d);
+      }
+      return visibles;
+    }
+
+    function peutVoirDemande(demande) {
+      var rang = viewMode === 'logica' ? currentProfil.rang_logica : currentProfil.rang_geq;
+      var age = hoursSince(demande.cree_le);
+      var liberationAuto = parseFloat(parametres.liberation_automatique_heures || 4);
+      var fenetreSenior = viewMode === 'logica' 
+        ? parseFloat(parametres.fenetre_priorite_senior_logica_heures || 1)
+        : parseFloat(parametres.fenetre_priorite_senior_geq_heures || 4);
+
+      // Libération automatique : après X heures, tout le monde voit
+      if (age >= liberationAuto) return true;
+
+      // Si la demande a été libérée par le senior, tout le monde voit
+      if (demande.libere_par_senior) return true;
+
+      // Le senior voit toujours sa fenêtre de priorité
+      if (rang === 'senior') return true;
+
+      // Les seconds : ne voient pas pendant la fenêtre senior
+      if (rang === 'second') {
+        if (age >= fenetreSenior) return true;
+        return false;
+      }
+
+      // Pas de rang = pas de restriction
+      return true;
+    }
+
+    function cardMesDemandes(d) {
+      var urgenceBadge = '<span class="badge badge-' + d.urgence + '">' + capitalize(d.urgence) + '</span>';
+      var statutBadge = badgeStatut(d.statut);
+      var lastAction = texteLastAction(d);
+
+      return '<div class="card" onclick="goToDetail(\'' + d.id + '\')">' +
+        '<div class="card-top">' +
+          '<span class="card-num">' + escapeHtml(d.numero) + '</span>' +
+          statutBadge +
+        '</div>' +
+        '<div class="card-title">' + escapeHtml(d.client_nom) + '</div>' +
+        '<div class="card-addr">' + escapeHtml(d.adresse_batiment) + '</div>' +
+        '<div class="card-meta">' + lastAction + '</div>' +
+      '</div>';
+    }
+
+    function cardDemandeDispo(d) {
+      var rang = viewMode === 'logica' ? currentProfil.rang_logica : currentProfil.rang_geq;
+      var age = hoursSince(d.cree_le);
+      var fenetreSenior = viewMode === 'logica' 
+        ? parseFloat(parametres.fenetre_priorite_senior_logica_heures || 1)
+        : parseFloat(parametres.fenetre_priorite_senior_geq_heures || 4);
+
+      var estReservee = (rang === 'senior' && age < fenetreSenior && !d.libere_par_senior);
+      var cardClass = estReservee ? 'card reserved' : 'card';
+
+      var topBadge;
+      if (estReservee) {
+        topBadge = '<span class="badge badge-reserved">R\u00e9serv\u00e9e pour toi</span>';
+      } else if (d.urgence === 'urgente') {
+        topBadge = '<span class="badge badge-urgente">Urgente</span>';
+      } else if (d.urgence === 'prioritaire') {
+        topBadge = '<span class="badge badge-prioritaire">Prioritaire</span>';
+      } else {
+        topBadge = '<span class="badge badge-normale">Normale</span>';
+      }
+
+      var typeTxt = texteTypeService(d.type_service);
+      var ageTxt = timeSince(d.cree_le);
+
+      var html = '<div class="' + cardClass + '" onclick="goToDetail(\'' + d.id + '\')">' +
+        '<div class="card-top">' +
+          '<span class="card-num">' + escapeHtml(d.numero) + '</span>' +
+          topBadge +
+        '</div>' +
+        '<div class="card-title">' + escapeHtml(d.client_nom) + '</div>' +
+        '<div class="card-addr">' + escapeHtml(d.adresse_batiment) + '</div>' +
+        '<div class="card-meta">' + typeTxt + ' \u00b7 saisie ' + ageTxt + '</div>';
+
+      if (estReservee) {
+        html += '<div class="card-actions two" onclick="event.stopPropagation()">' +
+          '<button class="btn-card btn-card-primary" onclick="prendreDemande(\'' + d.id + '\')">Je la prends</button>' +
+          '<button class="btn-card" onclick="libererDemande(\'' + d.id + '\')">Lib\u00e9rer</button>' +
+        '</div>';
+      } else {
+        html += '<div class="card-actions" onclick="event.stopPropagation()">' +
+          '<button class="btn-card btn-card-primary" onclick="prendreDemande(\'' + d.id + '\')">Je la prends</button>' +
+        '</div>';
+      }
+
+      html += '</div>';
+      return html;
+    }
+
+    function badgeStatut(statut) {
+      var map = {
+        assignee: { cls: 'badge-assignee', txt: 'Assign\u00e9e' },
+        client_contacte: { cls: 'badge-statut', txt: 'Client contact\u00e9' },
+        message_laisse: { cls: 'badge-message', txt: 'Message laiss\u00e9' },
+        soumission_envoyee: { cls: 'badge-soumission', txt: 'Soumission envoy\u00e9e' },
+        acceptee: { cls: 'badge-statut', txt: 'Accept\u00e9e' },
+        perdue: { cls: 'badge-assignee', txt: 'Perdue' },
+        nouvelle: { cls: 'badge-normale', txt: 'Nouvelle' }
+      };
+      var m = map[statut] || { cls: 'badge-normale', txt: statut };
+      return '<span class="badge ' + m.cls + '">' + m.txt + '</span>';
+    }
+
+    function texteLastAction(d) {
+      if (d.statut === 'assignee') return 'Prise ' + timeSince(d.assigne_le || d.cree_le) + ' \u00b7 pas encore contact\u00e9';
+      if (d.statut === 'client_contacte') return 'Client contact\u00e9';
+      if (d.statut === 'message_laisse') return 'Message laiss\u00e9 \u00b7 ' + timeSince(d.modifie_le);
+      if (d.statut === 'soumission_envoyee') return 'Soumission envoy\u00e9e \u00b7 ' + timeSince(d.modifie_le);
+      return timeSince(d.cree_le);
+    }
+
+    function texteTypeService(ts) {
+      var map = {
+        inspection_preachat: 'Inspection pr\u00e9-achat',
+        air_fongique: 'Qualit\u00e9 air fongique',
+        infiltration_eau: 'Infiltration d\'eau',
+        moisissure: 'Moisissure',
+        humidite: 'Humidit\u00e9 \u00e9lev\u00e9e',
+        amiante: '\u00c9chantillonnage amiante',
+        merule: 'M\u00e9rule pleureuse',
+        fonds_prevoyance: 'Fonds de pr\u00e9voyance'
+      };
+      return map[ts] || ts;
+    }
+
+    function capitalize(s) {
+      if (!s) return '';
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    async function prendreDemande(id) {
+      try {
+        var update = {
+          tech_assigne_id: currentUser.id,
+          statut: 'assignee',
+          assigne_le: new Date().toISOString()
+        };
+        var result = await db.from('demandes').update(update).eq('id', id).eq('statut', 'nouvelle');
+        if (result.error) throw new Error(result.error.message);
+
+        await db.from('demandes_historique').insert({
+          demande_id: id,
+          action: 'prise',
+          effectue_par: currentUser.id,
+          details: { tech_nom: currentProfil.nom_complet }
+        });
+
+        await renderBoard();
+      } catch (err) {
+        alert('Erreur : ' + err.message);
+        console.error(err);
+      }
+    }
+
+    async function libererDemande(id) {
+      if (!confirm('Lib\u00e9rer cette demande pour que ton coll\u00e8gue puisse la voir ?')) return;
+      try {
+        var result = await db.from('demandes').update({ libere_par_senior: true }).eq('id', id);
+        if (result.error) throw new Error(result.error.message);
+
+        await db.from('demandes_historique').insert({
+          demande_id: id,
+          action: 'liberee_par_senior',
+          effectue_par: currentUser.id,
+          details: { senior_nom: currentProfil.nom_complet }
+        });
+
+        await renderBoard();
+      } catch (err) {
+        alert('Erreur : ' + err.message);
+        console.error(err);
+      }
+    }
+
+    function switchView(compagnie) {
+      viewMode = compagnie;
+      renderBoard();
+    }
+
+    function goToDetail(id) {
+      window.location.href = 'demande.html?id=' + id;
+    }
+
+    async function doLogout() {
+      await db.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    window.switchView = switchView;
+    window.prendreDemande = prendreDemande;
+    window.libererDemande = libererDemande;
+    window.goToDetail = goToDetail;
+    window.doLogout = doLogout;
+
+    init();
+
+    // Rafraîchit automatiquement toutes les 60 secondes
+    setInterval(function() {
+      if (document.visibilityState === 'visible') renderBoard();
+    }, 60000);
+  </script>
+</body>
+</html>
