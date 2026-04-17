@@ -77,6 +77,7 @@
       align-items: center;
       gap: 1rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      width: 100%;
     }
     .choice-btn:hover {
       border-color: #0071e3;
@@ -143,95 +144,30 @@
     const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function init() {
       const app = document.getElementById('app');
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
 
       if (!session) {
         window.location.href = 'index.html';
         return;
       }
 
-      const { data: profil, error } = await supabase
+      const { data: profil, error } = await sb
         .from('tech_profils')
         .select('*')
         .eq('user_id', session.user.id)
         .single();
 
       if (error || !profil) {
-        app.innerHTML = '<div class="error">Erreur : profil introuvable. Contacter Sébastien.</div>';
+        app.innerHTML = '<div class="error">Erreur : profil introuvable. Contacter S\u00e9bastien.</div>';
+        console.error('Erreur profil:', error);
         return;
       }
 
       if (profil.role !== 'assistante' && profil.role !== 'gestionnaire') {
-        app.innerHTML = '<div class="access-denied"><h2>Accès non autorisé</h2><p>Cette page est r\u00e9serv\u00e9e aux assistantes et gestionnaires. Retour au tableau de bord.</p></div>';
-        setTimeout(() => window.location.href = 'dashboard.html', 3000);
-        return;
-      }
-
-      app.innerHTML = `
-        <div class="header">
-          <div class="header-info">
-            <div class="label">Connect\u00e9e comme</div>
-            <div class="name">${escapeHtml(profil.nom_complet)}</div>
-          </div>
-          <button class="btn-logout" onclick="logout()">Se d\u00e9connecter</button>
-        </div>
-
-        <h1>Nouvelle demande</h1>
-        <p class="subtitle">Choisis le type de demande que le client souhaite</p>
-
-        <div class="choices">
-          <button class="choice-btn" onclick="goTo('logica')">
-            <div class="choice-icon logica">L</div>
-            <div class="choice-text">
-              <div class="title">Inspection pr\u00e9-achat (Logica)</div>
-              <div class="desc">Pour un client qui veut faire inspecter un b\u00e2timent avant achat</div>
-            </div>
-          </button>
-
-          <button class="choice-btn" onclick="goTo('geq')">
-            <div class="choice-icon geq">G</div>
-            <div class="choice-text">
-              <div class="title">Expertise b\u00e2timent (GEQ)</div>
-              <div class="desc">Moisissure, infiltration d'eau, amiante, m\u00e9rule, humidit\u00e9, qualit\u00e9 de l'air</div>
-            </div>
-          </button>
-
-          <button class="choice-btn" onclick="goTo('fonds')">
-            <div class="choice-icon fonds">F</div>
-            <div class="choice-text">
-              <div class="title">\u00c9tude de fonds de pr\u00e9voyance (GEQ)</div>
-              <div class="desc">Pour un syndicat de copropri\u00e9t\u00e9</div>
-            </div>
-          </button>
-        </div>
-      `;
-    }
-
-    function goTo(type) {
-      window.location.href = 'nouvelle-demande.html?type=' + type;
-    }
-
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = 'index.html';
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    window.logout = logout;
-    window.goTo = goTo;
-
-    init();
-  </script>
-</body>
-</html>
+        app.innerHTML = '<div class="access-denied"><h2>Acc\u00e8s non autoris\u00e9</h2><p>Cette page est r\u00e9serv\u00e9e aux assistantes et gestionnaires.</p></div>';
+        setTimeout(function() { window.location.href = '
