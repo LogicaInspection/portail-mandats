@@ -272,7 +272,6 @@
     var currentHistorique = [];
     var demandeId = null;
 
-    // Mapping type_service → type_mandat (pour création auto)
     var TYPE_MANDAT_MAP = {
       inspection_preachat: 'Inspection pr\u00e9achat',
       air_fongique: 'Test de qualit\u00e9 de l\'air fongique',
@@ -288,6 +287,11 @@
       var div = document.createElement('div');
       div.textContent = String(str);
       return div.innerHTML;
+    }
+
+    function getNomComplet(p) {
+      if (!p) return 'Inconnu';
+      return ((p.prenom || '') + ' ' + (p.nom || '')).trim() || 'Inconnu';
     }
 
     function getUrlParam(name) {
@@ -391,7 +395,7 @@
         }
         currentUser = sessionResult.data.session.user;
 
-        var profilResult = await db.from('tech_profils').select('*').eq('user_id', currentUser.id).single();
+        var profilResult = await db.from('profiles').select('*').eq('id', currentUser.id).single();
         if (profilResult.error) {
           app.innerHTML = '<div class="error-box">Profil introuvable</div>';
           return;
@@ -419,7 +423,6 @@
         .order('effectue_le', { ascending: false });
       currentHistorique = histoResult.data || [];
 
-      // Récupérer les noms des profils pour l'historique
       var userIds = [];
       for (var i = 0; i < currentHistorique.length; i++) {
         if (currentHistorique[i].effectue_par && userIds.indexOf(currentHistorique[i].effectue_par) === -1) {
@@ -428,10 +431,11 @@
       }
       var profilsMap = {};
       if (userIds.length > 0) {
-        var profResult = await db.from('tech_profils').select('user_id, nom_complet').in('user_id', userIds);
+        var profResult = await db.from('profiles').select('id, nom, prenom').in('id', userIds);
         if (profResult.data) {
           for (var j = 0; j < profResult.data.length; j++) {
-            profilsMap[profResult.data[j].user_id] = profResult.data[j].nom_complet;
+            var p = profResult.data[j];
+            profilsMap[p.id] = ((p.prenom || '') + ' ' + (p.nom || '')).trim();
           }
         }
       }
@@ -460,14 +464,12 @@
           '<div style="display:flex;gap:6px;flex-wrap:wrap">' + badgeStatut(d.statut) + urgenceBadge + '</div>' +
         '</div>';
 
-      // Infos client
       html += '<div class="info-grid">';
       if (d.client_telephone) html += '<div class="info-cell"><div class="label">T\u00e9l\u00e9phone</div><div class="value"><a href="tel:' + escapeHtml(d.client_telephone) + '">' + escapeHtml(d.client_telephone) + '</a></div></div>';
       if (d.client_courriel) html += '<div class="info-cell"><div class="label">Courriel</div><div class="value"><a href="mailto:' + escapeHtml(d.client_courriel) + '">' + escapeHtml(d.client_courriel) + '</a></div></div>';
       if (d.adresse_batiment) html += '<div class="info-cell"><div class="label">Adresse du b\u00e2timent</div><div class="value">' + escapeHtml(d.adresse_batiment) + '</div></div>';
-      if (d.urgence || d.source) {
-        var srcTxt = d.source ? d.source : '';
-        html += '<div class="info-cell"><div class="label">Source du client</div><div class="value">' + escapeHtml(srcTxt || '\u2014') + '</div></div>';
+      if (d.source) {
+        html += '<div class="info-cell"><div class="label">Source du client</div><div class="value">' + escapeHtml(d.source) + '</div></div>';
       }
       if (d.contact_moyen || d.contact_moment) {
         var pref = [];
@@ -477,7 +479,6 @@
       }
       html += '</div>';
 
-      // Infos spécifiques Logica
       if (d.compagnie === 'logica') {
         var logicaRows = '';
         if (d.type_batiment) logicaRows += '<div class="info-cell"><div class="label">Type de b\u00e2timent</div><div class="value">' + escapeHtml(d.type_batiment) + '</div></div>';
@@ -487,7 +488,6 @@
         if (logicaRows) html += '<div class="info-grid">' + logicaRows + '</div>';
       }
 
-      // Infos spécifiques Fonds de prévoyance
       if (d.type_service === 'fonds_prevoyance') {
         var fpRows = '';
         if (d.syndicat_nom) fpRows += '<div class="info-cell"><div class="label">Syndicat</div><div class="value">' + escapeHtml(d.syndicat_nom) + '</div></div>';
@@ -499,12 +499,10 @@
         if (fpRows) html += '<div class="info-grid">' + fpRows + '</div>';
       }
 
-      // Description
       if (d.description) {
         html += '<div class="section"><h2>Notes et contexte</h2><div class="desc-block">' + escapeHtml(d.description) + '</div></div>';
       }
 
-      // Actions (seulement si assignée à moi et pas terminée)
       if (peutAgir) {
         html += '<div class="section">' +
           '<h2>Logger une action</h2>' +
@@ -533,7 +531,6 @@
         html += '<div class="locked-badge">Cette demande est assign\u00e9e \u00e0 un autre technicien.</div>';
       }
 
-      // Historique
       html += '<div class="section"><h2>Historique</h2><div id="historique-list">';
       if (currentHistorique.length === 0) {
         html += '<p style="color:#6e6e73;font-size:13px">Aucune action pour le moment.</p>';
@@ -595,13 +592,11 @@
         else if (selectedActionValue === 'acceptee') nouveauStatut = 'acceptee';
         else if (selectedActionValue === 'perdue') nouveauStatut = 'perdue';
 
-        // Si acceptée → créer le mandat d'abord
         var mandatId = null;
         if (selectedActionValue === 'acceptee') {
           mandatId = await creerMandat();
         }
 
-        // Mettre à jour la demande
         var update = { statut: nouveauStatut };
         if (mandatId) update.mandat_id = mandatId;
         if (selectedActionValue === 'perdue' && note) update.raison_perte = note;
@@ -609,7 +604,6 @@
         var updateResult = await db.from('demandes').update(update).eq('id', demandeId);
         if (updateResult.error) throw new Error(updateResult.error.message);
 
-        // Ajouter à l'historique
         var histDetails = {};
         if (note) histDetails.note = note;
         if (mandatId) histDetails.mandat_id = mandatId;
@@ -620,7 +614,6 @@
           details: histDetails
         });
 
-        // Si acceptée, redirection vers le board
         if (selectedActionValue === 'acceptee') {
           showSuccess(mandatId);
           return;
@@ -640,7 +633,6 @@
       var d = currentDemande;
       var typeMandat = TYPE_MANDAT_MAP[d.type_service] || d.type_service;
 
-      // Concaténer les notes pour le champ notes du mandat
       var notesMandat = [];
       if (d.description) notesMandat.push(d.description);
       notesMandat.push('--- Cr\u00e9\u00e9 automatiquement depuis la demande ' + d.numero + ' ---');
@@ -674,7 +666,7 @@
           '<h2>Demande accept\u00e9e</h2>' +
           '<p>Le mandat a \u00e9t\u00e9 cr\u00e9\u00e9 automatiquement dans votre portail.</p>' +
           '<p>Vous pourrez compl\u00e9ter les d\u00e9tails (date, prix, etc.) directement dans le dashboard.</p>' +
-          '<a href="board.html" class="btn-primary" style="display:inline-block;width:auto;text-decoration:none">Retour au board</a>' +
+          '<a href="board.html" class="btn-primary" style="display:inline-block;width:auto;text-decoration:none;padding:10px 24px">Retour au board</a>' +
         '</div>';
     }
 
@@ -694,7 +686,7 @@
           demande_id: demandeId,
           action: 'remise_au_board',
           effectue_par: currentUser.id,
-          details: { tech_nom: currentProfil.nom_complet }
+          details: { tech_nom: getNomComplet(currentProfil) }
         });
 
         window.location.href = 'board.html';
@@ -704,11 +696,10 @@
     };
 
     window.ouvrirModalTransfert = async function() {
-      // Charger les techs de la même compagnie (excluant moi)
-      var result = await db.from('tech_profils')
-        .select('user_id, nom_complet, courriel, compagnies')
-        .eq('actif', true)
-        .neq('user_id', currentUser.id);
+      var result = await db.from('profiles')
+        .select('id, nom, prenom, email, compagnies')
+        .eq('actif_demandes', true)
+        .neq('id', currentUser.id);
 
       if (result.error) {
         alert('Erreur : ' + result.error.message);
@@ -730,7 +721,9 @@
 
       var optionsHtml = '';
       for (var j = 0; j < techsCompatibles.length; j++) {
-        optionsHtml += '<option value="' + techsCompatibles[j].user_id + '" data-email="' + escapeHtml(techsCompatibles[j].courriel || '') + '" data-nom="' + escapeHtml(techsCompatibles[j].nom_complet) + '">' + escapeHtml(techsCompatibles[j].nom_complet) + '</option>';
+        var t = techsCompatibles[j];
+        var nomComplet = ((t.prenom || '') + ' ' + (t.nom || '')).trim();
+        optionsHtml += '<option value="' + t.id + '" data-email="' + escapeHtml(t.email || '') + '" data-nom="' + escapeHtml(nomComplet) + '">' + escapeHtml(nomComplet) + '</option>';
       }
 
       var modalHtml = 
@@ -776,13 +769,12 @@
           action: 'transferee',
           effectue_par: currentUser.id,
           details: {
-            de: currentProfil.nom_complet,
+            de: getNomComplet(currentProfil),
             vers: nouveauTechNom,
             note: note
           }
         });
 
-        // Notification par Gmail (si le tech a un token Gmail actif)
         try {
           await envoyerNotifTransfert(nouveauTechEmail, nouveauTechNom);
         } catch (e) {
@@ -797,7 +789,6 @@
     };
 
     async function envoyerNotifTransfert(email, nomDestinataire) {
-      // Utilise le token Gmail si disponible (pattern de GEQ Suivi)
       var token = localStorage.getItem('geq_gmail_token');
       var expiry = localStorage.getItem('geq_gmail_expiry');
       if (!token || !expiry || parseInt(expiry) < Date.now()) {
@@ -809,7 +800,7 @@
       var sujet = 'Demande ' + currentDemande.numero + ' transf\u00e9r\u00e9e \u00e0 toi';
       var corps = 
         'Bonjour ' + nomDestinataire + ',\n\n' +
-        currentProfil.nom_complet + ' t\'a transf\u00e9r\u00e9 la demande ' + currentDemande.numero + '.\n\n' +
+        getNomComplet(currentProfil) + ' t\'a transf\u00e9r\u00e9 la demande ' + currentDemande.numero + '.\n\n' +
         'Client : ' + currentDemande.client_nom + '\n' +
         'Adresse : ' + (currentDemande.adresse_batiment || 'Non sp\u00e9cifi\u00e9e') + '\n' +
         'T\u00e9l\u00e9phone : ' + (currentDemande.client_telephone || 'Non sp\u00e9cifi\u00e9') + '\n' +
