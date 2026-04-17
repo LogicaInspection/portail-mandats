@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saisie de demandes - Groupe Expert</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .header {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .header-info .label {
+      font-size: 13px;
+      color: #6e6e73;
+      margin-bottom: 4px;
+    }
+    .header-info .name {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid #d2d2d7;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #1d1d1f;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-logout:hover {
+      background: #f5f5f7;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: #6e6e73;
+      margin-bottom: 2rem;
+    }
+    .choices {
+      display: grid;
+      gap: 1rem;
+    }
+    .choice-btn {
+      background: white;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .choice-btn:hover {
+      border-color: #0071e3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .choice-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .choice-icon.logica { background: #e6f1fb; color: #185fa5; }
+    .choice-icon.geq { background: #e1f5ee; color: #0f6e56; }
+    .choice-icon.fonds { background: #eeedfe; color: #534ab7; }
+    .choice-text .title {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .choice-text .desc {
+      font-size: 13px;
+      color: #6e6e73;
+    }
+    .loading, .error {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6e6e73;
+    }
+    .error {
+      color: #c62828;
+    }
+    .access-denied {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .access-denied h2 {
+      color: #856404;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+    .access-denied p {
+      color: #856404;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <div class="loading">Chargement...</div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function init() {
+      const app = document.getElementById('app');
+
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const { data: profil, error } = await supabase
+        .from('tech_profils')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error || !profil) {
+        app.innerHTML = '<div class="error">Erreur : profil introuvable. Contacter Sébastien.</div>';
+        return;
+      }
+
+      if (profil.role !== 'assistante' && profil.role !== 'gestionnaire') {
+        app.innerHTML = '<div class="access-denied"><h2>Accès non autorisé</h2><p>Cette page est r\u00e9serv\u00e9e aux assistantes et gestionnaires. Retour au tableau de bord.</p></div>';
+        setTimeout(() => window.location.href = 'dashboard.html', 3000);
+        return;
+      }
+
+      app.innerHTML = `
+        <div class="header">
+          <div class="header-info">
+            <div class="label">Connect\u00e9e comme</div>
+            <div class="name">${escapeHtml(profil.nom_complet)}</div>
+          </div>
+          <button class="btn-logout" onclick="logout()">Se d\u00e9connecter</button>
+        </div>
+
+        <h1>Nouvelle demande</h1>
+        <p class="subtitle">Choisis le type de demande que le client souhaite</p>
+
+        <div class="choices">
+          <button class="choice-btn" onclick="goTo('logica')">
+            <div class="choice-icon logica">L</div>
+            <div class="choice-text">
+              <div class="title">Inspection pr\u00e9-achat (Logica)</div>
+              <div class="desc">Pour un client qui veut faire inspecter un b\u00e2timent avant achat</div>
+            </div>
+          </button>
+
+          <button class="choice-btn" onclick="goTo('geq')">
+            <div class="choice-icon geq">G</div>
+            <div class="choice-text">
+              <div class="title">Expertise b\u00e2timent (GEQ)</div>
+              <div class="desc">Moisissure, infiltration d'eau, amiante, m\u00e9rule, humidit\u00e9, qualit\u00e9 de l'air</div>
+            </div>
+          </button>
+
+          <button class="choice-btn" onclick="goTo('fonds')">
+            <div class="choice-icon fonds">F</div>
+            <div class="choice-text">
+              <div class="title">\u00c9tude de fonds de pr\u00e9voyance (GEQ)</div>
+              <div class="desc">Pour un syndicat de copropri\u00e9t\u00e9</div>
+            </div>
+          </button>
+        </div>
+      `;
+    }
+
+    function goTo(type) {
+      window.location.href = 'nouvelle-demande.html?type=' + type;
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    window.logout = logout;
+    window.goTo = goTo;
+
+    init();
+  </script>
+</body>
+</html>
