@@ -66,27 +66,64 @@
     h1 { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
     .subtitle { font-size: 14px; color: #6e6e73; margin-bottom: 2rem; }
 
-    /* SECTIONS */
-    .section { margin-bottom: 2.5rem; }
-    .section-head {
+    /* ZONES ENCADREES */
+    .zone {
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 2px solid;
+    }
+    .zone.demande {
+      background: #F8FBFE;
+      border-color: #B5D4F4;
+    }
+    .zone.mandat {
+      background: #F9FCF4;
+      border-color: #C0DD97;
+    }
+    .zone-head {
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1.5px dashed;
     }
-    .section-icon {
-      width: 48px;
-      height: 48px;
+    .zone.demande .zone-head { border-color: #B5D4F4; }
+    .zone.mandat .zone-head { border-color: #C0DD97; }
+    .zone-icon {
+      width: 52px;
+      height: 52px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-    .section-icon.demande { background: #E6F1FB; }
-    .section-icon.mandat { background: #EAF3DE; }
-    .section-title { font-size: 18px; font-weight: 600; color: #1a1a2e; line-height: 1.3; }
-    .section-desc { font-size: 13px; color: #6e6e73; margin-top: 2px; }
+    .zone-icon.demande { background: #E6F1FB; }
+    .zone-icon.mandat { background: #EAF3DE; }
+    .zone-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #1a1a2e;
+      line-height: 1.3;
+    }
+    .zone-desc {
+      font-size: 13px;
+      color: #6e6e73;
+      margin-top: 3px;
+    }
+    .zone-tag {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .zone.demande .zone-tag { background: #E6F1FB; color: #185FA5; }
+    .zone.mandat .zone-tag { background: #EAF3DE; color: #3B6D11; }
 
     /* DEMANDE CARDS */
     .demandes-list { display: grid; gap: 10px; }
@@ -123,10 +160,16 @@
       font-weight: 600;
       letter-spacing: 0.5px;
       font-size: 13px;
+      overflow: hidden;
     }
     .demande-badge.logica { background: #E1F5EE; color: #0F6E56; }
     .demande-badge.geq { background: #FCEBEB; color: #b71c1c; }
     .demande-badge.fonds { background: #EEEDFE; color: #534AB7; font-size: 12px; }
+    .demande-badge img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
     .demande-content { flex: 1; min-width: 0; }
     .demande-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; color: #1a1a2e; }
     .demande-desc { font-size: 12px; color: #6e6e73; }
@@ -161,19 +204,23 @@
       box-shadow: 0 4px 12px rgba(183, 28, 28, 0.25);
     }
     .mandat-badge {
-      width: 60px;
-      height: 60px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 10px;
+      width: 72px;
+      height: 72px;
+      background: white;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      font-size: 13px;
+      margin-bottom: 14px;
+      padding: 6px;
+      overflow: hidden;
     }
-    .mandat-title { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+    .mandat-badge img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .mandat-title { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
     .mandat-subtitle { font-size: 12px; opacity: 0.9; }
     .mandat-arrow { position: absolute; top: 16px; right: 18px; font-size: 20px; }
 
@@ -357,23 +404,33 @@
     .tarif-section-head {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 10px;
     }
-    .tarif-section-badge {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
+    .tarif-section-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 600;
-      font-size: 10px;
-      letter-spacing: 0.3px;
+      padding: 4px;
+      overflow: hidden;
+      background: white;
+      border: 1px solid #e5e5e7;
     }
-    .tarif-section-badge.logica { background: #E1F5EE; color: #0F6E56; }
-    .tarif-section-badge.geqqc { background: #FCEBEB; color: #b71c1c; }
-    .tarif-section-badge.geqestrie { background: #FAEEDA; color: #854F0B; }
+    .tarif-section-logo img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .tarif-section-logo.fonds {
+      background: #EEEDFE;
+      color: #534AB7;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
     .tarif-section-title { font-size: 15px; font-weight: 600; }
     .tarif-section-sub { font-size: 12px; color: #6e6e73; margin-top: 2px; }
 
@@ -451,17 +508,18 @@
         <strong>\u00c0 compl\u00e9ter</strong> &mdash; Les tarifs seront remplis ici quand tu les auras pr\u00eats.
       </div>
 
-      <!-- TABS -->
       <div class="tarif-tabs">
-        <button class="tarif-tab active" onclick="switchTarifTab('logica')"><span class="chip logica"></span>Logica</button>
-        <button class="tarif-tab" onclick="switchTarifTab('geqqc')"><span class="chip geqqc"></span>GEQ Qu\u00e9bec</button>
-        <button class="tarif-tab" onclick="switchTarifTab('geqestrie')"><span class="chip geqestrie"></span>GEQ Estrie</button>
+        <button class="tarif-tab active" onclick="switchTarifTab(event, 'logica')"><span class="chip logica"></span>Logica</button>
+        <button class="tarif-tab" onclick="switchTarifTab(event, 'geqqc')"><span class="chip geqqc"></span>GEQ Qu\u00e9bec</button>
+        <button class="tarif-tab" onclick="switchTarifTab(event, 'geqestrie')"><span class="chip geqestrie"></span>GEQ Estrie</button>
       </div>
 
       <!-- PANEL LOGICA -->
       <div class="tarif-panel active" id="panel-logica">
         <div class="tarif-section-head">
-          <div class="tarif-section-badge logica">LOGICA</div>
+          <div class="tarif-section-logo">
+            <img src="https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/LOGICA_Verti_Coul.jpg" alt="Logica">
+          </div>
           <div>
             <div class="tarif-section-title">Inspection pr\u00e9-achat</div>
             <div class="tarif-section-sub">Toutes r\u00e9gions</div>
@@ -479,7 +537,9 @@
       <!-- PANEL GEQ QUEBEC -->
       <div class="tarif-panel" id="panel-geqqc">
         <div class="tarif-section-head">
-          <div class="tarif-section-badge geqqc">GEQ</div>
+          <div class="tarif-section-logo">
+            <img src="https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg" alt="GEQ">
+          </div>
           <div>
             <div class="tarif-section-title">Expertise b\u00e2timent &mdash; Qu\u00e9bec</div>
             <div class="tarif-section-sub">Jacob, Pierre-Olivier, Charles</div>
@@ -495,7 +555,7 @@
         </div>
 
         <div class="tarif-section-head">
-          <div class="tarif-section-badge" style="background:#EEEDFE;color:#534AB7;">FONDS</div>
+          <div class="tarif-section-logo fonds">FONDS</div>
           <div>
             <div class="tarif-section-title">Fonds de pr\u00e9voyance</div>
             <div class="tarif-section-sub">Syndicat de copropri\u00e9t\u00e9</div>
@@ -512,7 +572,9 @@
       <!-- PANEL GEQ ESTRIE -->
       <div class="tarif-panel" id="panel-geqestrie">
         <div class="tarif-section-head">
-          <div class="tarif-section-badge geqestrie">GEQ</div>
+          <div class="tarif-section-logo">
+            <img src="https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg" alt="GEQ">
+          </div>
           <div>
             <div class="tarif-section-title">Expertise b\u00e2timent &mdash; Estrie / Sherbrooke</div>
             <div class="tarif-section-sub">Alain Audet</div>
@@ -538,6 +600,8 @@
   <script>
     var SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+    var LOGO_LOGICA = 'https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/LOGICA_Verti_Coul.jpg';
+    var LOGO_GEQ = 'https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg';
 
     var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -591,8 +655,8 @@
       
       var recentes = await chargerRecentes();
 
-      var phoneIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
-      var calendarIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 14 11 16 15 12"/></svg>';
+      var phoneIcon = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+      var calendarIcon = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 14 11 16 15 12"/></svg>';
       var clockIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
 
       app.innerHTML = 
@@ -611,17 +675,18 @@
         '<h1>Nouvelle saisie</h1>' +
         '<p class="subtitle">Choisis le type selon la situation du client</p>' +
 
-        '<div class="section">' +
-          '<div class="section-head">' +
-            '<div class="section-icon demande">' + phoneIcon + '</div>' +
+        '<div class="zone demande">' +
+          '<div class="zone-head">' +
+            '<div class="zone-icon demande">' + phoneIcon + '</div>' +
             '<div>' +
-              '<div class="section-title">Client \u00e0 rappeler</div>' +
-              '<div class="section-desc">Le client veut qu\'on le recontacte pour une soumission</div>' +
+              '<div class="zone-title">Client \u00e0 rappeler</div>' +
+              '<div class="zone-desc">Le client veut qu\'on le recontacte pour une soumission</div>' +
             '</div>' +
+            '<div class="zone-tag">Demande</div>' +
           '</div>' +
           '<div class="demandes-list">' +
             '<button class="demande-card logica" onclick="goToDemande(\'logica\')">' +
-              '<div class="demande-badge logica">LOGICA</div>' +
+              '<div class="demande-badge logica"><img src="' + LOGO_LOGICA + '" alt="Logica"></div>' +
               '<div class="demande-content">' +
                 '<div class="demande-title">Demande Logica</div>' +
                 '<div class="demande-desc">Inspection pr\u00e9-achat \u00b7 va au pool des techs</div>' +
@@ -629,7 +694,7 @@
               '<div class="demande-arrow">\u2192</div>' +
             '</button>' +
             '<button class="demande-card geq" onclick="goToDemande(\'geq\')">' +
-              '<div class="demande-badge geq">GEQ</div>' +
+              '<div class="demande-badge geq"><img src="' + LOGO_GEQ + '" alt="GEQ"></div>' +
               '<div class="demande-content">' +
                 '<div class="demande-title">Demande GEQ</div>' +
                 '<div class="demande-desc">Expertise \u00b7 moisissure, infiltration, amiante, air</div>' +
@@ -647,23 +712,24 @@
           '</div>' +
         '</div>' +
 
-        '<div class="section">' +
-          '<div class="section-head">' +
-            '<div class="section-icon mandat">' + calendarIcon + '</div>' +
+        '<div class="zone mandat">' +
+          '<div class="zone-head">' +
+            '<div class="zone-icon mandat">' + calendarIcon + '</div>' +
             '<div>' +
-              '<div class="section-title">Client d\u00e9j\u00e0 book\u00e9</div>' +
-              '<div class="section-desc">La job est confirm\u00e9e au t\u00e9l\u00e9phone, cr\u00e9er le mandat maintenant</div>' +
+              '<div class="zone-title">Client d\u00e9j\u00e0 book\u00e9</div>' +
+              '<div class="zone-desc">La job est confirm\u00e9e au t\u00e9l\u00e9phone, cr\u00e9er le mandat maintenant</div>' +
             '</div>' +
+            '<div class="zone-tag">Mandat direct</div>' +
           '</div>' +
           '<div class="mandats-grid">' +
             '<button class="mandat-card logica" onclick="goToMandat(\'logica\')">' +
-              '<div class="mandat-badge">LOGICA</div>' +
+              '<div class="mandat-badge"><img src="' + LOGO_LOGICA + '" alt="Logica"></div>' +
               '<div class="mandat-title">Mandat Logica</div>' +
               '<div class="mandat-subtitle">Inspection confirm\u00e9e</div>' +
               '<div class="mandat-arrow">\u2192</div>' +
             '</button>' +
             '<button class="mandat-card geq" onclick="goToMandat(\'geq\')">' +
-              '<div class="mandat-badge">GEQ</div>' +
+              '<div class="mandat-badge"><img src="' + LOGO_GEQ + '" alt="GEQ"></div>' +
               '<div class="mandat-title">Mandat GEQ</div>' +
               '<div class="mandat-subtitle">Expertise confirm\u00e9e</div>' +
               '<div class="mandat-arrow">\u2192</div>' +
@@ -786,12 +852,12 @@
       document.getElementById('modal-tarifs').classList.remove('visible');
     }
 
-    function switchTarifTab(tab) {
+    function switchTarifTab(evt, tab) {
       var tabs = document.querySelectorAll('.tarif-tab');
       var panels = document.querySelectorAll('.tarif-panel');
       for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
       for (var j = 0; j < panels.length; j++) panels[j].classList.remove('active');
-      event.target.closest('.tarif-tab').classList.add('active');
+      evt.currentTarget.classList.add('active');
       document.getElementById('panel-' + tab).classList.add('active');
     }
 
