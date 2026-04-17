@@ -202,6 +202,10 @@ input[type=file]{display:none;}
   .fg.s2,.fg.s3{grid-column:span 1;}
   .extra-row{grid-template-columns:28px 1fr 90px;}
 }
+  /* Cacher commissions pour l'assistante */
+  body.role-secretaire .extras-list > div > div:nth-child(4) { display: none !important; }
+  body.role-secretaire .extras-list > div > div:nth-child(5) { display: none !important; }
+  body.role-secretaire #profit-row { display: none !important; }
 </style>
 </head>
 <body>
