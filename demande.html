@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Détail demande - Groupe Expert</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      min-height: 100vh;
+      padding: 1.5rem 1rem;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .back-link {
+      color: #6e6e73;
+      font-size: 13px;
+      text-decoration: none;
+      margin-bottom: 1rem;
+      display: inline-block;
+    }
+    .back-link:hover { color: #1d1d1f; }
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+    .meta-info { font-size: 12px; color: #6e6e73; }
+    .badge {
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-weight: 500;
+      display: inline-block;
+    }
+    .badge-urgente { background: #fcebeb; color: #a32d2d; }
+    .badge-prioritaire { background: #faeeda; color: #854f0b; }
+    .badge-normale { background: #f1efe8; color: #5f5e5a; }
+    .badge-assignee { background: #f1efe8; color: #5f5e5a; }
+    .badge-contacte { background: #e1f5ee; color: #0f6e56; }
+    .badge-message { background: #faeeda; color: #854f0b; }
+    .badge-soumission { background: #eeedfe; color: #3c3489; }
+    .badge-acceptee { background: #eaf3de; color: #3b6d11; }
+    .badge-perdue { background: #fcebeb; color: #a32d2d; }
+    .badge-nouvelle { background: #e6f1fb; color: #185fa5; }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 600px) {
+      .info-grid { grid-template-columns: 1fr; }
+    }
+    .info-cell {
+      background: white;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #e5e5e7;
+    }
+    .info-cell .label { font-size: 11px; color: #6e6e73; margin-bottom: 4px; }
+    .info-cell .value { font-size: 14px; font-weight: 500; word-break: break-word; }
+    .info-cell .value a { color: #0071e3; text-decoration: none; }
+    .section {
+      background: white;
+      border: 1px solid #e5e5e7;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .section h2 { font-size: 16px; font-weight: 600; margin-bottom: 1rem; }
+    .section .desc-block {
+      font-size: 13px;
+      color: #3a3a3c;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .btn-action {
+      background: white;
+      border: 1px solid #d2d2d7;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-action:hover { background: #f5f5f7; border-color: #0071e3; }
+    .btn-action.selected {
+      border: 2px solid #0071e3;
+      background: #e6f1fb;
+      color: #185fa5;
+      font-weight: 500;
+    }
+    .btn-action.danger:hover { background: #fcebeb; border-color: #c62828; color: #a32d2d; }
+    .btn-action.success:hover { background: #eaf3de; border-color: #3b6d11; color: #3b6d11; }
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d2d2d7;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 70px;
+      outline: none;
+    }
+    textarea:focus { border-color: #0071e3; }
+    .btn-primary {
+      background: #0071e3;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      width: 100%;
+    }
+    .btn-primary:hover { background: #0058b0; }
+    .btn-primary:disabled { background: #8dbfea; cursor: not-allowed; }
+    .special-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (max-width: 500px) {
+      .special-actions { grid-template-columns: 1fr; }
+    }
+    .history-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .dot-creee { background: #d2d2d7; }
+    .dot-prise, .dot-transferee, .dot-liberee { background: #378add; }
+    .dot-appel, .dot-contacte { background: #5dcaa5; }
+    .dot-message { background: #efa027; }
+    .dot-soumission { background: #7f77dd; }
+    .dot-acceptee { background: #97c459; }
+    .dot-perdue { background: #e24b4a; }
+    .history-content .action-title {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    .history-content .action-meta {
+      font-size: 12px;
+      color: #6e6e73;
+      margin-bottom: 4px;
+    }
+    .history-content .action-note {
+      font-size: 12px;
+      color: #3a3a3c;
+      margin-top: 4px;
+      padding: 6px 10px;
+      background: #f9f9fa;
+      border-radius: 6px;
+      border-left: 2px solid #d2d2d7;
+    }
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 420px;
+      width: 100%;
+    }
+    .modal h3 { font-size: 17px; margin-bottom: 12px; }
+    .modal select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d2d2d7;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      margin-bottom: 12px;
+    }
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-cancel {
+      background: white;
+      border: 1px solid #d2d2d7;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-cancel:hover { background: #f5f5f7; }
+    .success-box {
+      background: #eaf3de;
+      border: 1px solid #97c459;
+      padding: 2rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .success-box h2 { color: #27500a; margin-bottom: 8px; font-size: 22px; }
+    .success-box p { color: #27500a; font-size: 14px; margin-bottom: 1.5rem; }
+    .error-box {
+      background: #fcebeb;
+      border: 1px solid #f09595;
+      padding: 1rem;
+      border-radius: 8px;
+      color: #a32d2d;
+      font-size: 13px;
+      margin: 1rem 0;
+    }
+    .loading { text-align: center; padding: 3rem; color: #6e6e73; }
+    .locked-badge {
+      background: #f1efe8;
+      color: #5f5e5a;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <div class="loading">Chargement de la demande...</div>
+    </div>
+  </div>
+
+  <script>
+    var SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+
+    var db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    var currentUser = null;
+    var currentProfil = null;
+    var currentDemande = null;
+    var currentHistorique = [];
+    var demandeId = null;
+
+    // Mapping type_service → type_mandat (pour création auto)
+    var TYPE_MANDAT_MAP = {
+      inspection_preachat: 'Inspection pr\u00e9achat',
+      air_fongique: 'Test de qualit\u00e9 de l\'air fongique',
+      infiltration_eau: 'Expertise technique : Infiltration d\'eau',
+      moisissure: 'Expertise technique : Moisissure',
+      humidite: 'Expertise technique : Probl\u00e8me d\'humidit\u00e9',
+      amiante: 'Analyse de mat\u00e9riaux pouvant contenir de l\'amiante',
+      merule: 'Analyse PCR ou Biotape pour pr\u00e9sence de m\u00e9rule pleureuse'
+    };
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      var div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
+    function getUrlParam(name) {
+      var match = window.location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+      return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    function timeSince(isoDate) {
+      var diff = Math.floor((Date.now() - new Date(isoDate).getTime()) / 1000);
+      if (diff < 60) return 'il y a quelques secondes';
+      var mins = Math.floor(diff / 60);
+      if (mins < 60) return 'il y a ' + mins + ' min';
+      var hours = Math.floor(mins / 60);
+      if (hours < 24) return 'il y a ' + hours + 'h';
+      var days = Math.floor(hours / 24);
+      if (days === 1) return 'hier';
+      return 'il y a ' + days + 'j';
+    }
+
+    function formatDateTime(isoDate) {
+      var d = new Date(isoDate);
+      var jours = ['dim','lun','mar','mer','jeu','ven','sam'];
+      var mois = ['jan','f\u00e9v','mars','avr','mai','juin','juil','ao\u00fbt','sep','oct','nov','d\u00e9c'];
+      var h = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
+      var m = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes();
+      return jours[d.getDay()] + ' ' + d.getDate() + ' ' + mois[d.getMonth()] + ' \u00e0 ' + h + 'h' + m;
+    }
+
+    function texteTypeService(ts) {
+      var map = {
+        inspection_preachat: 'Inspection pr\u00e9-achat',
+        air_fongique: 'Qualit\u00e9 air fongique',
+        infiltration_eau: 'Infiltration d\'eau',
+        moisissure: 'Moisissure',
+        humidite: 'Humidit\u00e9 \u00e9lev\u00e9e',
+        amiante: '\u00c9chantillonnage amiante',
+        merule: 'M\u00e9rule pleureuse',
+        fonds_prevoyance: 'Fonds de pr\u00e9voyance'
+      };
+      return map[ts] || ts;
+    }
+
+    function texteAction(action) {
+      var map = {
+        creee: 'Demande cr\u00e9\u00e9e',
+        prise: 'Demande prise en charge',
+        remise_au_board: 'Remise au board',
+        transferee: 'Transf\u00e9r\u00e9e \u00e0 un coll\u00e8gue',
+        liberee_par_senior: 'Lib\u00e9r\u00e9e par le senior',
+        libere_automatique: 'Lib\u00e9ration automatique',
+        appel_fait: 'Client contact\u00e9 par t\u00e9l\u00e9phone',
+        message_laisse: 'Message laiss\u00e9',
+        soumission_envoyee: 'Soumission envoy\u00e9e',
+        acceptee: 'Demande accept\u00e9e - mandat cr\u00e9\u00e9',
+        perdue: 'Demande perdue',
+        statut_change: 'Statut modifi\u00e9',
+        note_ajoutee: 'Note ajout\u00e9e'
+      };
+      return map[action] || action;
+    }
+
+    function classDot(action) {
+      if (action === 'creee') return 'dot-creee';
+      if (action === 'prise' || action === 'transferee' || action === 'liberee_par_senior' || action === 'libere_automatique' || action === 'remise_au_board') return 'dot-prise';
+      if (action === 'appel_fait') return 'dot-appel';
+      if (action === 'message_laisse') return 'dot-message';
+      if (action === 'soumission_envoyee') return 'dot-soumission';
+      if (action === 'acceptee') return 'dot-acceptee';
+      if (action === 'perdue') return 'dot-perdue';
+      return 'dot-creee';
+    }
+
+    function badgeStatut(statut) {
+      var map = {
+        nouvelle: { cls: 'badge-nouvelle', txt: 'Nouvelle' },
+        assignee: { cls: 'badge-assignee', txt: 'Assign\u00e9e' },
+        client_contacte: { cls: 'badge-contacte', txt: 'Client contact\u00e9' },
+        message_laisse: { cls: 'badge-message', txt: 'Message laiss\u00e9' },
+        soumission_envoyee: { cls: 'badge-soumission', txt: 'Soumission envoy\u00e9e' },
+        acceptee: { cls: 'badge-acceptee', txt: 'Accept\u00e9e' },
+        perdue: { cls: 'badge-perdue', txt: 'Perdue' }
+      };
+      var m = map[statut] || { cls: 'badge-normale', txt: statut };
+      return '<span class="badge ' + m.cls + '">' + m.txt + '</span>';
+    }
+
+    async function init() {
+      var app = document.getElementById('app');
+      demandeId = getUrlParam('id');
+
+      if (!demandeId) {
+        app.innerHTML = '<div class="error-box">ID de demande manquant. <a href="board.html">Retour au board</a></div>';
+        return;
+      }
+
+      try {
+        var sessionResult = await db.auth.getSession();
+        if (!sessionResult.data.session) {
+          app.innerHTML = '<div class="error-box">Non connect\u00e9. <a href="index.html">Se connecter</a></div>';
+          return;
+        }
+        currentUser = sessionResult.data.session.user;
+
+        var profilResult = await db.from('tech_profils').select('*').eq('user_id', currentUser.id).single();
+        if (profilResult.error) {
+          app.innerHTML = '<div class="error-box">Profil introuvable</div>';
+          return;
+        }
+        currentProfil = profilResult.data;
+
+        await loadDemande();
+      } catch (err) {
+        app.innerHTML = '<div class="error-box">Erreur: ' + escapeHtml(err.message) + '</div>';
+        console.error(err);
+      }
+    }
+
+    async function loadDemande() {
+      var result = await db.from('demandes').select('*').eq('id', demandeId).single();
+      if (result.error || !result.data) {
+        document.getElementById('app').innerHTML = '<div class="error-box">Demande introuvable. <a href="board.html">Retour au board</a></div>';
+        return;
+      }
+      currentDemande = result.data;
+
+      var histoResult = await db.from('demandes_historique')
+        .select('*')
+        .eq('demande_id', demandeId)
+        .order('effectue_le', { ascending: false });
+      currentHistorique = histoResult.data || [];
+
+      // Récupérer les noms des profils pour l'historique
+      var userIds = [];
+      for (var i = 0; i < currentHistorique.length; i++) {
+        if (currentHistorique[i].effectue_par && userIds.indexOf(currentHistorique[i].effectue_par) === -1) {
+          userIds.push(currentHistorique[i].effectue_par);
+        }
+      }
+      var profilsMap = {};
+      if (userIds.length > 0) {
+        var profResult = await db.from('tech_profils').select('user_id, nom_complet').in('user_id', userIds);
+        if (profResult.data) {
+          for (var j = 0; j < profResult.data.length; j++) {
+            profilsMap[profResult.data[j].user_id] = profResult.data[j].nom_complet;
+          }
+        }
+      }
+      for (var k = 0; k < currentHistorique.length; k++) {
+        currentHistorique[k].nom_effectue_par = profilsMap[currentHistorique[k].effectue_par] || 'Inconnu';
+      }
+
+      render();
+    }
+
+    function render() {
+      var d = currentDemande;
+      var estAssigneeAMoi = d.tech_assigne_id === currentUser.id;
+      var peutAgir = estAssigneeAMoi && ['assignee','client_contacte','message_laisse','soumission_envoyee'].indexOf(d.statut) !== -1;
+      var estTermineCl = ['acceptee','perdue'].indexOf(d.statut) !== -1;
+
+      var urgenceBadge = '<span class="badge badge-' + d.urgence + '">' + d.urgence.charAt(0).toUpperCase() + d.urgence.slice(1) + '</span>';
+
+      var html = 
+        '<a href="board.html" class="back-link">&larr; Retour au board</a>' +
+        '<div class="title-row">' +
+          '<div>' +
+            '<div class="meta-info">' + escapeHtml(d.numero) + ' \u00b7 ' + (d.compagnie === 'logica' ? 'Logica' : 'GEQ') + ' \u00b7 ' + texteTypeService(d.type_service) + '</div>' +
+            '<h1>' + escapeHtml(d.client_nom) + '</h1>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' + badgeStatut(d.statut) + urgenceBadge + '</div>' +
+        '</div>';
+
+      // Infos client
+      html += '<div class="info-grid">';
+      if (d.client_telephone) html += '<div class="info-cell"><div class="label">T\u00e9l\u00e9phone</div><div class="value"><a href="tel:' + escapeHtml(d.client_telephone) + '">' + escapeHtml(d.client_telephone) + '</a></div></div>';
+      if (d.client_courriel) html += '<div class="info-cell"><div class="label">Courriel</div><div class="value"><a href="mailto:' + escapeHtml(d.client_courriel) + '">' + escapeHtml(d.client_courriel) + '</a></div></div>';
+      if (d.adresse_batiment) html += '<div class="info-cell"><div class="label">Adresse du b\u00e2timent</div><div class="value">' + escapeHtml(d.adresse_batiment) + '</div></div>';
+      if (d.urgence || d.source) {
+        var srcTxt = d.source ? d.source : '';
+        html += '<div class="info-cell"><div class="label">Source du client</div><div class="value">' + escapeHtml(srcTxt || '\u2014') + '</div></div>';
+      }
+      if (d.contact_moyen || d.contact_moment) {
+        var pref = [];
+        if (d.contact_moyen) pref.push(d.contact_moyen);
+        if (d.contact_moment) pref.push(d.contact_moment);
+        html += '<div class="info-cell"><div class="label">Pr\u00e9f\u00e9rences contact</div><div class="value">' + escapeHtml(pref.join(' \u00b7 ')) + '</div></div>';
+      }
+      html += '</div>';
+
+      // Infos spécifiques Logica
+      if (d.compagnie === 'logica') {
+        var logicaRows = '';
+        if (d.type_batiment) logicaRows += '<div class="info-cell"><div class="label">Type de b\u00e2timent</div><div class="value">' + escapeHtml(d.type_batiment) + '</div></div>';
+        if (d.annee_construction) logicaRows += '<div class="info-cell"><div class="label">Ann\u00e9e de construction</div><div class="value">' + d.annee_construction + '</div></div>';
+        if (d.date_limite_inspection) logicaRows += '<div class="info-cell"><div class="label">Date limite inspection</div><div class="value">' + d.date_limite_inspection + '</div></div>';
+        if (d.courtier_nom) logicaRows += '<div class="info-cell"><div class="label">Courtier</div><div class="value">' + escapeHtml(d.courtier_nom) + (d.courtier_telephone ? ' \u00b7 ' + escapeHtml(d.courtier_telephone) : '') + '</div></div>';
+        if (logicaRows) html += '<div class="info-grid">' + logicaRows + '</div>';
+      }
+
+      // Infos spécifiques Fonds de prévoyance
+      if (d.type_service === 'fonds_prevoyance') {
+        var fpRows = '';
+        if (d.syndicat_nom) fpRows += '<div class="info-cell"><div class="label">Syndicat</div><div class="value">' + escapeHtml(d.syndicat_nom) + '</div></div>';
+        if (d.syndicat_type) fpRows += '<div class="info-cell"><div class="label">Type syndicat</div><div class="value">' + escapeHtml(d.syndicat_type) + '</div></div>';
+        if (d.nombre_unites) fpRows += '<div class="info-cell"><div class="label">Nombre d\'unit\u00e9s</div><div class="value">' + d.nombre_unites + '</div></div>';
+        if (d.nombre_batiments) fpRows += '<div class="info-cell"><div class="label">Nombre de b\u00e2timents</div><div class="value">' + d.nombre_batiments + '</div></div>';
+        if (d.annee_construction) fpRows += '<div class="info-cell"><div class="label">Ann\u00e9e construction</div><div class="value">' + d.annee_construction + '</div></div>';
+        if (d.urgence_notaire) fpRows += '<div class="info-cell"><div class="label">Urgence vente/notaire</div><div class="value" style="color:#a32d2d">OUI</div></div>';
+        if (fpRows) html += '<div class="info-grid">' + fpRows + '</div>';
+      }
+
+      // Description
+      if (d.description) {
+        html += '<div class="section"><h2>Notes et contexte</h2><div class="desc-block">' + escapeHtml(d.description) + '</div></div>';
+      }
+
+      // Actions (seulement si assignée à moi et pas terminée)
+      if (peutAgir) {
+        html += '<div class="section">' +
+          '<h2>Logger une action</h2>' +
+          '<div class="action-grid">' +
+            '<button class="btn-action" onclick="selectAction(\'appel_fait\')">\ud83d\udcde Appel fait</button>' +
+            '<button class="btn-action" onclick="selectAction(\'message_laisse\')">\ud83d\udcac Message laiss\u00e9</button>' +
+            '<button class="btn-action" onclick="selectAction(\'soumission_envoyee\')">\ud83d\udcc4 Soumission envoy\u00e9e</button>' +
+            '<button class="btn-action success" onclick="selectAction(\'acceptee\')">\u2705 Accept\u00e9e (cr\u00e9e mandat)</button>' +
+            '<button class="btn-action danger" onclick="selectAction(\'perdue\')">\u274c Perdue</button>' +
+          '</div>' +
+          '<textarea id="action-note" placeholder="Note optionnelle (ex: rappeler demain matin, demande un prix, etc.)"></textarea>' +
+          '<div id="action-error"></div>' +
+          '<button class="btn-primary" id="btn-submit-action" onclick="submitAction()" disabled>S\u00e9lectionne une action ci-dessus</button>' +
+        '</div>';
+
+        html += '<div class="section">' +
+          '<h2>Actions sp\u00e9ciales</h2>' +
+          '<div class="special-actions">' +
+            '<button class="btn-action" onclick="remettreAuBoard()">\u21a9\ufe0f Remettre au board</button>' +
+            '<button class="btn-action" onclick="ouvrirModalTransfert()">\ud83d\udc65 Transf\u00e9rer \u00e0 un coll\u00e8gue</button>' +
+          '</div>' +
+        '</div>';
+      } else if (estTermineCl) {
+        html += '<div class="locked-badge">Cette demande est termin\u00e9e. Aucune action disponible.</div>';
+      } else if (!estAssigneeAMoi && d.tech_assigne_id) {
+        html += '<div class="locked-badge">Cette demande est assign\u00e9e \u00e0 un autre technicien.</div>';
+      }
+
+      // Historique
+      html += '<div class="section"><h2>Historique</h2><div id="historique-list">';
+      if (currentHistorique.length === 0) {
+        html += '<p style="color:#6e6e73;font-size:13px">Aucune action pour le moment.</p>';
+      } else {
+        for (var i = 0; i < currentHistorique.length; i++) {
+          var h = currentHistorique[i];
+          var noteHtml = '';
+          if (h.details && h.details.note) {
+            noteHtml = '<div class="action-note">' + escapeHtml(h.details.note) + '</div>';
+          }
+          html += '<div class="history-item">' +
+            '<div class="history-dot ' + classDot(h.action) + '"></div>' +
+            '<div class="history-content">' +
+              '<div class="action-title">' + texteAction(h.action) + '</div>' +
+              '<div class="action-meta">' + escapeHtml(h.nom_effectue_par) + ' \u00b7 ' + formatDateTime(h.effectue_le) + ' (' + timeSince(h.effectue_le) + ')</div>' +
+              noteHtml +
+            '</div>' +
+          '</div>';
+        }
+      }
+      html += '</div></div>';
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    var selectedActionValue = null;
+
+    window.selectAction = function(action) {
+      selectedActionValue = action;
+      var buttons = document.querySelectorAll('.btn-action');
+      for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('selected');
+      event.target.classList.add('selected');
+      var btn = document.getElementById('btn-submit-action');
+      btn.disabled = false;
+      var labels = {
+        appel_fait: 'Confirmer : client contact\u00e9',
+        message_laisse: 'Confirmer : message laiss\u00e9',
+        soumission_envoyee: 'Confirmer : soumission envoy\u00e9e',
+        acceptee: 'Confirmer : accept\u00e9e et cr\u00e9er le mandat',
+        perdue: 'Confirmer : demande perdue'
+      };
+      btn.textContent = labels[action];
+    };
+
+    window.submitAction = async function() {
+      if (!selectedActionValue) return;
+      var note = document.getElementById('action-note').value.trim();
+      var btn = document.getElementById('btn-submit-action');
+      btn.disabled = true;
+      btn.textContent = 'En cours...';
+      var errorEl = document.getElementById('action-error');
+      errorEl.innerHTML = '';
+
+      try {
+        var nouveauStatut = null;
+        if (selectedActionValue === 'appel_fait') nouveauStatut = 'client_contacte';
+        else if (selectedActionValue === 'message_laisse') nouveauStatut = 'message_laisse';
+        else if (selectedActionValue === 'soumission_envoyee') nouveauStatut = 'soumission_envoyee';
+        else if (selectedActionValue === 'acceptee') nouveauStatut = 'acceptee';
+        else if (selectedActionValue === 'perdue') nouveauStatut = 'perdue';
+
+        // Si acceptée → créer le mandat d'abord
+        var mandatId = null;
+        if (selectedActionValue === 'acceptee') {
+          mandatId = await creerMandat();
+        }
+
+        // Mettre à jour la demande
+        var update = { statut: nouveauStatut };
+        if (mandatId) update.mandat_id = mandatId;
+        if (selectedActionValue === 'perdue' && note) update.raison_perte = note;
+
+        var updateResult = await db.from('demandes').update(update).eq('id', demandeId);
+        if (updateResult.error) throw new Error(updateResult.error.message);
+
+        // Ajouter à l'historique
+        var histDetails = {};
+        if (note) histDetails.note = note;
+        if (mandatId) histDetails.mandat_id = mandatId;
+        await db.from('demandes_historique').insert({
+          demande_id: demandeId,
+          action: selectedActionValue,
+          effectue_par: currentUser.id,
+          details: histDetails
+        });
+
+        // Si acceptée, redirection vers le board
+        if (selectedActionValue === 'acceptee') {
+          showSuccess(mandatId);
+          return;
+        }
+
+        await loadDemande();
+        selectedActionValue = null;
+
+      } catch (err) {
+        errorEl.innerHTML = '<div class="error-box">' + escapeHtml(err.message) + '</div>';
+        btn.disabled = false;
+        console.error(err);
+      }
+    };
+
+    async function creerMandat() {
+      var d = currentDemande;
+      var typeMandat = TYPE_MANDAT_MAP[d.type_service] || d.type_service;
+
+      // Concaténer les notes pour le champ notes du mandat
+      var notesMandat = [];
+      if (d.description) notesMandat.push(d.description);
+      notesMandat.push('--- Cr\u00e9\u00e9 automatiquement depuis la demande ' + d.numero + ' ---');
+      if (d.source) notesMandat.push('Source : ' + d.source);
+      if (d.contact_moyen) notesMandat.push('Contact pr\u00e9f\u00e9r\u00e9 : ' + d.contact_moyen);
+      if (d.contact_moment) notesMandat.push('Meilleur moment : ' + d.contact_moment);
+      if (d.date_limite_inspection) notesMandat.push('Date limite inspection : ' + d.date_limite_inspection);
+
+      var mandat = {
+        compagnie: d.compagnie,
+        type_mandat: typeMandat,
+        technicien_id: currentUser.id,
+        created_by: currentUser.id,
+        client_nom: d.client_nom,
+        client_telephone: d.client_telephone || null,
+        client_email: d.client_courriel || null,
+        adresse: d.adresse_batiment || null,
+        type_batiment: d.type_batiment || null,
+        courtier_nom: d.courtier_nom || null,
+        notes: notesMandat.join('\n\n')
+      };
+
+      var result = await db.from('mandats').insert(mandat).select().single();
+      if (result.error) throw new Error('Erreur cr\u00e9ation mandat : ' + result.error.message);
+      return result.data.id;
+    }
+
+    function showSuccess(mandatId) {
+      document.getElementById('app').innerHTML = 
+        '<div class="success-box">' +
+          '<h2>Demande accept\u00e9e</h2>' +
+          '<p>Le mandat a \u00e9t\u00e9 cr\u00e9\u00e9 automatiquement dans votre portail.</p>' +
+          '<p>Vous pourrez compl\u00e9ter les d\u00e9tails (date, prix, etc.) directement dans le dashboard.</p>' +
+          '<a href="board.html" class="btn-primary" style="display:inline-block;width:auto;text-decoration:none">Retour au board</a>' +
+        '</div>';
+    }
+
+    window.remettreAuBoard = async function() {
+      if (!confirm('Remettre cette demande au board pour qu\'un autre tech puisse la prendre ?')) return;
+      try {
+        var update = {
+          tech_assigne_id: null,
+          statut: 'nouvelle',
+          assigne_le: null,
+          libere_par_senior: true
+        };
+        var result = await db.from('demandes').update(update).eq('id', demandeId);
+        if (result.error) throw new Error(result.error.message);
+
+        await db.from('demandes_historique').insert({
+          demande_id: demandeId,
+          action: 'remise_au_board',
+          effectue_par: currentUser.id,
+          details: { tech_nom: currentProfil.nom_complet }
+        });
+
+        window.location.href = 'board.html';
+      } catch (err) {
+        alert('Erreur : ' + err.message);
+      }
+    };
+
+    window.ouvrirModalTransfert = async function() {
+      // Charger les techs de la même compagnie (excluant moi)
+      var result = await db.from('tech_profils')
+        .select('user_id, nom_complet, courriel, compagnies')
+        .eq('actif', true)
+        .neq('user_id', currentUser.id);
+
+      if (result.error) {
+        alert('Erreur : ' + result.error.message);
+        return;
+      }
+
+      var techsCompatibles = [];
+      for (var i = 0; i < result.data.length; i++) {
+        var t = result.data[i];
+        if (t.compagnies && t.compagnies.indexOf(currentDemande.compagnie) !== -1) {
+          techsCompatibles.push(t);
+        }
+      }
+
+      if (techsCompatibles.length === 0) {
+        alert('Aucun coll\u00e8gue disponible pour transfert.');
+        return;
+      }
+
+      var optionsHtml = '';
+      for (var j = 0; j < techsCompatibles.length; j++) {
+        optionsHtml += '<option value="' + techsCompatibles[j].user_id + '" data-email="' + escapeHtml(techsCompatibles[j].courriel || '') + '" data-nom="' + escapeHtml(techsCompatibles[j].nom_complet) + '">' + escapeHtml(techsCompatibles[j].nom_complet) + '</option>';
+      }
+
+      var modalHtml = 
+        '<div class="modal-backdrop" id="modal-transfert">' +
+          '<div class="modal">' +
+            '<h3>Transf\u00e9rer \u00e0 un coll\u00e8gue</h3>' +
+            '<label style="font-size:12px;color:#6e6e73;display:block;margin-bottom:6px">Choisir le technicien</label>' +
+            '<select id="transfert-tech">' + optionsHtml + '</select>' +
+            '<textarea id="transfert-note" placeholder="Raison du transfert (optionnel)" style="margin-bottom:12px"></textarea>' +
+            '<div class="modal-actions">' +
+              '<button class="btn-cancel" onclick="fermerModal()">Annuler</button>' +
+              '<button class="btn-primary" onclick="confirmerTransfert()">Transf\u00e9rer</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    };
+
+    window.fermerModal = function() {
+      var modal = document.getElementById('modal-transfert');
+      if (modal) modal.remove();
+    };
+
+    window.confirmerTransfert = async function() {
+      var select = document.getElementById('transfert-tech');
+      var nouveauTechId = select.value;
+      var nouveauTechNom = select.options[select.selectedIndex].getAttribute('data-nom');
+      var nouveauTechEmail = select.options[select.selectedIndex].getAttribute('data-email');
+      var note = document.getElementById('transfert-note').value.trim();
+
+      try {
+        var update = {
+          tech_assigne_id: nouveauTechId,
+          statut: 'assignee',
+          assigne_le: new Date().toISOString()
+        };
+        var result = await db.from('demandes').update(update).eq('id', demandeId);
+        if (result.error) throw new Error(result.error.message);
+
+        await db.from('demandes_historique').insert({
+          demande_id: demandeId,
+          action: 'transferee',
+          effectue_par: currentUser.id,
+          details: {
+            de: currentProfil.nom_complet,
+            vers: nouveauTechNom,
+            note: note
+          }
+        });
+
+        // Notification par Gmail (si le tech a un token Gmail actif)
+        try {
+          await envoyerNotifTransfert(nouveauTechEmail, nouveauTechNom);
+        } catch (e) {
+          console.warn('Notification email non envoy\u00e9e:', e);
+        }
+
+        fermerModal();
+        window.location.href = 'board.html';
+      } catch (err) {
+        alert('Erreur : ' + err.message);
+      }
+    };
+
+    async function envoyerNotifTransfert(email, nomDestinataire) {
+      // Utilise le token Gmail si disponible (pattern de GEQ Suivi)
+      var token = localStorage.getItem('geq_gmail_token');
+      var expiry = localStorage.getItem('geq_gmail_expiry');
+      if (!token || !expiry || parseInt(expiry) < Date.now()) {
+        console.log('Pas de token Gmail valide - notification email ignor\u00e9e');
+        return;
+      }
+      if (!email) return;
+
+      var sujet = 'Demande ' + currentDemande.numero + ' transf\u00e9r\u00e9e \u00e0 toi';
+      var corps = 
+        'Bonjour ' + nomDestinataire + ',\n\n' +
+        currentProfil.nom_complet + ' t\'a transf\u00e9r\u00e9 la demande ' + currentDemande.numero + '.\n\n' +
+        'Client : ' + currentDemande.client_nom + '\n' +
+        'Adresse : ' + (currentDemande.adresse_batiment || 'Non sp\u00e9cifi\u00e9e') + '\n' +
+        'T\u00e9l\u00e9phone : ' + (currentDemande.client_telephone || 'Non sp\u00e9cifi\u00e9') + '\n' +
+        'Type de service : ' + texteTypeService(currentDemande.type_service) + '\n\n' +
+        'Consulte la demande sur le portail : https://portail-mandats.vercel.app/demande.html?id=' + currentDemande.id + '\n\n' +
+        '---\n' +
+        'Notification automatique du Portail Mandats';
+
+      var mimeMessage = 
+        'To: ' + email + '\r\n' +
+        'Subject: =?utf-8?B?' + btoa(unescape(encodeURIComponent(sujet))) + '?=\r\n' +
+        'MIME-Version: 1.0\r\n' +
+        'Content-Type: text/plain; charset=UTF-8\r\n' +
+        'Content-Transfer-Encoding: 8bit\r\n\r\n' +
+        corps;
+
+      var encoded = btoa(unescape(encodeURIComponent(mimeMessage))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+      await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ raw: encoded })
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
