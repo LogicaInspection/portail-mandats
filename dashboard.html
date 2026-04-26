@@ -8,7 +8,6 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
 
-/* ============= MODE TEST (Voir comme...) ============= */
 body.test-mode { background: #fff8eb; }
 body.test-mode .main { border: 3px solid #f59e0b; border-top: none; padding-top: 18px; }
 body.test-mode::before {
@@ -71,7 +70,6 @@ body.test-mode::before {
 .role-technicien   { background: #e3f0ff; color: #1565c0; }
 .role-secretaire   { background: #f3e8ff; color: #6b21a8; }
 .role-autre        { background: #f3f4f6; color: #6b7280; }
-/* ============================================ */
 
 .header {
   background: white; border-bottom: 1px solid #e5e7eb;
@@ -157,9 +155,13 @@ select.filter:focus { border-color: #1a1a2e; }
 }
 .t-row:last-child { border-bottom: none; }
 .t-row:hover { background: #f8f9fa; }
+.t-row.row-assigne { background: #fff8e1; }
+.t-row.row-assigne:hover { background: #fff3c4; }
+.t-row.row-pool { background: #e3f0ff; }
+.t-row.row-pool:hover { background: #d0e4fa; }
 
-.cols-gest { grid-template-columns: 92px 1fr 180px 150px 130px 130px 110px; gap: 12px; }
-.cols-tech { grid-template-columns: 92px 1fr 180px 150px 130px 130px; gap: 12px; }
+.cols-gest { grid-template-columns: 92px 1fr 180px 130px 130px 130px 110px; gap: 12px; }
+.cols-tech { grid-template-columns: 92px 1fr 180px 130px 130px 130px; gap: 12px; }
 
 .badge {
   display: inline-block; padding: 3px 10px;
@@ -167,6 +169,20 @@ select.filter:focus { border-color: #1a1a2e; }
 }
 .badge-logica { background: #e3f0ff; color: #1565c0; }
 .badge-geq    { background: #fdecea; color: #b71c1c; }
+
+.assign-badge {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.assign-non_assigne { background: #f3f4f6; color: #6b7280; }
+.assign-assigne    { background: #ff9800; color: white; }
+.assign-reclame    { background: #e8f5e9; color: #2e7d32; }
+.assign-pool       { background: #1565c0; color: white; }
+
+.timer-text {
+  font-size: 11px; color: #e65100; margin-top: 4px; font-weight: 600;
+}
+.timer-text.expired { color: #c62828; }
 
 .statuts { display: flex; gap: 8px; }
 .s-dot { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #999; }
@@ -303,6 +319,13 @@ select.filter:focus { border-color: #1a1a2e; }
       <option value="rapport_pending">Rapport &agrave; envoyer</option>
       <option value="confirmation_pending">Confirmation &agrave; envoyer</option>
     </select>
+    <select class="filter" id="f-assign" onchange="filterMandats()">
+      <option value="">Toutes les assignations</option>
+      <option value="non_assigne">Non assign&eacute;</option>
+      <option value="assigne">Assign&eacute; (timer actif)</option>
+      <option value="reclame">R&eacute;clam&eacute;</option>
+      <option value="pool">Dans le pool</option>
+    </select>
     <select class="filter" id="f-tech" style="display:none" onchange="filterMandats()">
       <option value="">Tous les techniciens</option>
     </select>
@@ -349,6 +372,7 @@ let realProfile = null;
 let profile = null;
 let allMandats = [];
 let currentTab = 'tous';
+let timerInterval = null;
 
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
@@ -407,6 +431,9 @@ let currentTab = 'tous';
   }
 
   await loadMandats();
+
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimers, 60000);
 })();
 
 function enableTestMode(impersonatedProfile) {
@@ -550,6 +577,7 @@ function setTab(tab) {
 function filterMandats() {
   const s = document.getElementById('search').value.toLowerCase();
   const st = document.getElementById('f-statut').value;
+  const assign = document.getElementById('f-assign').value;
   const tech = document.getElementById('f-tech').value;
 
   let list = allMandats;
@@ -564,9 +592,49 @@ function filterMandats() {
   if (st === 'paye') list = list.filter(m => m.statut_paye);
   if (st === 'rapport_pending') list = list.filter(m => !m.statut_rapport_envoye);
   if (st === 'confirmation_pending') list = list.filter(m => !m.statut_confirmation_envoyee);
+  if (assign) list = list.filter(m => (m.statut_assignation || 'non_assigne') === assign);
   if (tech) list = list.filter(m => m.technicien_id === tech);
 
   renderTable(list);
+}
+
+function getAssignBadge(m) {
+  const s = m.statut_assignation || 'non_assigne';
+  const labels = {
+    'non_assigne': 'Non assign\u00e9',
+    'assigne': 'Assign\u00e9',
+    'reclame': 'R\u00e9clam\u00e9',
+    'pool': 'Pool ' + (m.region_mandat === 'estrie' ? 'Estrie' : 'Qu\u00e9bec')
+  };
+  return `<span class="assign-badge assign-${s}">${labels[s] || s}</span>`;
+}
+
+function getTimerHtml(m) {
+  if (m.statut_assignation !== 'assigne' || !m.assigne_le || !m.delai_reclamation_heures) return '';
+  return `<div class="timer-text" data-assigne-le="${m.assigne_le}" data-delai="${m.delai_reclamation_heures}">${formatTimer(m.assigne_le, m.delai_reclamation_heures)}</div>`;
+}
+
+function formatTimer(assigneLe, delaiHeures) {
+  const start = new Date(assigneLe).getTime();
+  const deadline = start + (delaiHeures * 3600 * 1000);
+  const now = Date.now();
+  const remaining = deadline - now;
+  if (remaining <= 0) return 'Bascule en pool imminente';
+  const h = Math.floor(remaining / 3600000);
+  const m = Math.floor((remaining % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}min restant`;
+  return `${m}min restant`;
+}
+
+function updateTimers() {
+  document.querySelectorAll('.timer-text').forEach(el => {
+    const assigneLe = el.dataset.assigneLe;
+    const delai = parseInt(el.dataset.delai || '6');
+    if (!assigneLe) return;
+    const txt = formatTimer(assigneLe, delai);
+    el.textContent = txt;
+    el.classList.toggle('expired', txt.includes('imminente'));
+  });
 }
 
 function renderTable(list) {
@@ -580,23 +648,23 @@ function renderTable(list) {
 
   let html = `<div class="t-header ${cols}">
     <div>Date</div><div>Client</div><div>Adresse</div>
-    <div>Type</div><div>Technicien</div><div>Statuts</div>
+    <div>Type</div><div>Technicien</div><div>Assignation</div>
     ${isGest ? '<div>Total TTC</div>' : ''}
   </div>`;
 
   list.forEach(m => {
     const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA') : '&mdash;';
     const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
-    const tech = m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : '&mdash;';
+    const tech = m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : (m.statut_assignation === 'pool' ? '<span style="color:#1565c0;font-style:italic">Pool</span>' : '<span style="color:#bbb">&mdash;</span>');
     const badge = m.compagnie === 'logica'
       ? '<span class="badge badge-logica">Logica</span>'
       : '<span class="badge badge-geq">GEQ</span>';
 
-    const dFact = m.statut_facture_envoyee ? 'dot-green' : 'dot-gray';
-    const dPaye = m.statut_paye ? 'dot-green' : 'dot-orange';
-    const dRapp = m.statut_rapport_envoye ? 'dot-green' : 'dot-gray';
+    const rowClass = m.statut_assignation === 'assigne' ? ' row-assigne'
+                   : m.statut_assignation === 'pool' ? ' row-pool'
+                   : '';
 
-    html += `<div class="t-row ${cols}" onclick="window.location.href='mandat.html?id=${m.id}'">
+    html += `<div class="t-row ${cols}${rowClass}" onclick="window.location.href='mandat.html?id=${m.id}'">
       <div>
         <div style="font-size:13px;font-weight:500;color:#333">${date}</div>
         ${heure ? `<div style="font-size:11px;color:#999">${heure}</div>` : ''}
@@ -611,10 +679,9 @@ function renderTable(list) {
         <div style="font-size:11px;color:#999;margin-top:4px">${m.type_mandat||''}</div>
       </div>
       <div style="font-size:13px;color:#555">${tech}</div>
-      <div class="statuts">
-        <div class="s-dot"><div class="dot ${dFact}"></div>Fact.</div>
-        <div class="s-dot"><div class="dot ${dPaye}"></div>Pay&eacute;</div>
-        <div class="s-dot"><div class="dot ${dRapp}"></div>Rapp.</div>
+      <div>
+        ${getAssignBadge(m)}
+        ${getTimerHtml(m)}
       </div>
       ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</div>` : ''}
     </div>`;
