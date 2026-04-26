@@ -8,6 +8,71 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
 
+/* ============= MODE TEST (Voir comme...) ============= */
+body.test-mode { background: #fff8eb; }
+body.test-mode .main { border: 3px solid #f59e0b; border-top: none; padding-top: 18px; }
+body.test-mode::before {
+  content: ''; position: fixed; inset: 0;
+  border: 3px solid #f59e0b; border-top: none; pointer-events: none; z-index: 9999;
+}
+.test-banner {
+  background: #fff3cd; border-bottom: 3px solid #f59e0b;
+  padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; color: #78350f; position: sticky; top: 0; z-index: 200;
+}
+.test-banner-left { display: flex; align-items: center; gap: 10px; }
+.test-banner .badge-test {
+  background: #f59e0b; color: white; font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px;
+}
+.test-banner .btn-exit-test {
+  padding: 6px 14px; background: white; border: 1px solid #f59e0b; color: #92400e;
+  border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+}
+.test-banner .btn-exit-test:hover { background: #f59e0b; color: white; }
+
+.btn-view-as {
+  padding: 7px 14px; background: #fff7e6; border: 1px solid #f59e0b;
+  border-radius: 8px; font-size: 13px; color: #92400e; cursor: pointer; transition: all 0.15s;
+}
+.btn-view-as:hover { background: #fde68a; }
+
+.modal-viewas {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center; z-index: 1500;
+}
+.modal-viewas-box {
+  background: white; border-radius: 16px; padding: 28px;
+  width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.modal-viewas-box h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 6px; }
+.modal-viewas-box p { font-size: 13px; color: #888; margin-bottom: 20px; }
+.profile-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 10px;
+  margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+}
+.profile-row:hover { background: #fff7e6; border-color: #f59e0b; }
+.profile-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #1a1a2e; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.profile-info { flex: 1; }
+.profile-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+.profile-meta { font-size: 12px; color: #888; margin-top: 2px; }
+.role-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+}
+.role-gestionnaire { background: #fdecea; color: #b71c1c; }
+.role-technicien   { background: #e3f0ff; color: #1565c0; }
+.role-secretaire   { background: #f3e8ff; color: #6b21a8; }
+.role-autre        { background: #f3f4f6; color: #6b7280; }
+/* ============================================ */
+
 .header {
   background: white; border-bottom: 1px solid #e5e7eb;
   padding: 0 32px; display: flex; align-items: center;
@@ -15,6 +80,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100
   position: sticky; top: 0; z-index: 100;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
+body.test-mode .header { top: 47px; }
 .header-left { display: flex; align-items: center; gap: 16px; }
 .header-left img { height: 36px; object-fit: contain; }
 .header-divider { width: 1px; height: 28px; background: #e5e7eb; }
@@ -150,6 +216,14 @@ select.filter:focus { border-color: #1a1a2e; }
 </head>
 <body>
 
+<div class="test-banner" id="test-banner" style="display:none">
+  <div class="test-banner-left">
+    <span class="badge-test">MODE TEST</span>
+    <span>Tu vois l'app comme <strong id="test-as-name">...</strong> <span id="test-as-role" style="color:#888;font-size:12px"></span></span>
+  </div>
+  <button class="btn-exit-test" onclick="exitTestMode()">Sortir du mode test</button>
+</div>
+
 <div class="header">
   <div class="header-left">
     <img src="https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg" alt="GEQ">
@@ -157,6 +231,7 @@ select.filter:focus { border-color: #1a1a2e; }
     <span class="header-title">Portail Mandats</span>
   </div>
   <div class="header-right">
+    <button class="btn-view-as" id="btn-view-as" style="display:none" onclick="openViewAsModal()">&#128373;&#65039; Voir comme...</button>
     <div class="user-info">
       <div class="user-avatar" id="user-avatar">?</div>
       <span id="user-name">...</span>
@@ -259,12 +334,18 @@ select.filter:focus { border-color: #1a1a2e; }
   </div>
 </div>
 
+<div id="modal-viewas-container"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+const BASS_UID = '72fed940-9f61-471d-ad81-378af125146e';
+const VIEW_AS_KEY = 'view_as_user_id';
+
+let realProfile = null;
 let profile = null;
 let allMandats = [];
 let currentTab = 'tous';
@@ -273,38 +354,129 @@ let currentTab = 'tous';
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = 'index.html'; return; }
 
-  const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-  if (!p) { window.location.href = 'index.html'; return; }
-  profile = p;
+  const { data: pReal } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+  if (!pReal) { window.location.href = 'index.html'; return; }
+  realProfile = pReal;
+
+  const viewAsId = localStorage.getItem(VIEW_AS_KEY);
+  if (viewAsId && session.user.id === BASS_UID && viewAsId !== BASS_UID) {
+    const { data: pImpersonated } = await sb.from('profiles').select('*').eq('id', viewAsId).single();
+    if (pImpersonated) {
+      profile = pImpersonated;
+      enableTestMode(pImpersonated);
+    } else {
+      localStorage.removeItem(VIEW_AS_KEY);
+      profile = realProfile;
+    }
+  } else {
+    profile = realProfile;
+  }
 
   const hasAccess =
     profile.role === 'gestionnaire' ||
     profile.role === 'secretaire' ||
     (profile.role === 'technicien' && profile.dashboard_access === true);
-  if (!hasAccess) { window.location.href = 'index.html'; return; }
 
-  const initiales = ((p.prenom||'')[0] + (p.nom||'')[0]).toUpperCase();
+  if (!hasAccess && !localStorage.getItem(VIEW_AS_KEY)) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  const initiales = ((profile.prenom||'')[0] + (profile.nom||'')[0]).toUpperCase();
   document.getElementById('user-avatar').textContent = initiales;
-  document.getElementById('user-name').textContent = `${p.prenom} ${p.nom}`;
+  document.getElementById('user-name').textContent = `${profile.prenom} ${profile.nom}`;
 
-  if (p.role === 'gestionnaire' || p.role === 'technicien') {
+  if (session.user.id === BASS_UID) {
+    document.getElementById('btn-view-as').style.display = 'inline-block';
+  }
+
+  if (profile.role === 'gestionnaire' || profile.role === 'technicien') {
     document.getElementById('tab-fdp').style.display = 'block';
   }
 
-  if (p.role === 'gestionnaire' || p.role === 'secretaire') {
+  if (profile.role === 'gestionnaire' || profile.role === 'secretaire') {
     document.getElementById('btn-new').style.display = 'flex';
   }
 
-  if (p.role === 'gestionnaire') {
+  if (profile.role === 'gestionnaire') {
     document.getElementById('stats-gest').style.display = 'grid';
     document.getElementById('f-tech').style.display = 'block';
     await loadTechs();
-  } else if (p.role === 'technicien') {
+  } else if (profile.role === 'technicien') {
     document.getElementById('stats-tech').style.display = 'grid';
   }
 
   await loadMandats();
 })();
+
+function enableTestMode(impersonatedProfile) {
+  document.body.classList.add('test-mode');
+  const banner = document.getElementById('test-banner');
+  banner.style.display = 'flex';
+  document.getElementById('test-as-name').textContent = `${impersonatedProfile.prenom} ${impersonatedProfile.nom}`;
+  document.getElementById('test-as-role').textContent = `(${impersonatedProfile.role})`;
+}
+
+function exitTestMode() {
+  localStorage.removeItem(VIEW_AS_KEY);
+  window.location.reload();
+}
+
+async function openViewAsModal() {
+  const { data: profiles } = await sb
+    .from('profiles')
+    .select('id, nom, prenom, email, role, dashboard_access')
+    .order('role')
+    .order('nom');
+
+  const list = (profiles || []).filter(p => p.id !== BASS_UID);
+
+  const roleClass = r => `role-${['gestionnaire','technicien','secretaire'].includes(r) ? r : 'autre'}`;
+  const roleLabel = r => ({
+    'gestionnaire': 'Gestionnaire',
+    'technicien': 'Technicien',
+    'secretaire': 'Secr\u00e9taire'
+  }[r] || r || 'Autre');
+
+  let rowsHtml = list.map(p => {
+    const init = ((p.prenom||'')[0] + (p.nom||'')[0]).toUpperCase();
+    const access = p.dashboard_access === false ? ' <span style="color:#dc2626;font-size:11px">(pas d\'acc\u00e8s dashboard)</span>' : '';
+    return `<div class="profile-row" onclick="selectViewAs('${p.id}')">
+      <div class="profile-avatar">${init || '?'}</div>
+      <div class="profile-info">
+        <div class="profile-name">${p.prenom||''} ${p.nom||''}</div>
+        <div class="profile-meta">
+          <span class="role-badge ${roleClass(p.role)}">${roleLabel(p.role)}</span>
+          ${p.email||''}${access}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (!rowsHtml) rowsHtml = '<div class="empty"><p>Aucun autre profil</p></div>';
+
+  const html = `<div class="modal-viewas" onclick="closeViewAsModal(event)">
+    <div class="modal-viewas-box" onclick="event.stopPropagation()">
+      <h2>&#128373;&#65039; Voir comme...</h2>
+      <p>Choisis un profil pour voir l'app comme cette personne. Tu pourras sortir du mode test \u00e0 tout moment.</p>
+      ${rowsHtml}
+      <button class="btn-cancel-modal" onclick="closeViewAsModal()">Annuler</button>
+    </div>
+  </div>`;
+
+  document.getElementById('modal-viewas-container').innerHTML = html;
+}
+
+function closeViewAsModal(e) {
+  if (!e || e.target.classList.contains('modal-viewas')) {
+    document.getElementById('modal-viewas-container').innerHTML = '';
+  }
+}
+
+function selectViewAs(userId) {
+  localStorage.setItem(VIEW_AS_KEY, userId);
+  window.location.reload();
+}
 
 async function loadTechs() {
   const { data } = await sb
@@ -333,7 +505,13 @@ async function loadMandats() {
     document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9888;&#65039;</div><p>Erreur de chargement</p></div>';
     return;
   }
-  allMandats = data || [];
+
+  let mandats = data || [];
+  if (profile.role === 'technicien') {
+    mandats = mandats.filter(m => m.technicien_id === profile.id);
+  }
+  allMandats = mandats;
+
   updateStats();
   filterMandats();
 }
@@ -458,6 +636,7 @@ function goToFDP() {
   window.location.href = 'https://geq-suivi-app.vercel.app/dashboard.html';
 }
 async function logout() {
+  localStorage.removeItem(VIEW_AS_KEY);
   await sb.auth.signOut();
   window.location.href = 'index.html';
 }
