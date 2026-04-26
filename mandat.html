@@ -1058,6 +1058,21 @@ async function saveMandat(){
   const techId=document.getElementById('f-tech').value||null;
   const {data:{session}}=await sb.auth.getSession();
 
+  // Calcul du statut d'assignation pour les nouveaux mandats
+  let statutAssign='non_assigne';
+  let assigneLe=null;
+  let reclameLe=null;
+  const nowIso=new Date().toISOString();
+  if(isNew){
+    if(techId && techId===session.user.id){
+      statutAssign='reclame';
+      reclameLe=nowIso;
+    } else if(techId){
+      statutAssign='assigne';
+      assigneLe=nowIso;
+    }
+  }
+
   const payload={
     compagnie:comp,type_mandat:typeMand,technicien_id:techId,
     date_mandat:document.getElementById('f-date').value||null,
@@ -1076,6 +1091,7 @@ async function saveMandat(){
     sous_total:st,tps:tps,tvq:tvq,total_ttc:ttc,
     commission_totale:commTot,profit:profit,
     notes:document.getElementById('f-notes').value||null,
+    ...(isNew?{statut_assignation:statutAssign,assigne_le:assigneLe,reclame_le:reclameLe}:{}),
   };
 
   if(isNew){
@@ -1087,6 +1103,27 @@ async function saveMandat(){
       await sb.from('mandat_extras').insert(exI);
     }
     isNew=false;
+
+    // Log dans mandats_historique
+    await sb.from('mandats_historique').insert({
+      mandat_id:data.id,action:'creation',
+      effectue_par:session.user.id,
+      details:{statut_initial:statutAssign,technicien_id:techId}
+    });
+    if(techId && techId===session.user.id){
+      await sb.from('mandats_historique').insert({
+        mandat_id:data.id,action:'reclamation',
+        effectue_par:session.user.id,technicien_concerne:techId,
+        details:{auto_creation:true}
+      });
+    } else if(techId){
+      await sb.from('mandats_historique').insert({
+        mandat_id:data.id,action:'assignation',
+        effectue_par:session.user.id,technicien_concerne:techId,
+        details:{delai_heures:6}
+      });
+    }
+
     toast('Mandat cree !');
     history.replaceState(null,'','?id='+data.id);
     document.getElementById('htitle').textContent=nom;
