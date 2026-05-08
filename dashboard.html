@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portail Mandats</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
@@ -133,8 +134,15 @@ select.filter {
   font-size: 14px; background: white; outline: none; color: #444; cursor: pointer;
 }
 select.filter:focus { border-color: #1a1a2e; }
-.btn-new {
+.btn-export {
   margin-left: auto; padding: 10px 22px;
+  background: #1d9e75; color: white; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 0.2s; display: none;
+}
+.btn-export:hover { background: #178a64; }
+.btn-new {
+  padding: 10px 22px;
   background: #1a1a2e; color: white; border: none;
   border-radius: 10px; font-size: 14px; font-weight: 500;
   cursor: pointer; transition: background 0.2s;
@@ -329,6 +337,7 @@ select.filter:focus { border-color: #1a1a2e; }
     <select class="filter" id="f-tech" style="display:none" onchange="filterMandats()">
       <option value="">Tous les techniciens</option>
     </select>
+    <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">&#128202; Exporter Excel</button>
     <button class="btn-new" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
       + Nouveau mandat
     </button>
@@ -428,6 +437,11 @@ let timerInterval = null;
     await loadTechs();
   } else if (profile.role === 'technicien') {
     document.getElementById('stats-tech').style.display = 'grid';
+  }
+
+  /* Show export button only for Bass (real gestionnaire, not impersonated) */
+  if (realProfile.role === 'gestionnaire' && session.user.id === BASS_UID) {
+    document.getElementById('btn-export-excel').style.display = 'inline-block';
   }
 
   await loadMandats();
@@ -574,7 +588,7 @@ function setTab(tab) {
   filterMandats();
 }
 
-function filterMandats() {
+function getFilteredMandats() {
   const s = document.getElementById('search').value.toLowerCase();
   const st = document.getElementById('f-statut').value;
   const assign = document.getElementById('f-assign').value;
@@ -595,7 +609,11 @@ function filterMandats() {
   if (assign) list = list.filter(m => (m.statut_assignation || 'non_assigne') === assign);
   if (tech) list = list.filter(m => m.technicien_id === tech);
 
-  renderTable(list);
+  return list;
+}
+
+function filterMandats() {
+  renderTable(getFilteredMandats());
 }
 
 function getAssignBadge(m) {
@@ -688,6 +706,92 @@ function renderTable(list) {
   });
 
   document.getElementById('table-wrap').innerHTML = html;
+}
+
+/* ===== EXCEL EXPORT ===== */
+function exportToExcel() {
+  const list = getFilteredMandats();
+
+  if (list.length === 0) {
+    alert('Aucun mandat \u00e0 exporter dans la s\u00e9lection actuelle.');
+    return;
+  }
+
+  const assignLabels = {
+    'non_assigne': 'Non assign\u00e9',
+    'assigne': 'Assign\u00e9',
+    'reclame': 'R\u00e9clam\u00e9',
+    'pool': 'Pool'
+  };
+
+  const rows = list.map(m => ({
+    'Date mandat': m.date_mandat || '',
+    'Heure': m.heure_mandat ? m.heure_mandat.substring(0,5) : '',
+    'Compagnie': m.compagnie === 'logica' ? 'Logica' : 'GEQ',
+    'Type mandat': m.type_mandat || '',
+    'Client': m.client_nom || '',
+    'T\u00e9l\u00e9phone': m.client_telephone || '',
+    'Courriel': m.client_email || '',
+    'Adresse': m.adresse || '',
+    'Type b\u00e2timent': m.type_batiment || '',
+    'Courtier': m.courtier_nom || '',
+    'R\u00e9f\u00e9rence client': m.reference_client || '',
+    'Lien listing': m.listing_url || '',
+    'Technicien': m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : '',
+    'Statut assignation': assignLabels[m.statut_assignation] || m.statut_assignation || '',
+    'R\u00e9gion': m.region_mandat || '',
+    'D\u00e9lai r\u00e9clamation (h)': m.delai_reclamation_heures || '',
+    'Assign\u00e9 le': m.assigne_le ? new Date(m.assigne_le).toLocaleString('fr-CA') : '',
+    'R\u00e9clam\u00e9 le': m.reclame_le ? new Date(m.reclame_le).toLocaleString('fr-CA') : '',
+    'Prix base ($)': parseFloat(m.prix_base) || 0,
+    'Transport ($)': parseFloat(m.transport_montant) || 0,
+    'Frais lab ($)': parseFloat(m.frais_lab) || 0,
+    'Sans lettre': m.sans_lettre ? 'Oui' : 'Non',
+    '\u00c9chantillons supp.': m.echantillons_supp || 0,
+    'Bonus non cart\u00e9': parseFloat(m.bonus_non_carte) || 0,
+    'Sous-total ($)': parseFloat(m.sous_total) || 0,
+    'TPS ($)': parseFloat(m.tps) || 0,
+    'TVQ ($)': parseFloat(m.tvq) || 0,
+    'Total TTC ($)': parseFloat(m.total_ttc) || 0,
+    'Commission tech ($)': parseFloat(m.commission_totale) || 0,
+    'Profit ($)': parseFloat(m.profit) || 0,
+    'Mode paiement': m.mode_paiement || '',
+    'Pay\u00e9 par': m.paye_par || '',
+    'Confirmation envoy\u00e9e': m.statut_confirmation_envoyee ? 'Oui' : 'Non',
+    'Facture envoy\u00e9e': m.statut_facture_envoyee ? 'Oui' : 'Non',
+    'Pay\u00e9': m.statut_paye ? 'Oui' : 'Non',
+    'Rapport envoy\u00e9': m.statut_rapport_envoye ? 'Oui' : 'Non',
+    'Final': m.statut_final ? 'Oui' : 'Non',
+    'Alerte commission': m.alerte_commission ? 'Oui' : 'Non',
+    'Notes': m.notes || ''
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  /* Auto-size columns */
+  const headers = Object.keys(rows[0]);
+  const colWidths = headers.map(h => {
+    let maxLen = h.length;
+    rows.forEach(r => {
+      const val = String(r[h] || '');
+      if (val.length > maxLen) maxLen = val.length;
+    });
+    return { wch: Math.min(maxLen + 2, 50) };
+  });
+  ws['!cols'] = colWidths;
+
+  const wb = XLSX.utils.book_new();
+  const sheetName = currentTab === 'tous' ? 'Tous les mandats' : (currentTab === 'logica' ? 'Logica' : 'GEQ');
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-'
+    + String(today.getMonth()+1).padStart(2,'0') + '-'
+    + String(today.getDate()).padStart(2,'0');
+  const tabSuffix = currentTab === 'tous' ? '' : '_' + currentTab;
+  const filename = `Mandats${tabSuffix}_${dateStr}.xlsx`;
+
+  XLSX.writeFile(wb, filename);
 }
 
 function showModalNouveauMandat() {
