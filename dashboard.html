@@ -632,16 +632,114 @@ function getTimerHtml(m) {
   return `<div class="timer-text" data-assigne-le="${m.assigne_le}" data-delai="${m.delai_reclamation_heures}">${formatTimer(m.assigne_le, m.delai_reclamation_heures)}</div>`;
 }
 
+/* ===== HEURES OUVRABLES (Quebec) =====
+   Heures de bureau: 8h-18h lundi-vendredi, hors feries quebecois.
+   Replique la logique des fonctions SQL is_quebec_holiday() et add_business_hours()
+   pour permettre un timer cote frontend qui gele hors heures ouvrables. */
+
+function isQuebecHoliday(date) {
+  const yr = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const dow = date.getDay();
+
+  /* Feries a date fixe */
+  if (month === 1 && day === 1) return true;     /* Jour de l'An */
+  if (month === 6 && day === 24) return true;    /* Saint-Jean-Baptiste */
+  if (month === 7 && day === 1) return true;     /* Fete du Canada */
+  if (month === 12 && (day === 24 || day === 25 || day === 26 || day === 31)) return true;
+
+  /* Paques (algorithme de Gauss) */
+  const a = yr % 19;
+  const b = Math.floor(yr / 100);
+  const c = yr % 100;
+  const dd = Math.floor(b / 4);
+  const ee = b % 4;
+  const ff = Math.floor((b + 8) / 25);
+  const gg = Math.floor((b - ff + 1) / 3);
+  const hg = (19 * a + b - dd - gg + 15) % 30;
+  const ii = Math.floor(c / 4);
+  const kk = c % 4;
+  const ll = (32 + 2 * ee + 2 * ii - hg - kk) % 7;
+  const mm = Math.floor((a + 11 * hg + 22 * ll) / 451);
+  const easterMonth = Math.floor((hg + ll - 7 * mm + 114) / 31);
+  const easterDay = ((hg + ll - 7 * mm + 114) % 31) + 1;
+  const easter = new Date(yr, easterMonth - 1, easterDay);
+
+  /* Vendredi saint = 2 jours avant Paques */
+  const goodFriday = new Date(easter);
+  goodFriday.setDate(easter.getDate() - 2);
+  if (month === goodFriday.getMonth() + 1 && day === goodFriday.getDate()) return true;
+
+  /* Lundi de Paques = 1 jour apres Paques */
+  const easterMonday = new Date(easter);
+  easterMonday.setDate(easter.getDate() + 1);
+  if (month === easterMonday.getMonth() + 1 && day === easterMonday.getDate()) return true;
+
+  /* Journee nationale des Patriotes (lundi precedant le 25 mai) */
+  if (month === 5 && dow === 1 && day >= 18 && day <= 24) return true;
+
+  /* Fete du Travail (1er lundi de septembre) */
+  if (month === 9 && dow === 1 && day <= 7) return true;
+
+  /* Action de graces (2e lundi d'octobre) */
+  if (month === 10 && dow === 1 && day >= 8 && day <= 14) return true;
+
+  return false;
+}
+
+function isBusinessDay(date) {
+  const dow = date.getDay();
+  if (dow === 0 || dow === 6) return false;
+  return !isQuebecHoliday(date);
+}
+
+/* Calcule le nombre d'heures ouvrables ecoulees entre start et end (Date objects).
+   Heures ouvrables = 8h-18h, lun-ven, hors feries. */
+function businessHoursElapsed(start, end) {
+  if (end <= start) return 0;
+
+  let elapsed = 0;
+  const cursor = new Date(start);
+
+  while (cursor < end) {
+    if (isBusinessDay(cursor)) {
+      const dayStart = new Date(cursor);
+      dayStart.setHours(8, 0, 0, 0);
+      const dayEnd = new Date(cursor);
+      dayEnd.setHours(18, 0, 0, 0);
+
+      const overlapStart = Math.max(cursor.getTime(), dayStart.getTime());
+      const overlapEnd = Math.min(end.getTime(), dayEnd.getTime());
+
+      if (overlapEnd > overlapStart) {
+        elapsed += (overlapEnd - overlapStart) / 3600000;
+      }
+    }
+
+    /* Avancer au debut du jour suivant */
+    cursor.setDate(cursor.getDate() + 1);
+    cursor.setHours(0, 0, 0, 0);
+  }
+
+  return elapsed;
+}
+
 function formatTimer(assigneLe, delaiHeures) {
-  const start = new Date(assigneLe).getTime();
-  const deadline = start + (delaiHeures * 3600 * 1000);
-  const now = Date.now();
-  const remaining = deadline - now;
+  const start = new Date(assigneLe);
+  const now = new Date();
+
+  const elapsed = businessHoursElapsed(start, now);
+  const remaining = delaiHeures - elapsed;
+
   if (remaining <= 0) return 'Bascule en pool imminente';
-  const h = Math.floor(remaining / 3600000);
-  const m = Math.floor((remaining % 3600000) / 60000);
-  if (h > 0) return `${h}h ${m}min restant`;
-  return `${m}min restant`;
+
+  const totalMinutes = Math.floor(remaining * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+
+  if (h > 0) return `Reste ${h}h ${m}min ouvrables`;
+  return `Reste ${m}min ouvrables`;
 }
 
 function updateTimers() {
