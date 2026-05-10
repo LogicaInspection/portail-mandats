@@ -266,6 +266,31 @@ input[type=file]{display:none;}
 .histo-action{font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:2px;}
 .histo-detail{font-size:12px;color:#666;line-height:1.4;}
 .histo-meta{font-size:11px;color:#999;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;}
+
+/* ===== Soumissions vs Mandats ===== */
+.badge-type-soum{display:inline-block;background:#fff3e0;color:#e65100;font-size:11px;font-weight:600;padding:3px 10px;border-radius:8px;margin-left:8px;letter-spacing:0.3px;}
+.badge-type-mand{display:inline-block;background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:600;padding:3px 10px;border-radius:8px;margin-left:8px;letter-spacing:0.3px;}
+.convert-sec{border-left:4px solid #e65100;background:linear-gradient(to right,#fff8f0,#fff);}
+.convert-sec .convert-title{font-size:15px;font-weight:600;color:#e65100;margin-bottom:6px;}
+.convert-sec .convert-sub{font-size:13px;color:#666;margin-bottom:14px;line-height:1.4;}
+.btn-convert{background:#e65100;color:white;border:none;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;}
+.btn-convert:hover{background:#bf360c;transform:translateY(-1px);box-shadow:0 4px 12px rgba(230,81,0,0.3);}
+.btn-revert{background:transparent;color:#666;border:1px solid #ddd;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;margin-left:8px;}
+.btn-revert:hover{background:#f5f5f5;color:#333;}
+
+/* Modal de choix initial */
+.modal-choice{max-width:520px;text-align:center;}
+.modal-choice h2{margin-bottom:8px;}
+.modal-choice .modal-sub{color:#666;font-size:14px;margin-bottom:24px;}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px;}
+.choice-btn{padding:24px 18px;border:2px solid #e5e7eb;border-radius:14px;background:white;cursor:pointer;transition:all 0.2s;text-align:center;}
+.choice-btn:hover{border-color:#1565c0;background:#f0f7ff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(21,101,192,0.15);}
+.choice-btn .choice-emoji{font-size:36px;margin-bottom:10px;}
+.choice-btn .choice-title{font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:4px;}
+.choice-btn .choice-desc{font-size:12px;color:#888;line-height:1.3;}
+.choice-soum:hover{border-color:#e65100;background:#fff8f0;}
+.choice-mand:hover{border-color:#2e7d32;background:#f1f8e9;}
+@media(max-width:600px){.choice-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -312,6 +337,12 @@ input[type=file]{display:none;}
       </div>
       <button class="btn-reclamer" onclick="reclamerMandat()">&#10003; R&eacute;clamer ce mandat</button>
     </div>
+  </div>
+
+  <div class="sec convert-sec" id="sec-convert" style="display:none">
+    <div class="convert-title">&#128221; Cette soumission est pr&ecirc;te &agrave; &ecirc;tre book&eacute;e?</div>
+    <div class="convert-sub">Convertis-la en mandat book&eacute; pour ajouter une date d'inspection et un technicien.</div>
+    <button class="btn-convert" onclick="ouvrirModalConversion()">&#128197; Convertir en mandat book&eacute;</button>
   </div>
 
   <div class="sec" id="sec-client">
@@ -370,7 +401,7 @@ input[type=file]{display:none;}
     </div>
   </div>
 
-  <div class="sec">
+  <div class="sec" id="sec-planification">
     <div class="sec-title"><span class="ic">&#128197;</span> Planification</div>
     <div class="grid2">
       <div class="fg"><label>Date</label><input id="f-date" type="date"></div>
@@ -502,7 +533,7 @@ input[type=file]{display:none;}
     </div>
   </div>
 
-  <div class="sec status-sec">
+  <div class="sec status-sec" id="sec-statuts">
     <div class="sec-title"><span class="ic">&#9989;</span> Statuts</div>
     <div class="statuts-grid">
       <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
@@ -587,6 +618,74 @@ input[type=file]{display:none;}
     <div class="mfooter">
       <button class="btn-cancel" onclick="closeEmailModal()">Annuler</button>
       <button class="btn-send" onclick="sendEmail()">&#128228; Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de choix initial: Soumission ou Mandat (pour nouveaux dossiers) -->
+<div class="ov" id="modal-type-dossier" style="display:none">
+  <div class="modal modal-choice">
+    <h2>Tu cr&eacute;es quoi?</h2>
+    <div class="modal-sub">Choisis le type de dossier pour bien organiser ton pipeline.</div>
+    <div class="choice-grid">
+      <div class="choice-btn choice-soum" onclick="choisirTypeDossier('soumission')">
+        <div class="choice-emoji">&#128221;</div>
+        <div class="choice-title">Soumission</div>
+        <div class="choice-desc">Devis sans RDV<br>(client n'a pas encore book&eacute;)</div>
+      </div>
+      <div class="choice-btn choice-mand" onclick="choisirTypeDossier('mandat')">
+        <div class="choice-emoji">&#128197;</div>
+        <div class="choice-title">Mandat book&eacute;</div>
+        <div class="choice-desc">Avec date d'inspection<br>et technicien assign&eacute;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de conversion: Soumission -> Mandat booke -->
+<div class="ov" id="modal-conversion" style="display:none">
+  <div class="modal" style="max-width:520px;">
+    <h2>&#128197; Convertir en mandat book&eacute;</h2>
+    <div style="color:#666;font-size:13px;margin-bottom:18px;">Renseigne la date d'inspection et l'assignation pour convertir cette soumission.</div>
+    <div class="grid2">
+      <div class="mfield"><label>Date d'inspection *</label><input id="conv-date" type="date"></div>
+      <div class="mfield"><label>Heure *</label><input id="conv-heure" type="time"></div>
+    </div>
+    <div style="margin-top:14px;">
+      <label style="display:block;margin-bottom:8px;font-size:13px;color:#666;font-weight:500;">Mode d'assignation</label>
+      <div class="assign-mode-group">
+        <button type="button" class="assign-mode-btn on" id="conv-mode-direct" onclick="setConvMode('direct')">
+          &#128100; Assigner &agrave; un tech
+        </button>
+        <button type="button" class="assign-mode-btn" id="conv-mode-pool" onclick="setConvMode('pool')">
+          &#127919; Pool ouvert
+        </button>
+      </div>
+    </div>
+    <div class="grid2" id="conv-block-direct" style="margin-top:14px;">
+      <div class="mfield"><label>Technicien</label>
+        <select id="conv-tech"><option value="">&#8212; Selectionner &#8212;</option></select>
+      </div>
+      <div class="mfield"><label>D&eacute;lai pour r&eacute;clamer</label>
+        <select id="conv-delai">
+          <option value="4">4h ouvrables</option>
+          <option value="6">6h ouvrables</option>
+          <option value="8" selected>8h ouvrables</option>
+          <option value="12">12h ouvrables</option>
+        </select>
+      </div>
+    </div>
+    <div id="conv-block-pool" style="display:none;margin-top:14px;">
+      <div class="mfield"><label>R&eacute;gion du pool</label>
+        <select id="conv-region">
+          <option value="quebec">Qu&eacute;bec</option>
+          <option value="estrie">Estrie</option>
+        </select>
+      </div>
+    </div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeModalConversion()">Annuler</button>
+      <button class="btn-send" onclick="confirmerConversion()">&#10003; Confirmer la conversion</button>
     </div>
   </div>
 </div>
@@ -729,6 +828,8 @@ async function confirmTestAction(actionLabel){
     if(profile.role==='technicien') document.getElementById('f-tech').value=profile.id;
     if(comp==='logica') extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
     onCompagnieChange();
+    /* Pour nouveau dossier: afficher la modal de choix (Soumission ou Mandat) */
+    document.getElementById('modal-type-dossier').style.display='flex';
   }
 
   const isGest=profile.role==='gestionnaire';
@@ -777,6 +878,10 @@ async function confirmTestAction(actionLabel){
   updateReclamerBtn();
   updateAssignInfo();
   loadHistorique();
+  /* Appliquer le type de dossier (cache/montre les sections) */
+  if(mandat){
+    applyDossierType(mandat.type_dossier||'mandat');
+  }
 })();
 
 function fillForm(){
@@ -1434,6 +1539,144 @@ function toggleHistorique(){
   arrow.classList.toggle('open',isOpen);
 }
 
+/* ===== SOUMISSIONS VS MANDATS BOOKES =====
+   currentDossierType : 'soumission' ou 'mandat'
+   - applyDossierType: cache/montre les sections appropriees
+   - choisirTypeDossier: bouton modal choix initial (nouveaux dossiers)
+   - ouvrirModalConversion + confirmerConversion: convertir soumission -> mandat */
+
+let currentDossierType='mandat';
+let convAssignMode='direct';
+
+function applyDossierType(type){
+  currentDossierType=type;
+  const isSoum=type==='soumission';
+
+  /* Sections cachees pour soumission: Planification, Statuts, Documents, Courriels */
+  document.getElementById('sec-planification').style.display=isSoum?'none':'';
+  document.getElementById('sec-statuts').style.display=isSoum?'none':'';
+  if(isSoum){
+    document.getElementById('sec-docs').style.display='none';
+    document.getElementById('sec-emails').style.display='none';
+  }
+
+  /* Banniere de conversion : visible UNIQUEMENT pour soumission existante */
+  const secConv=document.getElementById('sec-convert');
+  if(secConv) secConv.style.display=(isSoum && !isNew)?'block':'none';
+
+  /* Pour soumission, cacher la banniere Reclamer (pas applicable) */
+  if(isSoum){
+    const secRec=document.getElementById('sec-reclamer');
+    if(secRec) secRec.style.display='none';
+  }
+
+  /* Badge dans le header */
+  const hbadge=document.getElementById('hbadge');
+  if(hbadge){
+    hbadge.style.display='inline-block';
+    hbadge.className=isSoum?'badge-type-soum':'badge-type-mand';
+    hbadge.textContent=isSoum?'\u{1F4DD} Soumission':'\u{1F4C5} Mandat book\u00e9';
+  }
+
+  /* Cacher le bouton FINAL pour les soumissions (pas pertinent) */
+  const btnFinal=document.getElementById('btn-final');
+  if(btnFinal) btnFinal.style.display=isSoum?'none':'';
+  const finalProgress=document.getElementById('final-progress');
+  if(finalProgress) finalProgress.style.display=isSoum?'none':'block';
+}
+
+function choisirTypeDossier(type){
+  currentDossierType=type;
+  document.getElementById('modal-type-dossier').style.display='none';
+  applyDossierType(type);
+}
+
+function ouvrirModalConversion(){
+  /* Pre-remplir avec demain par defaut */
+  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('conv-date').value=tomorrow.toISOString().slice(0,10);
+  document.getElementById('conv-heure').value='09:00';
+
+  /* Copier la liste des techs depuis f-tech */
+  const convTech=document.getElementById('conv-tech');
+  const fTech=document.getElementById('f-tech');
+  if(convTech && fTech) convTech.innerHTML=fTech.innerHTML;
+
+  setConvMode('direct');
+  document.getElementById('modal-conversion').style.display='flex';
+}
+
+function closeModalConversion(){
+  document.getElementById('modal-conversion').style.display='none';
+}
+
+function setConvMode(mode){
+  convAssignMode=mode;
+  document.getElementById('conv-mode-direct').classList.toggle('on',mode==='direct');
+  document.getElementById('conv-mode-pool').classList.toggle('on',mode==='pool');
+  document.getElementById('conv-block-direct').style.display=mode==='direct'?'grid':'none';
+  document.getElementById('conv-block-pool').style.display=mode==='pool'?'block':'none';
+}
+
+async function confirmerConversion(){
+  const date=document.getElementById('conv-date').value;
+  const heure=document.getElementById('conv-heure').value;
+
+  if(!date||!heure){toast('Date et heure obligatoires','err');return;}
+  if(!await confirmTestAction('Convertir cette soumission en mandat book\u00e9')) return;
+
+  const {data:{session}}=await sb.auth.getSession();
+  const nowIso=new Date().toISOString();
+
+  /* Calcul du statut d'assignation selon le mode choisi */
+  let techId=null,statutAssign,assigneLe=null,reclameLe=null;
+  let delaiHeures=8,regionMandat=null;
+
+  if(convAssignMode==='pool'){
+    statutAssign='pool';
+    regionMandat=document.getElementById('conv-region').value;
+  } else {
+    techId=document.getElementById('conv-tech').value||null;
+    delaiHeures=parseInt(document.getElementById('conv-delai').value)||8;
+    if(techId && techId===profile.id){
+      statutAssign='reclame';reclameLe=nowIso;
+    } else if(techId){
+      statutAssign='assigne';assigneLe=nowIso;
+    } else {
+      statutAssign='non_assigne';
+    }
+  }
+
+  const updates={
+    type_dossier:'mandat',
+    date_mandat:date,
+    heure_mandat:heure,
+    technicien_id:techId,
+    statut_assignation:statutAssign,
+    assigne_le:assigneLe,
+    reclame_le:reclameLe,
+    delai_reclamation_heures:delaiHeures,
+    ...(regionMandat?{region_mandat:regionMandat}:{})
+  };
+
+  const {error}=await sb.from('mandats').update(updates).eq('id',mandat.id);
+  if(error){toast('Erreur: '+error.message,'err');return;}
+
+  /* Log historique */
+  await sb.from('mandats_historique').insert({
+    mandat_id:mandat.id,
+    action:'conversion_mandat',
+    effectue_par:session.user.id,
+    technicien_concerne:techId,
+    details:{date_mandat:date,heure_mandat:heure,statut_assignation:statutAssign,delai_heures:delaiHeures,region:regionMandat}
+  });
+
+  closeModalConversion();
+  toast('Soumission convertie en mandat book\u00e9 !');
+  /* Recharger pour appliquer toute la nouvelle UI (sections debloquees) */
+  setTimeout(()=>window.location.reload(),800);
+}
+
 async function saveMandat(){
   const nom=document.getElementById('f-client-nom').value.trim();
   if(!nom){toast('Le nom du client est requis','err');return;}
@@ -1467,41 +1710,53 @@ async function saveMandat(){
   const {data:{session}}=await sb.auth.getSession();
   const nowIso=new Date().toISOString();
 
-  /* ===== ETAPE 6: Calcul du statut d'assignation selon le mode choisi ===== */
+  /* ===== Calcul du statut d'assignation selon le type de dossier =====
+     Pour soumission: pas d'assignation, pas de date/heure
+     Pour mandat: logique normale (etape 6) */
   let techId=null;
-  let statutAssign,assigneLe=null,reclameLe=null;
-  let delaiHeures=parseInt(document.getElementById('f-delai').value)||8;
+  let statutAssign='non_assigne',assigneLe=null,reclameLe=null;
+  let delaiHeures=8;
   let regionMandat=mandat?(mandat.region_mandat||null):null;
+  let dateMandat=null,heureMandat=null;
 
-  if(currentAssignMode==='pool'){
-    techId=null;
-    statutAssign='pool';
-    regionMandat=document.getElementById('f-region-pool').value||'quebec';
-  } else {
-    techId=document.getElementById('f-tech').value||null;
-    if(techId && techId===profile.id){
-      statutAssign='reclame';
-      reclameLe=nowIso;
-    } else if(techId){
-      statutAssign='assigne';
-      assigneLe=nowIso;
+  if(currentDossierType==='mandat'){
+    /* Mandat booke: logique d'assignation complete + date/heure */
+    delaiHeures=parseInt(document.getElementById('f-delai').value)||8;
+    dateMandat=document.getElementById('f-date').value||null;
+    heureMandat=document.getElementById('f-heure').value||null;
+
+    if(currentAssignMode==='pool'){
+      techId=null;
+      statutAssign='pool';
+      regionMandat=document.getElementById('f-region-pool').value||'quebec';
     } else {
-      statutAssign='non_assigne';
+      techId=document.getElementById('f-tech').value||null;
+      if(techId && techId===profile.id){
+        statutAssign='reclame';
+        reclameLe=nowIso;
+      } else if(techId){
+        statutAssign='assigne';
+        assigneLe=nowIso;
+      } else {
+        statutAssign='non_assigne';
+      }
     }
-  }
 
-  /* Preserver les timestamps si statut inchange sur un UPDATE */
-  if(!isNew && mandat){
-    if(mandat.statut_assignation===statutAssign){
-      if(statutAssign==='assigne') assigneLe=mandat.assigne_le;
-      if(statutAssign==='reclame') reclameLe=mandat.reclame_le;
+    /* Preserver les timestamps si statut inchange sur un UPDATE */
+    if(!isNew && mandat){
+      if(mandat.statut_assignation===statutAssign){
+        if(statutAssign==='assigne') assigneLe=mandat.assigne_le;
+        if(statutAssign==='reclame') reclameLe=mandat.reclame_le;
+      }
     }
   }
+  /* else (soumission): tous les champs ci-dessus restent null/default */
 
   const payload={
+    type_dossier:currentDossierType,
     compagnie:comp,type_mandat:typeMand,technicien_id:techId,
-    date_mandat:document.getElementById('f-date').value||null,
-    heure_mandat:document.getElementById('f-heure').value||null,
+    date_mandat:dateMandat,
+    heure_mandat:heureMandat,
     client_nom:nom,
     client_telephone:document.getElementById('f-client-tel').value||null,
     client_email:document.getElementById('f-client-email').value||null,
@@ -1537,37 +1792,43 @@ async function saveMandat(){
     await sb.from('mandats_historique').insert({
       mandat_id:data.id,action:'creation',
       effectue_par:session.user.id,
-      details:{statut_initial:statutAssign,technicien_id:techId,delai_heures:delaiHeures}
+      details:{statut_initial:statutAssign,technicien_id:techId,delai_heures:delaiHeures,type_dossier:currentDossierType}
     });
-    /* Log specifique selon le statut initial */
-    if(statutAssign==='pool'){
-      await sb.from('mandats_historique').insert({
-        mandat_id:data.id,action:'mise_pool_initiale',
-        effectue_par:session.user.id,
-        details:{region:regionMandat}
-      });
-    } else if(statutAssign==='reclame'){
-      await sb.from('mandats_historique').insert({
-        mandat_id:data.id,action:'reclamation',
-        effectue_par:session.user.id,technicien_concerne:techId,
-        details:{auto_creation:true}
-      });
-    } else if(statutAssign==='assigne'){
-      await sb.from('mandats_historique').insert({
-        mandat_id:data.id,action:'assignation',
-        effectue_par:session.user.id,technicien_concerne:techId,
-        details:{delai_heures:delaiHeures}
-      });
+    /* Log specifique selon le statut initial (uniquement pour les mandats) */
+    if(currentDossierType==='mandat'){
+      if(statutAssign==='pool'){
+        await sb.from('mandats_historique').insert({
+          mandat_id:data.id,action:'mise_pool_initiale',
+          effectue_par:session.user.id,
+          details:{region:regionMandat}
+        });
+      } else if(statutAssign==='reclame'){
+        await sb.from('mandats_historique').insert({
+          mandat_id:data.id,action:'reclamation',
+          effectue_par:session.user.id,technicien_concerne:techId,
+          details:{auto_creation:true}
+        });
+      } else if(statutAssign==='assigne'){
+        await sb.from('mandats_historique').insert({
+          mandat_id:data.id,action:'assignation',
+          effectue_par:session.user.id,technicien_concerne:techId,
+          details:{delai_heures:delaiHeures}
+        });
+      }
     }
 
-    toast('Mandat cree !');
+    toast(currentDossierType==='soumission'?'Soumission cr\u00e9\u00e9e !':'Mandat cr\u00e9\u00e9 !');
     history.replaceState(null,'','?id='+data.id);
     document.getElementById('htitle').textContent=nom;
     if(profile.role==='gestionnaire') document.getElementById('btn-del').style.display='flex';
-    document.getElementById('sec-docs').style.display='block';
-    document.getElementById('sec-emails').style.display='block';
-    renderDocs();renderEmails();
-    /* Charger l'historique apres creation (affichera les evenements creation + assignation/reclamation/pool) */
+    /* Documents et Emails seulement pour les mandats */
+    if(currentDossierType==='mandat'){
+      document.getElementById('sec-docs').style.display='block';
+      document.getElementById('sec-emails').style.display='block';
+      renderDocs();renderEmails();
+    }
+    /* Appliquer le type de dossier (cache/montre les bonnes sections + banniere conversion) */
+    applyDossierType(currentDossierType);
     loadHistorique();
   } else {
     const previousStatus=mandat.statut_assignation;
