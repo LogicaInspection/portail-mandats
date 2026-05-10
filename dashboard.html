@@ -177,6 +177,10 @@ select.filter:focus { border-color: #1a1a2e; }
 }
 .badge-logica { background: #e3f0ff; color: #1565c0; }
 .badge-geq    { background: #fdecea; color: #b71c1c; }
+.badge-soumission { display:inline-block; background:#fff3e0; color:#e65100; font-size:10px; font-weight:600; padding:2px 8px; border-radius:6px; margin-left:6px; vertical-align:middle; letter-spacing:0.3px; }
+.tab-count { display:inline-block; background:rgba(255,255,255,0.25); color:inherit; font-size:11px; font-weight:600; padding:1px 8px; border-radius:10px; margin-left:4px; min-width:18px; text-align:center; }
+.tab:not(.active) .tab-count { background:#e5e7eb; color:#666; }
+.tab-count:empty { display:none; }
 
 .assign-badge {
   display: inline-block; padding: 3px 10px;
@@ -266,10 +270,12 @@ select.filter:focus { border-color: #1a1a2e; }
 
 <div class="main">
   <div class="tabs">
-    <button class="tab active" data-tab="tous" onclick="setTab('tous')">Tous</button>
-    <button class="tab" data-tab="logica" onclick="setTab('logica')">&#127968; Logica</button>
-    <button class="tab" data-tab="geq" onclick="setTab('geq')">&#127970; GEQ</button>
-    <button class="tab" id="tab-pool" data-tab="pool" style="display:none" onclick="setTab('pool')">&#127919; Pool</button>
+    <button class="tab active" data-tab="tous" onclick="setTab('tous')">Tous <span class="tab-count" id="tc-tous"></span></button>
+    <button class="tab" data-tab="soumissions" onclick="setTab('soumissions')">&#128221; Soumissions <span class="tab-count" id="tc-soumissions"></span></button>
+    <button class="tab" data-tab="mandats" onclick="setTab('mandats')">&#128197; Mandats <span class="tab-count" id="tc-mandats"></span></button>
+    <button class="tab" data-tab="logica" onclick="setTab('logica')">&#127968; Logica <span class="tab-count" id="tc-logica"></span></button>
+    <button class="tab" data-tab="geq" onclick="setTab('geq')">&#127970; GEQ <span class="tab-count" id="tc-geq"></span></button>
+    <button class="tab" id="tab-pool" data-tab="pool" style="display:none" onclick="setTab('pool')">&#127919; Pool <span class="tab-count" id="tc-pool"></span></button>
     <button class="tab" id="tab-fdp" style="display:none" onclick="goToFDP()">&#128202; Fonds de pr&eacute;voyance</button>
   </div>
 
@@ -560,7 +566,25 @@ async function loadMandats() {
   allMandats = mandats;
 
   updateStats();
+  updateTabCounters();
   filterMandats();
+}
+
+function updateTabCounters() {
+  const c = (filterFn) => {
+    const n = allMandats.filter(filterFn).length;
+    return n > 0 ? String(n) : '';
+  };
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  set('tc-tous', c(() => true));
+  set('tc-soumissions', c(m => m.type_dossier === 'soumission'));
+  set('tc-mandats', c(m => m.type_dossier === 'mandat'));
+  set('tc-logica', c(m => m.compagnie === 'logica'));
+  set('tc-geq', c(m => m.compagnie === 'geq'));
+  set('tc-pool', c(m => m.statut_assignation === 'pool' && m.type_dossier === 'mandat'));
 }
 
 function updateStats() {
@@ -601,9 +625,15 @@ function getFilteredMandats() {
   const tech = document.getElementById('f-tech').value;
 
   let list = allMandats;
-  if (currentTab === 'pool') {
-    /* Onglet Pool: uniquement les mandats avec statut='pool' */
-    list = list.filter(m => m.statut_assignation === 'pool');
+  if (currentTab === 'soumissions') {
+    /* Onglet Soumissions: uniquement type='soumission' */
+    list = list.filter(m => m.type_dossier === 'soumission');
+  } else if (currentTab === 'mandats') {
+    /* Onglet Mandats: uniquement type='mandat' */
+    list = list.filter(m => m.type_dossier === 'mandat');
+  } else if (currentTab === 'pool') {
+    /* Onglet Pool: uniquement les mandats avec statut='pool' (jamais des soumissions) */
+    list = list.filter(m => m.statut_assignation === 'pool' && m.type_dossier === 'mandat');
   } else if (currentTab !== 'tous') {
     list = list.filter(m => m.compagnie === currentTab);
   }
@@ -797,7 +827,10 @@ function renderTable(list) {
         ${heure ? `<div style="font-size:11px;color:#999">${heure}</div>` : ''}
       </div>
       <div>
-        <div style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:2px">${m.client_nom}</div>
+        <div style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:2px">
+          ${m.client_nom}
+          ${m.type_dossier === 'soumission' ? '<span class="badge-soumission">&#128221; Soumission</span>' : ''}
+        </div>
         <div style="font-size:12px;color:#999">${m.client_telephone||''}</div>
       </div>
       <div style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.adresse||'&mdash;'}</div>
