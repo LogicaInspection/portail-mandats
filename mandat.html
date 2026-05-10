@@ -242,6 +242,30 @@ input[type=file]{display:none;}
 .assign-info.warn{background:#fff8e1;color:#92400e;border-left-color:#f59e0b;}
 .assign-info.pool{background:#e3f0ff;color:#0d47a1;border-left-color:#1565c0;}
 @media(max-width:600px){.assign-mode-group{grid-template-columns:1fr;}}
+
+.sec.histo-sec{border-left:4px solid #6b7280;background:#fafafa;}
+.histo-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;padding:6px 0;}
+.histo-toggle:hover .histo-arrow{color:#1565c0;}
+.histo-arrow{font-size:14px;color:#999;transition:transform 0.2s;}
+.histo-arrow.open{transform:rotate(90deg);}
+.histo-content{display:none;margin-top:14px;}
+.histo-content.open{display:block;}
+.histo-empty{text-align:center;color:#bbb;font-size:13px;padding:14px;}
+.histo-event{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0;}
+.histo-event:last-child{border-bottom:none;}
+.histo-icon-box{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.histo-ic-creation{background:#f3f4f6;color:#6b7280;}
+.histo-ic-assignation{background:#fff3cd;color:#92400e;}
+.histo-ic-reclamation{background:#e8f5e9;color:#2e7d32;}
+.histo-ic-bascule_pool_auto{background:#e3f0ff;color:#1565c0;}
+.histo-ic-bascule_pool_manuel{background:#e3f0ff;color:#1565c0;}
+.histo-ic-mise_pool_initiale{background:#e3f0ff;color:#1565c0;}
+.histo-ic-desassignation{background:#fee2e2;color:#b91c1c;}
+.histo-ic-changement_delai{background:#f3f4f6;color:#6b7280;}
+.histo-body{flex:1;min-width:0;}
+.histo-action{font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:2px;}
+.histo-detail{font-size:12px;color:#666;line-height:1.4;}
+.histo-meta{font-size:11px;color:#999;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -537,6 +561,16 @@ input[type=file]{display:none;}
     <textarea id="f-notes" placeholder="Notes visibles seulement par l equipe..."></textarea>
   </div>
 
+  <div class="sec histo-sec" id="sec-histo" style="display:none">
+    <div class="histo-toggle" onclick="toggleHistorique()">
+      <div class="sec-title" style="margin-bottom:0"><span class="ic">&#128214;</span> Historique du mandat <span id="histo-count" style="font-size:13px;color:#999;font-weight:500;margin-left:6px"></span></div>
+      <span class="histo-arrow" id="histo-arrow">&#9654;</span>
+    </div>
+    <div class="histo-content" id="histo-content">
+      <div class="histo-empty" id="histo-loading">Chargement...</div>
+    </div>
+  </div>
+
 </div>
 
 <div class="ov" id="modal-email" style="display:none">
@@ -742,6 +776,7 @@ async function confirmTestAction(actionLabel){
   updateFinalBtn();
   updateReclamerBtn();
   updateAssignInfo();
+  loadHistorique();
 })();
 
 function fillForm(){
@@ -1255,6 +1290,148 @@ async function reclamerMandat(){
 
   toast(isInPool?'Mandat reclame du pool !':'Prise en charge confirmee !');
   updateReclamerBtn();
+  loadHistorique();
+}
+
+/* ===== ETAPE 8 - HISTORIQUE DU MANDAT =====
+   Section repliable affichant tous les evenements de mandats_historique pour ce mandat.
+   Permissions:
+   - Gestionnaire et secretaire: voient toujours l'historique
+   - Tech: voit l'historique seulement s'il est implique (cree, assigne, ou concerne) */
+
+async function loadHistorique(){
+  if(!mandat||isNew) return;
+  const sec=document.getElementById('sec-histo');
+  if(!sec) return;
+
+  const {data:histoData,error}=await sb.from('mandats_historique')
+    .select('*')
+    .eq('mandat_id',mandat.id)
+    .order('created_at',{ascending:true});
+
+  if(error||!histoData){
+    sec.style.display='none';
+    return;
+  }
+
+  /* Charger les profils referencEs (deduplique les IDs) */
+  const profileIds=new Set();
+  histoData.forEach(e=>{
+    if(e.effectue_par) profileIds.add(e.effectue_par);
+    if(e.technicien_concerne) profileIds.add(e.technicien_concerne);
+  });
+
+  let profilesMap={};
+  if(profileIds.size>0){
+    const {data:profData}=await sb.from('profiles')
+      .select('id, prenom, nom')
+      .in('id',Array.from(profileIds));
+    if(profData) profData.forEach(p=>profilesMap[p.id]=p);
+  }
+
+  /* Permissions */
+  const isGest=profile.role==='gestionnaire';
+  const isSecr=profile.role==='secretaire';
+  const isTech=profile.role==='technicien';
+  let canView=isGest||isSecr;
+  if(isTech){
+    const isInHisto=histoData.some(e=>e.technicien_concerne===profile.id||e.effectue_par===profile.id);
+    const isCurrentTech=mandat.technicien_id===profile.id;
+    canView=isInHisto||isCurrentTech;
+  }
+
+  if(!canView){
+    sec.style.display='none';
+    return;
+  }
+
+  sec.style.display='block';
+  document.getElementById('histo-count').textContent='('+histoData.length+' \u00e9v\u00e9nement'+(histoData.length>1?'s':'')+')';
+  renderHistorique(histoData,profilesMap);
+}
+
+function renderHistorique(events,profMap){
+  const content=document.getElementById('histo-content');
+
+  if(!events||events.length===0){
+    content.innerHTML='<div class="histo-empty">Aucun \u00e9v\u00e9nement enregistr\u00e9</div>';
+    return;
+  }
+
+  const ICONS={
+    creation:'\u2728',
+    assignation:'\u{1F464}',
+    reclamation:'\u2713',
+    bascule_pool_auto:'\u{1F300}',
+    bascule_pool_manuel:'\u{1F300}',
+    mise_pool_initiale:'\u{1F3AF}',
+    desassignation:'\u2715',
+    changement_delai:'\u23F1'
+  };
+
+  const LABELS={
+    creation:'Cr\u00e9ation du mandat',
+    assignation:'Assignation \u00e0 un tech',
+    reclamation:'Mandat r\u00e9clam\u00e9',
+    bascule_pool_auto:'Bascule automatique vers le pool',
+    bascule_pool_manuel:'Bascule manuelle vers le pool',
+    mise_pool_initiale:'Mis directement dans le pool',
+    desassignation:'D\u00e9sassignation',
+    changement_delai:'Changement de d\u00e9lai'
+  };
+
+  let html='';
+  events.forEach(e=>{
+    const icon=ICONS[e.action]||'\u2022';
+    const label=LABELS[e.action]||e.action;
+    const date=new Date(e.created_at);
+    const dateStr=date.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
+    const timeStr=date.toLocaleTimeString('fr-CA',{hour:'2-digit',minute:'2-digit'});
+
+    const effPar=e.effectue_par&&profMap[e.effectue_par]?profMap[e.effectue_par]:null;
+    const techConc=e.technicien_concerne&&profMap[e.technicien_concerne]?profMap[e.technicien_concerne]:null;
+
+    /* Construction du detail */
+    let detailParts=[];
+    if(techConc && (!effPar || techConc.id!==e.effectue_par)){
+      detailParts.push('Tech concern\u00e9 : '+techConc.prenom+' '+techConc.nom);
+    }
+    if(e.details && typeof e.details==='object'){
+      const d=e.details;
+      if(d.delai_heures) detailParts.push('D\u00e9lai : '+d.delai_heures+'h');
+      if(d.region) detailParts.push('R\u00e9gion : '+(d.region==='estrie'?'Estrie':'Qu\u00e9bec'));
+      if(d.previous_status && d.new_status) detailParts.push('Statut : '+d.previous_status+' \u2192 '+d.new_status);
+      if(d.auto_creation) detailParts.push('Auto-r\u00e9clam\u00e9 \u00e0 la cr\u00e9ation');
+      if(d.via==='btn-reclamer') detailParts.push('Via le bouton R\u00e9clamer');
+    }
+    const detail=detailParts.join(' \u2022 ');
+
+    /* effectue_par : si AUCUN profil (cron par exemple), on indique "Systeme" */
+    const effLabel=e.effectue_par
+      ? (effPar?'par '+effPar.prenom+' '+effPar.nom:'par utilisateur supprim\u00e9')
+      : (e.action==='bascule_pool_auto'?'par le syst\u00e8me (cron)':'');
+
+    html+='<div class="histo-event">'+
+      '<div class="histo-icon-box histo-ic-'+e.action+'">'+icon+'</div>'+
+      '<div class="histo-body">'+
+        '<div class="histo-action">'+label+'</div>'+
+        (detail?'<div class="histo-detail">'+detail+'</div>':'')+
+        '<div class="histo-meta">'+
+          '<span>'+dateStr+' \u00e0 '+timeStr+'</span>'+
+          (effLabel?'<span>'+effLabel+'</span>':'')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  });
+
+  content.innerHTML=html;
+}
+
+function toggleHistorique(){
+  const content=document.getElementById('histo-content');
+  const arrow=document.getElementById('histo-arrow');
+  const isOpen=content.classList.toggle('open');
+  arrow.classList.toggle('open',isOpen);
 }
 
 async function saveMandat(){
@@ -1390,6 +1567,8 @@ async function saveMandat(){
     document.getElementById('sec-docs').style.display='block';
     document.getElementById('sec-emails').style.display='block';
     renderDocs();renderEmails();
+    /* Charger l'historique apres creation (affichera les evenements creation + assignation/reclamation/pool) */
+    loadHistorique();
   } else {
     const previousStatus=mandat.statut_assignation;
     const {error}=await sb.from('mandats').update(payload).eq('id',mandat.id);
@@ -1415,6 +1594,8 @@ async function saveMandat(){
     }
     /* Mise a jour banniere reclamer si visible */
     updateReclamerBtn();
+    /* Rafraichir l'historique pour voir les nouveaux evenements */
+    loadHistorique();
     toast('Sauvegarde !');
   }
   document.getElementById('par-client-nom').textContent=nom;
