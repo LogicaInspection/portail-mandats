@@ -113,14 +113,50 @@ body.test-mode .header { top: 47px; }
 .tab.active { background: #1a1a2e; color: white; }
 .tab:hover:not(.active) { background: #f5f5f5; color: #444; }
 
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.stat-card {
-  background: white; border-radius: 12px; padding: 20px 24px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+/* ===== PIPELINE TILES (Tous / Pool / Mandats / Soumissions envoyees) ===== */
+.pipeline-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+.ptile {
+  background: white; border-radius: 14px; padding: 22px 22px 20px;
+  cursor: pointer; transition: all 0.2s; border: 2px solid #e5e7eb;
+  position: relative; user-select: none;
 }
-.stat-label { font-size: 11px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-.stat-value { font-size: 26px; font-weight: 700; color: #1a1a2e; }
-.stat-sub { font-size: 12px; color: #999; margin-top: 4px; }
+.ptile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+.ptile-label { font-size: 14px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 10px; color: #555; }
+.ptile-num { font-size: 38px; font-weight: 700; line-height: 1; color: #1a1a2e; }
+.ptile-sub { font-size: 12px; color: #888; margin-top: 6px; }
+/* Variantes de couleur par type */
+.ptile-tous.active { border-color: #1a1a2e; background: #fafafa; }
+.ptile-tous.active .ptile-label, .ptile-tous.active .ptile-sub { color: #1a1a2e; }
+.ptile-pool { border-color: #b3d4f0; }
+.ptile-pool .ptile-label { color: #1565c0; }
+.ptile-pool .ptile-num { color: #0d47a1; }
+.ptile-pool .ptile-sub { color: #1565c0; }
+.ptile-pool.active { background: #e3f0ff; border-color: #1565c0; border-width: 3px; }
+.ptile-mandats { border-color: #c5e1a5; }
+.ptile-mandats .ptile-label { color: #2e7d32; }
+.ptile-mandats .ptile-num { color: #1b5e20; }
+.ptile-mandats .ptile-sub { color: #2e7d32; }
+.ptile-mandats.active { background: #e8f5e9; border-color: #2e7d32; border-width: 3px; }
+.ptile-soumissions { border-color: #ffcc80; }
+.ptile-soumissions .ptile-label { color: #e65100; }
+.ptile-soumissions .ptile-num { color: #bf360c; }
+.ptile-soumissions .ptile-sub { color: #e65100; }
+.ptile-soumissions.active { background: #fff3e0; border-color: #e65100; border-width: 3px; }
+
+/* ===== MINISTATS (barre compacte) ===== */
+.ministats {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+  background: #fafafa; border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 8px 16px; font-size: 12px; color: #555; flex-wrap: wrap;
+}
+.ministats .ms-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.6px; margin-right: 4px; }
+.ministats b { font-weight: 700; color: #1a1a2e; font-size: 14px; }
+.ministats .ms-sep { width: 1px; height: 16px; background: #e5e7eb; }
+
+/* Anciens stats-row caches (mais ID gardes pour compat JS updateStats) */
+.stats-row { display: none; }
+.stat-card { display: none; }
+.stat-label, .stat-value, .stat-sub { display: none; }
 
 .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
 .search-input {
@@ -134,6 +170,13 @@ select.filter {
   font-size: 14px; background: white; outline: none; color: #444; cursor: pointer;
 }
 select.filter:focus { border-color: #1a1a2e; }
+.btn-fdp {
+  margin-left: auto; padding: 10px 18px;
+  background: white; color: #1a1a2e; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-fdp:hover { border-color: #1a1a2e; background: #fafafa; }
 .btn-export {
   margin-left: auto; padding: 10px 22px;
   background: #1d9e75; color: white; border: none;
@@ -236,9 +279,15 @@ select.filter:focus { border-color: #1a1a2e; }
 }
 
 @media (max-width: 900px) {
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .pipeline-tiles { grid-template-columns: repeat(2, 1fr); }
+  .ministats { font-size: 11px; gap: 10px; padding: 8px 12px; }
+  .ministats b { font-size: 13px; }
   .cols-gest, .cols-tech { grid-template-columns: 1fr; }
   .t-header { display: none; }
+}
+@media (max-width: 600px) {
+  .pipeline-tiles { grid-template-columns: 1fr; }
+  .ptile-num { font-size: 32px; }
 }
 </style>
 </head>
@@ -269,64 +318,60 @@ select.filter:focus { border-color: #1a1a2e; }
 </div>
 
 <div class="main">
-  <div class="tabs">
-    <button class="tab active" data-tab="tous" onclick="setTab('tous')">Tous <span class="tab-count" id="tc-tous"></span></button>
-    <button class="tab" data-tab="soumissions" onclick="setTab('soumissions')">&#128221; Soumissions <span class="tab-count" id="tc-soumissions"></span></button>
-    <button class="tab" data-tab="mandats" onclick="setTab('mandats')">&#128197; Mandats <span class="tab-count" id="tc-mandats"></span></button>
-    <button class="tab" data-tab="logica" onclick="setTab('logica')">&#127968; Logica <span class="tab-count" id="tc-logica"></span></button>
-    <button class="tab" data-tab="geq" onclick="setTab('geq')">&#127970; GEQ <span class="tab-count" id="tc-geq"></span></button>
-    <button class="tab" id="tab-pool" data-tab="pool" style="display:none" onclick="setTab('pool')">&#127919; Pool <span class="tab-count" id="tc-pool"></span></button>
-    <button class="tab" id="tab-fdp" style="display:none" onclick="goToFDP()">&#128202; Fonds de pr&eacute;voyance</button>
-  </div>
-
-  <div class="stats-row" id="stats-gest" style="display:none">
-    <div class="stat-card">
-      <div class="stat-label">Mandats ce mois</div>
-      <div class="stat-value" id="s-mois">&mdash;</div>
-      <div class="stat-sub" id="s-total">&mdash; au total</div>
+  <div class="pipeline-tiles">
+    <div class="ptile ptile-tous active" data-tab="tous" onclick="setTab('tous')">
+      <div class="ptile-label">&#128203; TOUS</div>
+      <div class="ptile-num" id="ptile-tous">&mdash;</div>
+      <div class="ptile-sub">dossiers actifs</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Rapports en attente</div>
-      <div class="stat-value" id="s-rapports">&mdash;</div>
-      <div class="stat-sub">à envoyer</div>
+    <div class="ptile ptile-pool" data-tab="pool" id="ptile-pool-card" style="display:none" onclick="setTab('pool')">
+      <div class="ptile-label">&#127919; POOL</div>
+      <div class="ptile-num" id="ptile-pool">&mdash;</div>
+      <div class="ptile-sub">&agrave; r&eacute;clamer</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Non pay&eacute;s</div>
-      <div class="stat-value" id="s-nonpaye">&mdash;</div>
-      <div class="stat-sub">factures ouvertes</div>
+    <div class="ptile ptile-mandats" data-tab="mandats" onclick="setTab('mandats')">
+      <div class="ptile-label">&#128197; MANDATS</div>
+      <div class="ptile-num" id="ptile-mandats">&mdash;</div>
+      <div class="ptile-sub">book&eacute;s avec date</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Revenus ce mois</div>
-      <div class="stat-value" id="s-revenus">&mdash;</div>
-      <div class="stat-sub">total TTC</div>
+    <div class="ptile ptile-soumissions" data-tab="soumissions" onclick="setTab('soumissions')">
+      <div class="ptile-label">&#128221; SOUMISSIONS ENVOY&Eacute;ES</div>
+      <div class="ptile-num" id="ptile-soumissions">&mdash;</div>
+      <div class="ptile-sub">en attente client</div>
     </div>
   </div>
 
-  <div class="stats-row" id="stats-tech" style="display:none">
-    <div class="stat-card">
-      <div class="stat-label">Mandats cette ann&eacute;e</div>
-      <div class="stat-value" id="t-annee">&mdash;</div>
-      <div class="stat-sub" id="t-mois-sub">&mdash; ce mois</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Logica</div>
-      <div class="stat-value" id="t-logica">&mdash;</div>
-      <div class="stat-sub">inspections</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">GEQ</div>
-      <div class="stat-value" id="t-geq">&mdash;</div>
-      <div class="stat-sub">mandats</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Mes commissions</div>
-      <div class="stat-value" id="t-comm">&mdash;</div>
-      <div class="stat-sub">cette ann&eacute;e</div>
-    </div>
+  <div class="ministats" id="ministats-gest" style="display:none">
+    <span class="ms-label">&#128202; Stats du mois</span>
+    <span><b id="s-mois">&mdash;</b> mandats ce mois</span>
+    <span class="ms-sep"></span>
+    <span><b id="s-rapports">&mdash;</b> rapports en attente</span>
+    <span class="ms-sep"></span>
+    <span><b id="s-nonpaye">&mdash;</b> non pay&eacute;s</span>
+    <span class="ms-sep"></span>
+    <span><b id="s-revenus">&mdash;</b> revenus</span>
+    <span style="display:none" id="s-total">&mdash; au total</span>
+  </div>
+
+  <div class="ministats" id="ministats-tech" style="display:none">
+    <span class="ms-label">&#128202; Mes stats</span>
+    <span><b id="t-annee">&mdash;</b> cette ann&eacute;e</span>
+    <span class="ms-sep"></span>
+    <span><b id="t-logica">&mdash;</b> Logica</span>
+    <span class="ms-sep"></span>
+    <span><b id="t-geq">&mdash;</b> GEQ</span>
+    <span class="ms-sep"></span>
+    <span><b id="t-comm">&mdash;</b> commissions</span>
+    <span style="display:none" id="t-mois-sub">&mdash; ce mois</span>
   </div>
 
   <div class="toolbar">
     <input type="text" class="search-input" id="search" placeholder="&#128269;  Rechercher client, adresse..." oninput="filterMandats()">
+    <select class="filter" id="f-compagnie" onchange="filterMandats()">
+      <option value="">Toutes compagnies</option>
+      <option value="logica">&#127968; Logica</option>
+      <option value="geq">&#127970; GEQ</option>
+    </select>
     <select class="filter" id="f-statut" onchange="filterMandats()">
       <option value="">Tous les statuts</option>
       <option value="nonpaye">Non pay&eacute;</option>
@@ -344,6 +389,7 @@ select.filter:focus { border-color: #1a1a2e; }
     <select class="filter" id="f-tech" style="display:none" onchange="filterMandats()">
       <option value="">Tous les techniciens</option>
     </select>
+    <button class="btn-fdp" id="btn-fdp" style="display:none" onclick="goToFDP()">&#128202; Fonds de pr&eacute;voyance</button>
     <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">&#128202; Exporter Excel</button>
     <button class="btn-new" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
       + Nouveau mandat
@@ -431,8 +477,8 @@ let timerInterval = null;
   }
 
   if (profile.role === 'gestionnaire' || profile.role === 'technicien') {
-    document.getElementById('tab-fdp').style.display = 'block';
-    document.getElementById('tab-pool').style.display = 'block';
+    document.getElementById('btn-fdp').style.display = 'inline-block';
+    document.getElementById('ptile-pool-card').style.display = 'block';
   }
 
   if (profile.role === 'gestionnaire' || profile.role === 'secretaire' || profile.role === 'technicien') {
@@ -440,11 +486,11 @@ let timerInterval = null;
   }
 
   if (profile.role === 'gestionnaire') {
-    document.getElementById('stats-gest').style.display = 'grid';
+    document.getElementById('ministats-gest').style.display = 'flex';
     document.getElementById('f-tech').style.display = 'block';
     await loadTechs();
   } else if (profile.role === 'technicien') {
-    document.getElementById('stats-tech').style.display = 'grid';
+    document.getElementById('ministats-tech').style.display = 'flex';
   }
 
   /* Show export button only for Bass (real gestionnaire, not impersonated) */
@@ -571,20 +617,16 @@ async function loadMandats() {
 }
 
 function updateTabCounters() {
-  const c = (filterFn) => {
-    const n = allMandats.filter(filterFn).length;
-    return n > 0 ? String(n) : '';
-  };
+  /* Met a jour les compteurs des 4 grosses tuiles */
+  const c = (filterFn) => allMandats.filter(filterFn).length;
   const set = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   };
-  set('tc-tous', c(() => true));
-  set('tc-soumissions', c(m => m.type_dossier === 'soumission'));
-  set('tc-mandats', c(m => m.type_dossier === 'mandat'));
-  set('tc-logica', c(m => m.compagnie === 'logica'));
-  set('tc-geq', c(m => m.compagnie === 'geq'));
-  set('tc-pool', c(m => m.statut_assignation === 'pool' && m.type_dossier === 'mandat'));
+  set('ptile-tous', c(() => true));
+  set('ptile-pool', c(m => m.statut_assignation === 'pool' && m.type_dossier === 'mandat'));
+  set('ptile-mandats', c(m => m.type_dossier === 'mandat'));
+  set('ptile-soumissions', c(m => m.type_dossier === 'soumission'));
 }
 
 function updateStats() {
@@ -614,7 +656,7 @@ function updateStats() {
 
 function setTab(tab) {
   currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.ptile').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   filterMandats();
 }
 
@@ -623,20 +665,19 @@ function getFilteredMandats() {
   const st = document.getElementById('f-statut').value;
   const assign = document.getElementById('f-assign').value;
   const tech = document.getElementById('f-tech').value;
+  const compagnie = document.getElementById('f-compagnie').value;
 
   let list = allMandats;
+  /* Onglet pipeline (tuile cliquee) */
   if (currentTab === 'soumissions') {
-    /* Onglet Soumissions: uniquement type='soumission' */
     list = list.filter(m => m.type_dossier === 'soumission');
   } else if (currentTab === 'mandats') {
-    /* Onglet Mandats: uniquement type='mandat' */
     list = list.filter(m => m.type_dossier === 'mandat');
   } else if (currentTab === 'pool') {
-    /* Onglet Pool: uniquement les mandats avec statut='pool' (jamais des soumissions) */
     list = list.filter(m => m.statut_assignation === 'pool' && m.type_dossier === 'mandat');
-  } else if (currentTab !== 'tous') {
-    list = list.filter(m => m.compagnie === currentTab);
   }
+  /* Filtre compagnie (select separe) - applique en plus de l'onglet */
+  if (compagnie) list = list.filter(m => m.compagnie === compagnie);
   if (s) list = list.filter(m =>
     (m.client_nom||'').toLowerCase().includes(s) ||
     (m.adresse||'').toLowerCase().includes(s) ||
