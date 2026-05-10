@@ -177,6 +177,23 @@ select.filter:focus { border-color: #1a1a2e; }
   cursor: pointer; transition: all 0.2s;
 }
 .btn-fdp:hover { border-color: #1a1a2e; background: #fafafa; }
+
+.btn-archives {
+  padding: 10px 18px;
+  background: white; color: #666; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-archives:hover { border-color: #888; background: #f9f9f9; }
+.btn-archives.on { background: #f57c00; color: white; border-color: #f57c00; }
+
+.archive-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff3e0; border-left: 4px solid #f57c00;
+  padding: 10px 16px; border-radius: 0 8px 8px 0;
+  margin-bottom: 14px; font-size: 13px; color: #bf360c;
+}
+body.archives-mode { background: #faf5ed; }
 .btn-export {
   margin-left: auto; padding: 10px 22px;
   background: #1d9e75; color: white; border: none;
@@ -390,10 +407,16 @@ select.filter:focus { border-color: #1a1a2e; }
       <option value="">Tous les techniciens</option>
     </select>
     <button class="btn-fdp" id="btn-fdp" style="display:none" onclick="goToFDP()">&#128202; Fonds de pr&eacute;voyance</button>
+    <button class="btn-archives" id="btn-archives" onclick="toggleArchives()">&#128193; Archives</button>
     <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">&#128202; Exporter Excel</button>
     <button class="btn-new" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
       + Nouveau mandat
     </button>
+  </div>
+
+  <div class="archive-banner" id="archive-banner" style="display:none">
+    <span>&#128193; <strong>Mode Archives</strong> &mdash; Affichage des dossiers finalis&eacute;s seulement.</span>
+    <button onclick="toggleArchives()" style="margin-left:auto;background:transparent;border:1px solid #f57c00;color:#e65100;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;">Revenir aux dossiers actifs</button>
   </div>
 
   <div class="table-wrap" id="table-wrap">
@@ -617,8 +640,12 @@ async function loadMandats() {
 }
 
 function updateTabCounters() {
+  /* Filtre de base selon mode (actifs vs archives) */
+  const baseFilter = viewArchives
+    ? (m => m.statut_final === true)
+    : (m => m.statut_final !== true);
   /* Met a jour les compteurs des 4 grosses tuiles */
-  const c = (filterFn) => allMandats.filter(filterFn).length;
+  const c = (filterFn) => allMandats.filter(m => baseFilter(m) && filterFn(m)).length;
   const set = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
@@ -660,6 +687,24 @@ function setTab(tab) {
   filterMandats();
 }
 
+/* ===== MODE ARCHIVES =====
+   Par defaut: on affiche les dossiers actifs (statut_final=false ou null).
+   Mode Archives: on affiche les dossiers finalises (statut_final=true).
+   La separation se fait via le bouton FINAL deja existant sur chaque mandat. */
+let viewArchives = false;
+
+function toggleArchives() {
+  viewArchives = !viewArchives;
+  const btn = document.getElementById('btn-archives');
+  btn.classList.toggle('on', viewArchives);
+  btn.innerHTML = viewArchives ? '\u{1F3E0} Dossiers actifs' : '\u{1F4C1} Archives';
+  document.getElementById('archive-banner').style.display = viewArchives ? 'flex' : 'none';
+  document.body.classList.toggle('archives-mode', viewArchives);
+  updateTabCounters();
+  updateStats();
+  filterMandats();
+}
+
 function getFilteredMandats() {
   const s = document.getElementById('search').value.toLowerCase();
   const st = document.getElementById('f-statut').value;
@@ -668,6 +713,11 @@ function getFilteredMandats() {
   const compagnie = document.getElementById('f-compagnie').value;
 
   let list = allMandats;
+  /* Filtre archives en premier (actifs vs finalises) */
+  list = viewArchives
+    ? list.filter(m => m.statut_final === true)
+    : list.filter(m => m.statut_final !== true);
+
   /* Onglet pipeline (tuile cliquee) */
   if (currentTab === 'soumissions') {
     list = list.filter(m => m.type_dossier === 'soumission');
