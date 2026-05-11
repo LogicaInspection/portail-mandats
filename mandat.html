@@ -53,7 +53,24 @@ body.test-mode .content { padding-top: 18px; }
 .btn-final-pending{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.2);cursor:not-allowed;}
 @keyframes pulse{0%,100%{box-shadow:0 2px 12px rgba(76,175,80,0.5);}50%{box-shadow:0 2px 24px rgba(76,175,80,0.8);}}
 
-.content{max-width:920px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px;}
+.content{max-width:1500px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px;}
+
+/* ===== Layout 3 colonnes ===== */
+.grid-3col{
+  display:grid;
+  grid-template-columns: minmax(340px, 1fr) minmax(380px, 1.3fr) minmax(360px, 1fr);
+  gap:20px;
+  align-items:start;
+}
+.col{display:flex;flex-direction:column;gap:20px;min-width:0;}
+
+@media (max-width:1199px){
+  .grid-3col{grid-template-columns:1fr;}
+  .content{max-width:920px;}
+}
+
+/* Textarea Notes plus grande et redimensionnable */
+#f-notes{min-height:240px;resize:vertical;font-family:inherit;line-height:1.5;}
 
 .sec{background:white;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid #f0f0f0;}
 .sec.logica-sec{border-left:4px solid #1565c0;}
@@ -318,6 +335,10 @@ input[type=file]{display:none;}
     </div>
   </div>
 
+  <div class="grid-3col">
+
+    <!-- ===== COLONNE 1 (gauche): Client / Planification / Statuts ===== -->
+    <div class="col col-left">
   <div class="sec" id="sec-client">
     <div class="sec-title"><span class="ic">&#128100;</span> Informations client</div>
     <div class="grid2">
@@ -419,6 +440,82 @@ input[type=file]{display:none;}
     <div id="assign-info" class="assign-info"></div>
   </div>
 
+  <div class="sec status-sec" id="sec-statuts">
+    <div class="sec-title"><span class="ic">&#9989;</span> Statuts</div>
+    <div class="statuts-grid">
+      <button class="btn-st st-soum" id="st-soum" onclick="toggleSoumissionEnvoyee()">
+        <div class="ck"></div> Soumission envoyee
+      </button>
+      <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
+        <div class="ck"></div> Confirmation envoyee
+      </button>
+      <button class="btn-st" id="st-fact" onclick="toggleSt('statut_facture_envoyee','st-fact')">
+        <div class="ck"></div> Facture envoyee
+      </button>
+      <button class="btn-st" id="st-paye" onclick="togglePaye()">
+        <div class="ck"></div> Paye
+      </button>
+      <button class="btn-st" id="st-rapp" onclick="toggleSt('statut_rapport_envoye','st-rapp')">
+        <div class="ck"></div> Rapport / Analyse envoye
+      </button>
+    </div>
+
+    <div class="paye-section" id="paye-section">
+      <div>
+        <label>Paye par</label>
+        <div class="par-row">
+          <button class="btn-par" id="par-client" onclick="setPar('client')">&#128100; <span id="par-client-nom">Client</span></button>
+          <button class="btn-par" id="par-autre" onclick="setPar('autre')">Autre...</button>
+        </div>
+        <input type="text" id="par-autre-input" style="display:none;margin-top:10px;max-width:300px;" placeholder="Nom de la personne" oninput="setParAutre(this.value)">
+      </div>
+      <div style="margin-top:16px">
+        <label>Mode de paiement</label>
+        <div class="mode-row">
+          <button class="btn-mode" onclick="setMode('comptant')">Comptant</button>
+          <button class="btn-mode" onclick="setMode('virement')">Virement Interac</button>
+          <button class="btn-mode" onclick="setMode('carte')">Carte</button>
+          <button class="btn-mode" onclick="setMode('debit')">Debit</button>
+          <button class="btn-mode" onclick="setMode('cheque')">Cheque</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="final-progress" id="final-progress" style="display:none">
+      <div style="font-size:13px;font-weight:700;color:#555;margin-bottom:12px;">Conditions pour FINAL :</div>
+      <div class="final-checks" id="final-checks"></div>
+    </div>
+  </div>
+    </div>
+
+    <!-- ===== COLONNE 2 (centre): Courriels / Documents / Notes ===== -->
+    <div class="col col-center">
+  <div class="sec" id="sec-notes">
+    <div class="sec-title"><span class="ic">&#128221;</span> Notes internes</div>
+    <textarea id="f-notes" placeholder="Notes visibles seulement par l equipe..."></textarea>
+  </div>
+
+  <div class="sec email-sec" id="sec-emails" style="display:none">
+    <div class="sec-title"><span class="ic">&#9993;</span> Courriels</div>
+    <div class="email-list" id="email-list"></div>
+  </div>
+
+  <div class="sec doc-sec" id="sec-docs" style="display:none">
+    <div class="sec-title"><span class="ic">&#128196;</span> Documents</div>
+    <div class="doc-section" id="doc-section"></div>
+  </div>
+    </div>
+
+    <!-- ===== COLONNE 3 (droite): Commission tech (si tech) / Finances ===== -->
+    <div class="col col-right">
+  <div class="sec" id="sec-comm-tech" style="display:none">
+    <div class="sec-title"><span class="ic">&#128188;</span> Ma commission</div>
+    <div class="comm-tech-card">
+      <div class="comm-tech-val" id="tech-comm-val">&#8212;</div>
+      <div class="comm-tech-sub">Commission pour ce mandat</div>
+    </div>
+  </div>
+
   <div class="sec finance-sec" id="sec-finances">
     <div class="sec-title"><span class="ic">&#128176;</span> Finances</div>
 
@@ -497,77 +594,9 @@ input[type=file]{display:none;}
       </div>
     </div>
   </div>
-
-  <div class="sec" id="sec-comm-tech" style="display:none">
-    <div class="sec-title"><span class="ic">&#128188;</span> Ma commission</div>
-    <div class="comm-tech-card">
-      <div class="comm-tech-val" id="tech-comm-val">&#8212;</div>
-      <div class="comm-tech-sub">Commission pour ce mandat</div>
-    </div>
-  </div>
-
-  <div class="sec status-sec" id="sec-statuts">
-    <div class="sec-title"><span class="ic">&#9989;</span> Statuts</div>
-    <div class="statuts-grid">
-      <button class="btn-st st-soum" id="st-soum" onclick="toggleSoumissionEnvoyee()">
-        <div class="ck"></div> Soumission envoyee
-      </button>
-      <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
-        <div class="ck"></div> Confirmation envoyee
-      </button>
-      <button class="btn-st" id="st-fact" onclick="toggleSt('statut_facture_envoyee','st-fact')">
-        <div class="ck"></div> Facture envoyee
-      </button>
-      <button class="btn-st" id="st-paye" onclick="togglePaye()">
-        <div class="ck"></div> Paye
-      </button>
-      <button class="btn-st" id="st-rapp" onclick="toggleSt('statut_rapport_envoye','st-rapp')">
-        <div class="ck"></div> Rapport / Analyse envoye
-      </button>
     </div>
 
-    <div class="paye-section" id="paye-section">
-      <div>
-        <label>Paye par</label>
-        <div class="par-row">
-          <button class="btn-par" id="par-client" onclick="setPar('client')">&#128100; <span id="par-client-nom">Client</span></button>
-          <button class="btn-par" id="par-autre" onclick="setPar('autre')">Autre...</button>
-        </div>
-        <input type="text" id="par-autre-input" style="display:none;margin-top:10px;max-width:300px;" placeholder="Nom de la personne" oninput="setParAutre(this.value)">
-      </div>
-      <div style="margin-top:16px">
-        <label>Mode de paiement</label>
-        <div class="mode-row">
-          <button class="btn-mode" onclick="setMode('comptant')">Comptant</button>
-          <button class="btn-mode" onclick="setMode('virement')">Virement Interac</button>
-          <button class="btn-mode" onclick="setMode('carte')">Carte</button>
-          <button class="btn-mode" onclick="setMode('debit')">Debit</button>
-          <button class="btn-mode" onclick="setMode('cheque')">Cheque</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="final-progress" id="final-progress" style="display:none">
-      <div style="font-size:13px;font-weight:700;color:#555;margin-bottom:12px;">Conditions pour FINAL :</div>
-      <div class="final-checks" id="final-checks"></div>
-    </div>
   </div>
-
-  <div class="sec doc-sec" id="sec-docs" style="display:none">
-    <div class="sec-title"><span class="ic">&#128196;</span> Documents</div>
-    <div class="doc-section" id="doc-section"></div>
-  </div>
-
-  <div class="sec email-sec" id="sec-emails" style="display:none">
-    <div class="sec-title"><span class="ic">&#9993;</span> Courriels</div>
-    <div class="email-list" id="email-list"></div>
-  </div>
-
-  <div class="sec">
-    <div class="sec-title"><span class="ic">&#128221;</span> Notes internes</div>
-    <textarea id="f-notes" placeholder="Notes visibles seulement par l equipe..."></textarea>
-  </div>
-
   <div class="sec histo-sec" id="sec-histo" style="display:none">
     <div class="histo-toggle" onclick="toggleHistorique()">
       <div class="sec-title" style="margin-bottom:0"><span class="ic">&#128214;</span> Historique du mandat <span id="histo-count" style="font-size:13px;color:#999;font-weight:500;margin-left:6px"></span></div>
