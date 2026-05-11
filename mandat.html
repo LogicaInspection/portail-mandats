@@ -1099,14 +1099,9 @@ async function toggleSoumissionEnvoyee(){
       details:{via:'soumission_envoyee_auto'}
     });
     /* Rafraichir UI pour refleter la nouvelle assignation */
+    applyReclameUI(profile.id);
     updateReclamerBtn();
-    updateAssignInfo();
     loadHistorique();
-    /* Mettre a jour le selecteur tech dans la section planification si visible */
-    const fTech=document.getElementById('f-tech');
-    if(fTech) fTech.value=profile.id;
-    /* Mettre a jour le statut visible */
-    if(typeof setAssignMode==='function') setAssignMode('direct');
     toast('Soumission envoyee + mandat reclame');
   } else {
     toast(newVal?'Soumission envoyee':'Statut desactive');
@@ -1282,6 +1277,22 @@ function lockAssignControls(locked){
   document.getElementById('f-region-pool').disabled=locked;
 }
 
+/* Helper: applique l'UI Planification apres une reclamation
+   - Force le mode "Assigner a un tech" (direct)
+   - Met le selecteur tech sur le tech qui a reclame
+   - Verrouille les controles d'assignation pour les non-gestionnaires
+     (puisque le statut devient 'reclame') */
+function applyReclameUI(techId){
+  /* Force unlock temporaire pour pouvoir modifier l'UI */
+  assignLocked=false;
+  setAssignMode('direct');
+  const tsel=document.getElementById('f-tech');
+  if(tsel) tsel.value=techId;
+  updateAssignInfo();
+  /* Verrouille pour les non-gestionnaires */
+  if(profile.role!=='gestionnaire') lockAssignControls(true);
+}
+
 /* ===== ETAPE 4 - BOUTON RECLAMER =====
    Affiche une banniere avec bouton "Reclamer ce mandat" pour les techs:
    - Si mandat assigne (statut='assigne') au tech connecte (priorite avec timer actif)
@@ -1354,8 +1365,7 @@ async function reclamerMandat(){
 
   mandat={...mandat,...updates};
 
-  const tsel=document.getElementById('f-tech');
-  if(tsel) tsel.value=profile.id;
+  applyReclameUI(profile.id);
 
   toast(isInPool?'Mandat reclame du pool !':'Prise en charge confirmee !');
   updateReclamerBtn();
