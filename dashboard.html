@@ -228,8 +228,8 @@ body.archives-mode { background: #faf5ed; }
 .t-row.row-pool { background: #e3f0ff; }
 .t-row.row-pool:hover { background: #d0e4fa; }
 
-.cols-gest { grid-template-columns: 92px 1fr 160px 80px 140px 120px 120px 100px; gap: 10px; }
-.cols-tech { grid-template-columns: 92px 1fr 160px 80px 140px 120px 120px; gap: 10px; }
+.cols-gest { grid-template-columns: 92px 1fr 140px 70px 120px 110px 110px 130px 90px; gap: 8px; }
+.cols-tech { grid-template-columns: 92px 1fr 140px 70px 120px 110px 110px 130px; gap: 8px; }
 
 .badge {
   display: inline-block; padding: 3px 10px;
@@ -255,6 +255,65 @@ body.archives-mode { background: #faf5ed; }
   white-space: nowrap;
   vertical-align: middle;
 }
+
+/* Statut de contact - badge */
+.suivi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.suivi-badge.pas_contacte    { background:#f5f5f5; color:#666; }
+.suivi-badge.message_laisse  { background:#fff3e0; color:#bf360c; }
+.suivi-badge.en_attente      { background:#fff9c4; color:#827717; }
+.suivi-badge.soumission_envoyee { background:#f3e5f5; color:#6a1b9a; }
+.suivi-badge.confirme        { background:#e8f5e9; color:#2e7d32; }
+.suivi-badge.refuse          { background:#fee2e2; color:#c62828; }
+
+/* Indicateur de rappel en retard sur la ligne */
+.rappel-warn {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 11px;
+  color: #c62828;
+  font-weight: 600;
+  background: #fee2e2;
+  padding: 1px 6px;
+  border-radius: 8px;
+  vertical-align: middle;
+}
+
+/* Banniere de rappels en haut du dashboard */
+.rappels-banner {
+  background: linear-gradient(to right, #fff3e0, #ffe0b2);
+  border-left: 4px solid #e65100;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: none;
+  align-items: center;
+  gap: 14px;
+}
+.rappels-banner.show { display: flex; }
+.rappels-banner-icon { font-size: 26px; }
+.rappels-banner-content { flex: 1; min-width: 0; }
+.rappels-banner-title { font-weight: 700; color: #bf360c; font-size: 14px; margin-bottom: 2px; }
+.rappels-banner-sub { font-size: 12px; color: #6d4c00; }
+.rappels-banner-btn {
+  background: #e65100; color: white; border: none;
+  padding: 8px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+}
+.rappels-banner-btn:hover { background: #bf360c; }
 .tab-count { display:inline-block; background:rgba(255,255,255,0.25); color:inherit; font-size:11px; font-weight:600; padding:1px 8px; border-radius:10px; margin-left:4px; min-width:18px; text-align:center; }
 .tab:not(.active) .tab-count { background:#e5e7eb; color:#666; }
 .tab-count:empty { display:none; }
@@ -352,6 +411,16 @@ body.archives-mode { background: #faf5ed; }
 </div>
 
 <div class="main">
+  <!-- Banniere de rappels client (affichee si mandats necessitent suivi) -->
+  <div class="rappels-banner" id="rappels-banner">
+    <div class="rappels-banner-icon">&#128276;</div>
+    <div class="rappels-banner-content">
+      <div class="rappels-banner-title" id="rappels-banner-title">Mandats n&eacute;cessitant un suivi</div>
+      <div class="rappels-banner-sub" id="rappels-banner-sub">&nbsp;</div>
+    </div>
+    <button class="rappels-banner-btn" onclick="showRappels()">Voir les rappels</button>
+  </div>
+
   <div class="pipeline-tiles">
     <div class="ptile ptile-tous active" data-tab="tous" onclick="setTab('tous')">
       <div class="ptile-label">&#128203; TOUS</div>
@@ -419,6 +488,15 @@ body.archives-mode { background: #faf5ed; }
       <option value="assigne">Assign&eacute; (timer actif)</option>
       <option value="reclame">R&eacute;clam&eacute;</option>
       <option value="pool">Dans le pool</option>
+    </select>
+    <select class="filter" id="f-suivi" onchange="filterMandats()">
+      <option value="">Tous les suivis</option>
+      <option value="pas_contacte">&#128222; Pas contact&eacute;</option>
+      <option value="message_laisse">&#128172; Message laiss&eacute;</option>
+      <option value="en_attente">&#9203; En attente client</option>
+      <option value="soumission_envoyee">&#128221; Soumission envoy&eacute;e</option>
+      <option value="confirme">&#9989; Confirm&eacute;</option>
+      <option value="refuse">&#10060; Refus&eacute;</option>
     </select>
     <select class="filter" id="f-tech" style="display:none" onchange="filterMandats()">
       <option value="">Tous les techniciens</option>
@@ -742,6 +820,11 @@ function getFilteredMandats() {
     list = list.filter(m => !!m.date_mandat);
   } else if (currentTab === 'pool') {
     list = list.filter(m => m.statut_assignation === 'pool');
+  } else if (currentTab === 'rappels') {
+    /* Filtre special: mandats necessitant un suivi */
+    const isGest = profile.role === 'gestionnaire';
+    const baseList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
+    list = getMandatsNecessitantSuivi(baseList);
   }
   /* Filtre compagnie (select separe) - applique en plus de l'onglet */
   if (compagnie) list = list.filter(m => m.compagnie === compagnie);
@@ -757,12 +840,20 @@ function getFilteredMandats() {
   if (st === 'confirmation_pending') list = list.filter(m => !m.statut_confirmation_envoyee);
   if (assign) list = list.filter(m => (m.statut_assignation || 'non_assigne') === assign);
   if (tech) list = list.filter(m => m.technicien_id === tech);
+  const suivi = document.getElementById('f-suivi')?.value;
+  if (suivi) list = list.filter(m => m.statut_contact === suivi);
 
   return list;
 }
 
 function filterMandats() {
   renderTable(getFilteredMandats());
+  updateRappelsBanner(allMandats);
+}
+
+/* Alias pour showRappels() (qui doit declencher un render apres avoir change currentTab) */
+function render() {
+  filterMandats();
 }
 
 function getAssignBadge(m) {
@@ -774,6 +865,77 @@ function getAssignBadge(m) {
     'pool': 'Pool ' + (m.region_mandat === 'estrie' ? 'Estrie' : 'Qu\u00e9bec')
   };
   return `<span class="assign-badge assign-${s}">${labels[s] || s}</span>`;
+}
+
+/* ===== SUIVI CLIENT - BADGES ET BANNIERE DE RAPPELS ===== */
+const STATUT_CONTACT_LABELS = {
+  'pas_contacte':       {icon:'\uD83D\uDCDE', label:'Pas contact\u00e9'},
+  'message_laisse':     {icon:'\uD83D\uDCAC', label:'Message laiss\u00e9'},
+  'en_attente':         {icon:'\u23F3',       label:'En attente'},
+  'soumission_envoyee': {icon:'\uD83D\uDCDD', label:'Soumission'},
+  'confirme':           {icon:'\u2705',       label:'Confirm\u00e9'},
+  'refuse':             {icon:'\u274C',       label:'Refus\u00e9'},
+};
+
+function getSuiviBadge(m) {
+  const s = m.statut_contact;
+  if (!s) return '<span style="color:#bbb">&mdash;</span>';
+  const info = STATUT_CONTACT_LABELS[s] || {icon:'?',label:s};
+  /* Indicateur si rappel en retard */
+  let rappelHtml = '';
+  if (m.prochain_rappel) {
+    const rappelDate = new Date(m.prochain_rappel);
+    if (rappelDate < new Date()) {
+      rappelHtml = '<span class="rappel-warn">&#9888;&#65039; En retard</span>';
+    }
+  }
+  return `<span class="suivi-badge ${s}">${info.icon} ${info.label}</span>${rappelHtml}`;
+}
+
+/* Identifie les mandats necessitant un suivi:
+   - prochain_rappel dans le passe
+   - OU statut 'message_laisse' depuis > 24h sans nouvelle entree */
+function getMandatsNecessitantSuivi(list) {
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 24*60*60*1000);
+  return list.filter(m => {
+    /* Refuse/confirme = ne necessite plus de suivi */
+    if (m.statut_contact === 'refuse' || m.statut_contact === 'confirme') return false;
+    /* Rappel echu */
+    if (m.prochain_rappel && new Date(m.prochain_rappel) < now) return true;
+    /* Message laisse depuis > 24h (on utilise updated_at comme proxy) */
+    if (m.statut_contact === 'message_laisse' && m.updated_at && new Date(m.updated_at) < yesterday) return true;
+    return false;
+  });
+}
+
+function updateRappelsBanner(list) {
+  const banner = document.getElementById('rappels-banner');
+  const isGest = profile.role === 'gestionnaire';
+  /* Pour les techs: filtrer sur leurs propres mandats. Pour gestionnaires: tous. */
+  const myList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
+  const needFollowUp = getMandatsNecessitantSuivi(myList);
+  if (needFollowUp.length === 0) {
+    banner.classList.remove('show');
+    return;
+  }
+  document.getElementById('rappels-banner-title').textContent =
+    needFollowUp.length + ' mandat' + (needFollowUp.length>1?'s':'') + ' n\u00e9cessite' + (needFollowUp.length>1?'nt':'') + ' un suivi';
+  document.getElementById('rappels-banner-sub').textContent =
+    'Rappels en retard ou messages laiss\u00e9s depuis plus de 24h';
+  banner.classList.add('show');
+  /* Stocke les IDs pour le clic "Voir les rappels" */
+  banner.dataset.mandatIds = needFollowUp.map(m=>m.id).join(',');
+}
+
+function showRappels() {
+  /* Bascule sur un filtre special pour montrer uniquement les mandats necessitant suivi */
+  currentTab = 'rappels';
+  /* Desactive les autres pipeline tiles visuellement */
+  document.querySelectorAll('.ptile').forEach(p => p.classList.remove('active'));
+  render();
+  /* Scroll vers la table */
+  document.getElementById('table-wrap').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function getTimerHtml(m) {
@@ -914,6 +1076,7 @@ function renderTable(list) {
   let html = `<div class="t-header ${cols}">
     <div>Date</div><div>Client</div><div>Adresse</div>
     <div>Compagnie</div><div>Type</div><div>Technicien</div><div>Assignation</div>
+    <div>Suivi</div>
     ${isGest ? '<div>Total TTC</div>' : ''}
   </div>`;
 
@@ -949,6 +1112,7 @@ function renderTable(list) {
         ${getAssignBadge(m)}
         ${getTimerHtml(m)}
       </div>
+      <div>${getSuiviBadge(m)}</div>
       ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</div>` : ''}
     </div>`;
   });
