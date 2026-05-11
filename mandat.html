@@ -177,6 +177,19 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 }
 .extra-name-input:focus{border-color:#1a1a2e;}
 
+/* Google Calendar - bouton + statut */
+.gcal-block{margin-top:14px;padding:12px 14px;background:#f0f7ff;border-left:3px solid #1976d2;border-radius:8px;}
+.gcal-row{display:flex;align-items:center;gap:8px;}
+.btn-gcal{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:white;border:1.5px solid #1976d2;color:#1565c0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.btn-gcal:hover{background:#1976d2;color:white;}
+.btn-gcal.added{background:#e8f5e9;border-color:#43a047;color:#2e7d32;}
+.btn-gcal.added:hover{background:#43a047;color:white;}
+.btn-gcal-remove{width:36px;height:36px;border:1.5px solid #e0e0e0;background:white;color:#c62828;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;}
+.btn-gcal-remove:hover{background:#ffebee;border-color:#c62828;}
+.gcal-status{margin-top:8px;font-size:12px;color:#666;line-height:1.4;}
+.gcal-status.added{color:#2e7d32;font-weight:500;}
+.gcal-status.error{color:#c62828;}
+
 .extras-wrap{background:#f8f9fa;border-radius:12px;padding:14px 12px;margin:12px 0;}
 .extra-row{display:grid;grid-template-columns:26px 1fr 72px 72px 30px;gap:6px;align-items:center;padding:9px 4px;border-bottom:1px solid #eee;}
 .extra-row:last-child{border:none;}
@@ -477,6 +490,16 @@ input[type=file]{display:none;}
     <div class="grid2">
       <div class="fg"><label>Date</label><input id="f-date" type="date"></div>
       <div class="fg"><label>Heure</label><input id="f-heure" type="time"></div>
+    </div>
+
+    <div class="gcal-block">
+      <div class="gcal-row">
+        <button type="button" class="btn-gcal" id="btn-gcal" onclick="addToGoogleCalendar()">
+          <span id="btn-gcal-icon">&#128197;</span> <span id="btn-gcal-label">Ajouter au calendrier</span>
+        </button>
+        <button type="button" class="btn-gcal-remove" id="btn-gcal-remove" onclick="removeFromGoogleCalendar()" style="display:none" title="Retirer du calendrier">&#10005;</button>
+      </div>
+      <div id="gcal-status" class="gcal-status">Pas encore ajout&eacute;</div>
     </div>
 
     <div style="margin-top:14px">
@@ -797,6 +820,7 @@ async function confirmTestAction(actionLabel){
     if(profile.role==='technicien') document.getElementById('f-tech').value=profile.id;
     if(comp==='logica') extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
     onCompagnieChange();
+    updateGcalStatus();
   }
 
   const isGest=profile.role==='gestionnaire';
@@ -921,6 +945,7 @@ function fillForm(){
   document.getElementById('echan-count').textContent=echantillonsSupp;
   onCompagnieChange();
   recalc();
+  updateGcalStatus();
 }
 
 function onCompagnieChange(){
@@ -1955,7 +1980,7 @@ function closeEmailModal(){document.getElementById('modal-email').style.display=
 function connectGmail(){
   const client=google.accounts.oauth2.initTokenClient({
     client_id:GC_ID,
-    scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly',
+    scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events',
     callback:async(resp)=>{
       if(resp.error) return;
       localStorage.setItem('portail_gmail_token',resp.access_token);
@@ -1970,6 +1995,28 @@ function connectGmail(){
     }
   });
   client.requestAccessToken();
+}
+
+/* Helper: obtient un token Google valide (Gmail + Calendar partagent le meme token).
+   Si pas de token / expire, demande une nouvelle autorisation a l'utilisateur. */
+function getGoogleToken(){
+  return new Promise((resolve,reject)=>{
+    const token=localStorage.getItem('portail_gmail_token');
+    const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
+    if(token && Date.now()<expiry) return resolve(token);
+    /* Pas de token valide: demande une autorisation */
+    const client=google.accounts.oauth2.initTokenClient({
+      client_id:GC_ID,
+      scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events',
+      callback:(resp)=>{
+        if(resp.error) return reject(resp.error);
+        localStorage.setItem('portail_gmail_token',resp.access_token);
+        localStorage.setItem('portail_gmail_expiry',Date.now()+3500*1000);
+        resolve(resp.access_token);
+      }
+    });
+    client.requestAccessToken();
+  });
 }
 
 async function sendEmail(){
@@ -2014,6 +2061,165 @@ function openListing(){
 
 function money(n){
   return new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD',minimumFractionDigits:2}).format(n||0);
+}
+
+/* ===== GOOGLE CALENDAR INTEGRATION =====
+   Ajoute le mandat au calendrier Google PERSONNEL de l'utilisateur connecte.
+   - Pas d'invites, juste un evenement personnel
+   - Duree 2h, timezone America/Toronto, rappels 1 jour + 1 heure
+   - Si gcal_event_id existe deja: UPDATE l'evenement (utile si date/adresse change)
+   - Bouton ✕ pour supprimer l'evenement */
+
+function buildGcalEventBody(){
+  const clientNom=document.getElementById('f-client-nom').value||'Client';
+  const adresse=document.getElementById('f-adresse').value||'';
+  const tel=document.getElementById('f-client-tel').value||'';
+  const courtier=document.getElementById('f-courtier').value||'';
+  const date=document.getElementById('f-date').value;
+  const heure=document.getElementById('f-heure').value;
+  const comp=document.getElementById('f-compagnie').value;
+  let typeM='';
+  if(comp==='logica') typeM='Inspection pre-achat';
+  else {
+    const sel=document.getElementById('f-type-mandat');
+    typeM=sel?(sel.options[sel.selectedIndex]?.text||sel.value||''):'';
+  }
+  const total=mandat?mandat.total_ttc:0;
+
+  if(!date||!heure) throw new Error('Date et heure obligatoires');
+
+  /* Calcul de la plage horaire (2h par defaut) */
+  const startDt=new Date(date+'T'+heure+':00');
+  const endDt=new Date(startDt.getTime()+2*60*60*1000);
+  /* Format ISO local avec offset Toronto */
+  const fmt=d=>d.getFullYear()+'-'+
+    String(d.getMonth()+1).padStart(2,'0')+'-'+
+    String(d.getDate()).padStart(2,'0')+'T'+
+    String(d.getHours()).padStart(2,'0')+':'+
+    String(d.getMinutes()).padStart(2,'0')+':00';
+
+  const descLines=[
+    typeM?'Type: '+typeM:null,
+    tel?'Telephone: '+tel:null,
+    courtier?'Courtier: '+courtier:null,
+    total?'Total TTC: '+money(total):null,
+    '',
+    mandat?'Mandat: https://portail-mandats.vercel.app/mandat.html?id='+mandat.id:null,
+  ].filter(Boolean);
+
+  return {
+    summary:clientNom+(typeM?' - '+typeM:''),
+    location:adresse,
+    description:descLines.join('\n'),
+    start:{dateTime:fmt(startDt),timeZone:'America/Toronto'},
+    end:{dateTime:fmt(endDt),timeZone:'America/Toronto'},
+    reminders:{
+      useDefault:false,
+      overrides:[
+        {method:'popup',minutes:24*60},
+        {method:'popup',minutes:60}
+      ]
+    }
+  };
+}
+
+async function addToGoogleCalendar(){
+  if(!mandat){toast('Sauvegardez le mandat avant','err');return;}
+  const date=document.getElementById('f-date').value;
+  const heure=document.getElementById('f-heure').value;
+  if(!date||!heure){toast('Date et heure obligatoires pour ajouter au calendrier','err');return;}
+
+  const isUpdate=!!mandat.gcal_event_id;
+  if(!await confirmTestAction(isUpdate?'Mettre a jour l evenement dans Google Calendar':'Ajouter au Google Calendar')) return;
+
+  toast(isUpdate?'Mise a jour...':'Ajout au calendrier...');
+
+  let token;
+  try{token=await getGoogleToken();}
+  catch(e){toast('Connexion Google annulee','err');return;}
+
+  let eventBody;
+  try{eventBody=buildGcalEventBody();}
+  catch(e){toast(e.message,'err');return;}
+
+  const url=isUpdate
+    ?'https://www.googleapis.com/calendar/v3/calendars/primary/events/'+mandat.gcal_event_id
+    :'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+  const method=isUpdate?'PUT':'POST';
+
+  try{
+    const resp=await fetch(url,{
+      method:method,
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify(eventBody)
+    });
+    if(!resp.ok){
+      const err=await resp.json();
+      toast('Erreur calendrier: '+(err.error?.message||'inconnue'),'err');
+      return;
+    }
+    const data=await resp.json();
+    /* Sauvegarde l'id en BD si c'est une nouvelle creation */
+    if(!isUpdate){
+      await sb.from('mandats').update({gcal_event_id:data.id}).eq('id',mandat.id);
+      mandat.gcal_event_id=data.id;
+    }
+    updateGcalStatus();
+    toast(isUpdate?'Calendrier mis a jour':'Ajoute au calendrier !');
+  }catch(e){toast('Erreur reseau: '+e.message,'err');}
+}
+
+async function removeFromGoogleCalendar(){
+  if(!mandat||!mandat.gcal_event_id) return;
+  if(!await confirmTestAction('Retirer l evenement du Google Calendar')) return;
+
+  let token;
+  try{token=await getGoogleToken();}
+  catch(e){toast('Connexion Google annulee','err');return;}
+
+  try{
+    const resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events/'+mandat.gcal_event_id,{
+      method:'DELETE',
+      headers:{'Authorization':'Bearer '+token}
+    });
+    /* 410 Gone = deja supprime cote Google, on continue le nettoyage en BD */
+    if(!resp.ok && resp.status!==410 && resp.status!==404){
+      const err=await resp.json();
+      toast('Erreur: '+(err.error?.message||'inconnue'),'err');
+      return;
+    }
+    await sb.from('mandats').update({gcal_event_id:null}).eq('id',mandat.id);
+    mandat.gcal_event_id=null;
+    updateGcalStatus();
+    toast('Retire du calendrier');
+  }catch(e){toast('Erreur reseau: '+e.message,'err');}
+}
+
+/* Met a jour l'UI du bouton + statut Calendrier */
+function updateGcalStatus(){
+  const btn=document.getElementById('btn-gcal');
+  const btnIcon=document.getElementById('btn-gcal-icon');
+  const btnLabel=document.getElementById('btn-gcal-label');
+  const btnRm=document.getElementById('btn-gcal-remove');
+  const status=document.getElementById('gcal-status');
+  if(!btn) return;
+
+  const hasEvent=mandat&&mandat.gcal_event_id;
+  if(hasEvent){
+    btn.classList.add('added');
+    btnIcon.innerHTML='&#10003;';
+    btnLabel.textContent='Mettre a jour';
+    btnRm.style.display='flex';
+    status.className='gcal-status added';
+    status.textContent='\u2713 Ajoute au calendrier';
+  } else {
+    btn.classList.remove('added');
+    btnIcon.innerHTML='&#128197;';
+    btnLabel.textContent='Ajouter au calendrier';
+    btnRm.style.display='none';
+    status.className='gcal-status';
+    status.textContent='Pas encore ajoute';
+  }
 }
 
 function toast(msg,type){
