@@ -1573,13 +1573,8 @@ async function saveMandat(){
     }
 
     toast('Mandat cree !');
-    history.replaceState(null,'','?id='+data.id);
-    document.getElementById('htitle').textContent=nom;
-    if(profile.role==='gestionnaire') document.getElementById('btn-del').style.display='flex';
-    document.getElementById('sec-docs').style.display='block';
-    document.getElementById('sec-emails').style.display='block';
-    renderDocs();renderEmails();
-    loadHistorique();
+    setTimeout(()=>window.location.href='dashboard.html',800);
+    return;
   } else {
     const previousStatus=mandat.statut_assignation;
     const {error}=await sb.from('mandats').update(payload).eq('id',mandat.id);
@@ -1608,6 +1603,7 @@ async function saveMandat(){
     /* Rafraichir l'historique pour voir les nouveaux evenements */
     loadHistorique();
     toast('Sauvegarde !');
+    setTimeout(()=>window.location.href='dashboard.html',800);
   }
   document.getElementById('par-client-nom').textContent=nom;
   if(profile.role==='technicien') document.getElementById('tech-comm-val').textContent=money(commTot);
