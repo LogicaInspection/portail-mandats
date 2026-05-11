@@ -687,6 +687,27 @@ input[type=file]{display:none;}
   </div>
 </div>
 
+<!-- Modal de confirmation - modifications non sauvegardees -->
+<div class="ov" id="modal-unsaved" style="display:none">
+  <div class="modal" style="max-width:480px;">
+    <h2>&#9888;&#65039; Modifications non sauvegard&eacute;es</h2>
+    <div style="color:#555;font-size:14px;line-height:1.5;margin-bottom:24px;">
+      Vous avez des modifications non sauvegard&eacute;es sur ce mandat. Que voulez-vous faire ?
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn-send" onclick="unsavedSaveAndLeave()" style="background:#4caf50;">
+        &#128190; Sauvegarder et quitter
+      </button>
+      <button class="btn-cancel" onclick="unsavedLeave()" style="background:#fee2e2;border-color:#fecaca;color:#c62828;">
+        &#10005; Quitter sans sauvegarder
+      </button>
+      <button class="btn-cancel" onclick="unsavedCancel()">
+        Annuler (rester sur le mandat)
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast pour les notifications -->
 <div class="toast" id="toast"></div>
 
@@ -2312,14 +2333,31 @@ function markClean(){
   if(btn) btn.classList.remove('dirty');
 }
 
-async function goBack(){
+function goBack(){
   if(formDirty){
-    const ok=confirm('Vous avez des modifications non sauvegardees.\n\nVoulez-vous vraiment quitter sans sauvegarder ?\n\n(Cliquez Annuler pour revenir au mandat, ou OK pour quitter)');
-    if(!ok) return;
+    document.getElementById('modal-unsaved').style.display='flex';
+    return;
   }
-  /* Desactive le beforeunload puisqu'on quitte volontairement */
-  formDirty=false;
+  /* Pas de modifs: on quitte direct */
   window.location.href='dashboard.html';
+}
+
+/* Handlers de la modal "modifications non sauvegardees" */
+function unsavedCancel(){
+  document.getElementById('modal-unsaved').style.display='none';
+}
+
+function unsavedLeave(){
+  /* Quitter sans sauvegarder: desactive le warning beforeunload */
+  formDirty=false;
+  document.getElementById('modal-unsaved').style.display='none';
+  window.location.href='dashboard.html';
+}
+
+async function unsavedSaveAndLeave(){
+  document.getElementById('modal-unsaved').style.display='none';
+  /* saveMandat redirige deja vers dashboard apres succes (markClean + setTimeout) */
+  await saveMandat();
 }
 
 /* Detection globale de modifications sur tous les champs du form principal.
