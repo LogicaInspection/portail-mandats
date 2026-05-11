@@ -3,19 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mandat — Portail</title>
+<title>Portail Mandats</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#222;}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
 
-/* ============= MODE TEST ============= */
 body.test-mode { background: #fff8eb; }
+body.test-mode .main { border: 3px solid #f59e0b; border-top: none; padding-top: 18px; }
 body.test-mode::before {
   content: ''; position: fixed; inset: 0;
   border: 3px solid #f59e0b; border-top: none; pointer-events: none; z-index: 9999;
 }
-body.test-mode .header { top: 47px; }
-body.test-mode .content { padding-top: 18px; }
 .test-banner {
   background: #fff3cd; border-bottom: 3px solid #f59e0b;
   padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
@@ -31,245 +30,282 @@ body.test-mode .content { padding-top: 18px; }
   border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
 }
 .test-banner .btn-exit-test:hover { background: #f59e0b; color: white; }
-/* ===================================== */
 
-.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.15);}
-.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;}
-.btn-back:hover{background:rgba(255,255,255,0.2);}
-.hcenter{display:flex;align-items:center;gap:10px;}
-#htitle{font-size:16px;font-weight:600;}
-.badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;}
-.badge-logica{background:#1565c0;color:white;}
-.badge-geq{background:#b71c1c;color:white;}
-.hright{display:flex;gap:8px;align-items:center;}
-.btn-save{background:#4caf50;border:none;color:white;padding:10px 22px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 2px 8px rgba(76,175,80,0.3);}
-.btn-save:hover{background:#43a047;}
-.btn-del{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:white;padding:10px 16px;border-radius:9px;cursor:pointer;font-size:13px;}
-.btn-del:hover{background:#c62828;border-color:#c62828;}
-
-.btn-final-header{padding:10px 22px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all 0.3s;letter-spacing:0.5px;}
-.btn-final-ready{background:#4caf50;color:white;box-shadow:0 2px 12px rgba(76,175,80,0.5);animation:pulse 2s infinite;}
-.btn-final-done{background:#2e7d32;color:white;}
-.btn-final-pending{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.2);cursor:not-allowed;}
-@keyframes pulse{0%,100%{box-shadow:0 2px 12px rgba(76,175,80,0.5);}50%{box-shadow:0 2px 24px rgba(76,175,80,0.8);}}
-
-.content{max-width:920px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px;}
-
-.sec{background:white;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid #f0f0f0;}
-.sec.logica-sec{border-left:4px solid #1565c0;}
-.sec.geq-sec{border-left:4px solid #b71c1c;}
-.sec.finance-sec{border-left:4px solid #ff9800;}
-.sec.status-sec{border-left:4px solid #4caf50;}
-.sec.doc-sec{border-left:4px solid #7c4dff;}
-.sec.email-sec{border-left:4px solid #00bcd4;}
-.sec.alert-sec{border-left:4px solid #f44336;background:#fff8f8;}
-
-.sec-title{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #f5f5f5;display:flex;align-items:center;gap:8px;}
-.sec-title .ic{font-size:18px;}
-
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
-.fg{display:flex;flex-direction:column;gap:6px;}
-.fg.s2{grid-column:span 2;}
-.fg.s3{grid-column:span 3;}
-
-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;}
-
-input,select,textarea{
-  padding:11px 15px;border:1.5px solid #e8eaed;border-radius:10px;
-  font-size:14px;color:#222;background:white;outline:none;
-  transition:all 0.2s;font-family:inherit;width:100%;
+.btn-view-as {
+  padding: 7px 14px; background: #fff7e6; border: 1px solid #f59e0b;
+  border-radius: 8px; font-size: 13px; color: #92400e; cursor: pointer; transition: all 0.15s;
 }
-input:focus,select:focus,textarea:focus{border-color:#1a1a2e;box-shadow:0 0 0 3px rgba(26,26,46,0.08);}
-input[readonly]{background:#f8f9fa;color:#999;}
-textarea{resize:vertical;min-height:80px;line-height:1.6;}
+.btn-view-as:hover { background: #fde68a; }
 
-.link-input{display:flex;gap:8px;}
-.link-input input{flex:1;}
-.btn-link{padding:11px 16px;border:1.5px solid #e8eaed;border-radius:10px;background:white;cursor:pointer;font-size:13px;color:#1565c0;white-space:nowrap;transition:all 0.2s;}
-.btn-link:hover{background:#e3f0ff;border-color:#1565c0;}
-
-.statuts-grid{display:flex;gap:10px;flex-wrap:wrap;}
-.btn-st{
-  display:flex;align-items:center;gap:8px;padding:11px 18px;
-  border-radius:10px;border:2px solid #e8eaed;background:white;
-  font-size:13px;font-weight:600;color:#999;cursor:pointer;transition:all 0.2s;
+.modal-viewas {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center; z-index: 1500;
 }
-.btn-st:hover{border-color:#bbb;color:#666;}
-.btn-st.on{border-color:#4caf50;background:#f1f8e9;color:#2e7d32;}
-.btn-st .ck{width:20px;height:20px;border-radius:50%;border:2px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.2s;flex-shrink:0;}
-.btn-st.on .ck{background:#4caf50;border-color:#4caf50;color:white;}
-
-.paye-section{margin-top:18px;padding-top:18px;border-top:1px solid #f0f0f0;display:none;}
-.paye-section.show{display:block;}
-.par-row,.mode-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
-.btn-par{padding:8px 16px;border:1.5px solid #e8eaed;border-radius:8px;background:white;font-size:13px;cursor:pointer;transition:all 0.2s;color:#555;font-weight:500;}
-.btn-par.on{border-color:#1a1a2e;background:#1a1a2e;color:white;}
-.btn-mode{padding:8px 14px;border:1.5px solid #e8eaed;border-radius:8px;background:white;font-size:13px;cursor:pointer;transition:all 0.2s;color:#555;}
-.btn-mode:hover{border-color:#bbb;}
-.btn-mode.on{border-color:#1565c0;background:#e3f0ff;color:#1565c0;font-weight:600;}
-
-.fin-card{background:#f8f9fa;border-radius:12px;padding:20px;margin-bottom:16px;}
-.fin-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;}
-.fin-row:last-child{border:none;}
-.fin-row.total{background:#e8f5e9;border-radius:10px;padding:14px 16px;margin-top:8px;border:none;}
-.fin-row.comm{background:#e3f0ff;border-radius:10px;padding:14px 16px;border:none;}
-.fin-row.profit{background:#fff3e0;border-radius:10px;padding:14px 16px;border:none;margin-top:4px;}
-.fin-row.tax{color:#999;font-size:13px;}
-.fin-label{font-size:14px;color:#444;display:flex;align-items:center;gap:8px;}
-.fin-label.bold{font-weight:700;color:#1a1a2e;font-size:15px;}
-.fin-label.comm-color{color:#1565c0;font-weight:700;}
-.fin-label.profit-color{color:#e65100;font-weight:700;}
-.fin-value{font-weight:600;font-size:14px;color:#222;}
-.fin-value.big{font-size:18px;font-weight:800;}
-.fin-value.comm-val{color:#1565c0;font-size:18px;font-weight:800;}
-.fin-value.profit-val{color:#e65100;font-size:18px;font-weight:800;}
-
-.fin-input{width:110px;padding:8px 12px;border:1.5px solid #e8eaed;border-radius:8px;font-size:14px;text-align:right;background:white;outline:none;transition:border 0.2s;}
-.fin-input:focus{border-color:#1a1a2e;}
-.fin-input.small{width:90px;font-size:13px;}
-
-.extras-wrap{background:#f8f9fa;border-radius:12px;padding:16px;margin:12px 0;}
-.extra-row{display:grid;grid-template-columns:32px 1fr 110px 110px 36px;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid #eee;}
-.extra-row:last-child{border:none;}
-.extra-check{width:18px;height:18px;cursor:pointer;accent-color:#1a1a2e;}
-.extra-name{font-size:13px;color:#333;font-weight:500;}
-.extra-label{font-size:11px;color:#999;text-align:right;margin-bottom:2px;}
-.btn-rm{padding:4px 8px;border:none;border-radius:6px;background:#ffebee;color:#e53935;cursor:pointer;font-size:14px;}
-.btn-add-extra{margin-top:10px;padding:8px 16px;border:2px dashed #ccc;border-radius:9px;background:none;color:#999;font-size:13px;cursor:pointer;width:100%;transition:all 0.2s;}
-.btn-add-extra:hover{border-color:#1a1a2e;color:#1a1a2e;}
-
-.special-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
-.btn-special{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:2px solid #e8eaed;background:white;font-size:13px;font-weight:600;color:#555;cursor:pointer;transition:all 0.2s;}
-.btn-special:hover{border-color:#bbb;}
-.btn-special.on{border-color:#ff9800;background:#fff8e1;color:#e65100;}
-.btn-echan{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;border:2px solid #e8eaed;background:white;font-size:13px;font-weight:600;color:#555;}
-.btn-echan-pm{width:28px;height:28px;border-radius:6px;border:none;font-size:16px;cursor:pointer;font-weight:700;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
-.btn-echan-pm.plus{background:#e3f0ff;color:#1565c0;}
-.btn-echan-pm.plus:hover{background:#1565c0;color:white;}
-.btn-echan-pm.minus{background:#ffebee;color:#e53935;}
-.btn-echan-pm.minus:hover{background:#e53935;color:white;}
-.echan-count{font-size:18px;font-weight:800;color:#1a1a2e;min-width:24px;text-align:center;}
-
-.frais-lab-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff3e0;border-radius:10px;margin-top:8px;border:1px solid #ffe0b2;}
-.frais-lab-label{font-size:13px;color:#e65100;font-weight:600;display:flex;align-items:center;gap:8px;}
-.sans-lettre-row{display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f8f9fa;border-radius:8px;margin-top:6px;font-size:13px;color:#666;}
-.sans-lettre-row input{width:auto;}
-
-.alerte-commission{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.btn-alerte{padding:10px 20px;border-radius:10px;border:none;background:#f44336;color:white;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;}
-.btn-alerte:hover{background:#d32f2f;}
-.btn-alerte.sent{background:#e8f5e9;color:#2e7d32;border:2px solid #4caf50;cursor:default;}
-.alerte-msg{font-size:13px;color:#888;}
-
-.doc-section{display:flex;flex-direction:column;gap:16px;}
-.doc-block-title{font-size:13px;font-weight:700;color:#555;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.doc-drop{border:2px dashed #e8eaed;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;font-size:13px;color:#bbb;background:#fafafa;}
-.doc-drop:hover{border-color:#1a1a2e;background:#f5f5f5;color:#666;}
-.doc-file{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8f9fa;border-radius:10px;margin-bottom:6px;border:1px solid #eee;}
-.doc-fn{flex:1;font-size:13px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
-.btn-dl{padding:6px 12px;border:1.5px solid #e8eaed;border-radius:7px;background:white;font-size:12px;cursor:pointer;color:#1565c0;transition:all 0.2s;}
-.btn-dl:hover{background:#e3f0ff;}
-.btn-deldoc{padding:6px 10px;border:none;border-radius:7px;background:#ffebee;color:#e53935;cursor:pointer;font-size:12px;}
-input[type=file]{display:none;}
-
-.email-list{display:flex;flex-direction:column;gap:10px;}
-.btn-email{display:flex;align-items:center;gap:14px;padding:16px 18px;border:2px solid #e8eaed;border-radius:12px;background:white;cursor:pointer;transition:all 0.2s;text-align:left;width:100%;}
-.btn-email:hover{border-color:#1a1a2e;background:#f8f9fa;transform:translateY(-1px);}
-.btn-email.sent{border-color:#4caf50;background:#f1f8e9;}
-.ei{font-size:22px;}
-.et{font-size:14px;font-weight:700;color:#1a1a2e;}
-.es{font-size:12px;color:#999;margin-top:3px;}
-
-.ov{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:20px;overflow-y:auto;}
-.modal{background:white;border-radius:20px;padding:32px;width:100%;max-width:640px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
-.modal h2{font-size:18px;color:#1a1a2e;margin-bottom:20px;font-weight:700;}
-.mfield{margin-bottom:14px;}
-.mfield label{display:block;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:6px;letter-spacing:0.5px;}
-.mfield input,.mfield textarea{width:100%;padding:11px 15px;border:1.5px solid #e8eaed;border-radius:10px;font-size:13px;outline:none;font-family:inherit;}
-.mfield input:focus,.mfield textarea:focus{border-color:#1a1a2e;}
-.mfield textarea{min-height:280px;line-height:1.7;}
-.mfooter{display:flex;gap:10px;justify-content:flex-end;margin-top:10px;}
-.btn-send{padding:12px 26px;background:#1a1a2e;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;}
-.btn-send:hover{background:#2d2d4e;}
-.btn-cancel{padding:12px 18px;border:1.5px solid #e8eaed;border-radius:10px;background:white;color:#666;font-size:14px;cursor:pointer;}
-.gmail-bar{padding:12px 16px;background:#e3f0ff;border:1px solid #90caf9;border-radius:10px;font-size:13px;color:#1565c0;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
-.btn-gc{padding:7px 16px;background:#1565c0;color:white;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;}
-
-.comm-tech-card{background:linear-gradient(135deg,#e3f0ff,#f0f7ff);border-radius:14px;padding:24px;text-align:center;}
-.comm-tech-val{font-size:36px;font-weight:800;color:#1565c0;margin-bottom:6px;}
-.comm-tech-sub{font-size:13px;color:#888;}
-
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:13px 26px;border-radius:12px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
-.toast.show{opacity:1;}
-
-.final-progress{margin-top:16px;padding:16px;background:#f8f9fa;border-radius:12px;}
-.final-checks{display:flex;flex-direction:column;gap:8px;}
-.final-check-item{display:flex;align-items:center;gap:10px;font-size:13px;color:#666;}
-.final-check-item.ok{color:#2e7d32;font-weight:600;}
-.final-check-item .chk{width:20px;height:20px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
-.final-check-item.ok .chk{background:#4caf50;border-color:#4caf50;color:white;}
-
-@media(max-width:640px){
-  .grid2,.grid3{grid-template-columns:1fr;}
-  .fg.s2,.fg.s3{grid-column:span 1;}
-  .extra-row{grid-template-columns:28px 1fr 90px;}
+.modal-viewas-box {
+  background: white; border-radius: 16px; padding: 28px;
+  width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
 }
-  body.role-secretaire .extras-list > div > div:nth-child(4) { display: none !important; }
-  body.role-secretaire .extras-list > div > div:nth-child(5) { display: none !important; }
-  body.role-secretaire #profit-row { display: none !important; }
+.modal-viewas-box h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 6px; }
+.modal-viewas-box p { font-size: 13px; color: #888; margin-bottom: 20px; }
+.profile-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 10px;
+  margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+}
+.profile-row:hover { background: #fff7e6; border-color: #f59e0b; }
+.profile-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #1a1a2e; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.profile-info { flex: 1; }
+.profile-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+.profile-meta { font-size: 12px; color: #888; margin-top: 2px; }
+.role-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+}
+.role-gestionnaire { background: #fdecea; color: #b71c1c; }
+.role-technicien   { background: #e3f0ff; color: #1565c0; }
+.role-secretaire   { background: #f3e8ff; color: #6b21a8; }
+.role-autre        { background: #f3f4f6; color: #6b7280; }
 
-.sec.reclamer-sec{border-left:4px solid #f59e0b;background:#fff8eb;}
-.sec.reclamer-sec.pool-mode{border-left:4px solid #1565c0;background:#e3f0ff;}
-.reclamer-content{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
-.reclamer-info{display:flex;align-items:center;gap:14px;flex:1;min-width:240px;}
-.reclamer-icon{font-size:32px;flex-shrink:0;}
-.reclamer-text{flex:1;}
-.reclamer-title{font-size:15px;font-weight:700;color:#92400e;margin-bottom:3px;}
-.reclamer-sec.pool-mode .reclamer-title{color:#0d47a1;}
-.reclamer-msg{font-size:13px;color:#a16207;}
-.reclamer-sec.pool-mode .reclamer-msg{color:#1565c0;}
-.btn-reclamer{padding:12px 24px;border-radius:10px;border:none;background:#2e7d32;color:white;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(46,125,50,0.3);flex-shrink:0;}
-.btn-reclamer:hover{background:#1b5e20;box-shadow:0 4px 12px rgba(46,125,50,0.45);transform:translateY(-1px);}
-.btn-reclamer:active{transform:translateY(0);}
+.header {
+  background: white; border-bottom: 1px solid #e5e7eb;
+  padding: 0 32px; display: flex; align-items: center;
+  justify-content: space-between; height: 64px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+body.test-mode .header { top: 47px; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-left img { height: 36px; object-fit: contain; }
+.header-divider { width: 1px; height: 28px; background: #e5e7eb; }
+.header-title { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.user-info { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #555; }
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #1a1a2e; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.btn-logout {
+  padding: 7px 14px; border: 1px solid #e5e7eb; border-radius: 8px;
+  background: white; color: #555; font-size: 13px; cursor: pointer; transition: all 0.2s;
+}
+.btn-logout:hover { background: #f5f5f5; }
 
-.assign-mode-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.assign-mode-btn{padding:14px 16px;border:2px solid #e5e7eb;border-radius:10px;background:white;font-size:13px;font-weight:500;color:#666;cursor:pointer;transition:all 0.2s;text-align:center;}
-.assign-mode-btn:hover:not(:disabled){border-color:#1565c0;background:#f0f7ff;color:#1565c0;}
-.assign-mode-btn.on{border-color:#1565c0;background:#1565c0;color:white;font-weight:600;}
-.assign-mode-btn:disabled{opacity:0.5;cursor:not-allowed;}
-.assign-info{margin-top:12px;padding:10px 14px;background:#f0f7ff;border-radius:8px;font-size:12px;color:#0d47a1;border-left:3px solid #1565c0;line-height:1.4;}
-.assign-info.warn{background:#fff8e1;color:#92400e;border-left-color:#f59e0b;}
-.assign-info.pool{background:#e3f0ff;color:#0d47a1;border-left-color:#1565c0;}
-@media(max-width:600px){.assign-mode-group{grid-template-columns:1fr;}}
+.main { max-width: 1400px; margin: 0 auto; padding: 28px 24px; }
 
-.sec.histo-sec{border-left:4px solid #6b7280;background:#fafafa;}
-.histo-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;padding:6px 0;}
-.histo-toggle:hover .histo-arrow{color:#1565c0;}
-.histo-arrow{font-size:14px;color:#999;transition:transform 0.2s;}
-.histo-arrow.open{transform:rotate(90deg);}
-.histo-content{display:none;margin-top:14px;}
-.histo-content.open{display:block;}
-.histo-empty{text-align:center;color:#bbb;font-size:13px;padding:14px;}
-.histo-event{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0;}
-.histo-event:last-child{border-bottom:none;}
-.histo-icon-box{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.histo-ic-creation{background:#f3f4f6;color:#6b7280;}
-.histo-ic-assignation{background:#fff3cd;color:#92400e;}
-.histo-ic-reclamation{background:#e8f5e9;color:#2e7d32;}
-.histo-ic-bascule_pool_auto{background:#e3f0ff;color:#1565c0;}
-.histo-ic-bascule_pool_manuel{background:#e3f0ff;color:#1565c0;}
-.histo-ic-mise_pool_initiale{background:#e3f0ff;color:#1565c0;}
-.histo-ic-desassignation{background:#fee2e2;color:#b91c1c;}
-.histo-ic-changement_delai{background:#f3f4f6;color:#6b7280;}
-.histo-body{flex:1;min-width:0;}
-.histo-action{font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:2px;}
-.histo-detail{font-size:12px;color:#666;line-height:1.4;}
-.histo-meta{font-size:11px;color:#999;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;}
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 24px;
+  background: white; padding: 4px; border-radius: 12px;
+  width: fit-content; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.tab {
+  padding: 8px 20px; border-radius: 8px; border: none;
+  background: none; font-size: 14px; font-weight: 500;
+  color: #888; cursor: pointer; transition: all 0.2s;
+}
+.tab.active { background: #1a1a2e; color: white; }
+.tab:hover:not(.active) { background: #f5f5f5; color: #444; }
 
-/* ===== Bouton statut Soumission envoyee ===== */
-.btn-st.st-soum.on{border-color:#e65100;background:#fff3e0;color:#bf360c;}
-.btn-st.st-soum.on .ck{background:#e65100;border-color:#e65100;color:white;}
+/* ===== PIPELINE TILES (Tous / Pool / Mandats / Soumissions envoyees) ===== */
+.pipeline-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+.ptile {
+  background: white; border-radius: 14px; padding: 22px 22px 20px;
+  cursor: pointer; transition: all 0.2s; border: 2px solid #e5e7eb;
+  position: relative; user-select: none;
+}
+.ptile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+.ptile-label { font-size: 14px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 10px; color: #555; }
+.ptile-num { font-size: 38px; font-weight: 700; line-height: 1; color: #1a1a2e; }
+.ptile-sub { font-size: 12px; color: #888; margin-top: 6px; }
+/* Variantes de couleur par type */
+.ptile-tous.active { border-color: #1a1a2e; background: #fafafa; }
+.ptile-tous.active .ptile-label, .ptile-tous.active .ptile-sub { color: #1a1a2e; }
+.ptile-pool { border-color: #b3d4f0; }
+.ptile-pool .ptile-label { color: #1565c0; }
+.ptile-pool .ptile-num { color: #0d47a1; }
+.ptile-pool .ptile-sub { color: #1565c0; }
+.ptile-pool.active { background: #e3f0ff; border-color: #1565c0; border-width: 3px; }
+.ptile-mandats { border-color: #c5e1a5; }
+.ptile-mandats .ptile-label { color: #2e7d32; }
+.ptile-mandats .ptile-num { color: #1b5e20; }
+.ptile-mandats .ptile-sub { color: #2e7d32; }
+.ptile-mandats.active { background: #e8f5e9; border-color: #2e7d32; border-width: 3px; }
+.ptile-soumissions { border-color: #ffcc80; }
+.ptile-soumissions .ptile-label { color: #e65100; }
+.ptile-soumissions .ptile-num { color: #bf360c; }
+.ptile-soumissions .ptile-sub { color: #e65100; }
+.ptile-soumissions.active { background: #fff3e0; border-color: #e65100; border-width: 3px; }
+
+/* ===== MINISTATS (barre compacte) ===== */
+.ministats {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+  background: #fafafa; border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 8px 16px; font-size: 12px; color: #555; flex-wrap: wrap;
+}
+.ministats .ms-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.6px; margin-right: 4px; }
+.ministats b { font-weight: 700; color: #1a1a2e; font-size: 14px; }
+.ministats .ms-sep { width: 1px; height: 16px; background: #e5e7eb; }
+
+/* Anciens stats-row caches (mais ID gardes pour compat JS updateStats) */
+.stats-row { display: none; }
+.stat-card { display: none; }
+.stat-label, .stat-value, .stat-sub { display: none; }
+
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-input {
+  flex: 1; min-width: 200px; max-width: 320px;
+  padding: 10px 16px; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; font-size: 14px; outline: none; transition: border 0.2s;
+}
+.search-input:focus { border-color: #1a1a2e; }
+select.filter {
+  padding: 10px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+  font-size: 14px; background: white; outline: none; color: #444; cursor: pointer;
+}
+select.filter:focus { border-color: #1a1a2e; }
+.btn-fdp {
+  margin-left: auto; padding: 10px 18px;
+  background: white; color: #1a1a2e; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-fdp:hover { border-color: #1a1a2e; background: #fafafa; }
+
+.btn-archives {
+  padding: 10px 18px;
+  background: white; color: #666; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-archives:hover { border-color: #888; background: #f9f9f9; }
+.btn-archives.on { background: #f57c00; color: white; border-color: #f57c00; }
+
+.archive-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff3e0; border-left: 4px solid #f57c00;
+  padding: 10px 16px; border-radius: 0 8px 8px 0;
+  margin-bottom: 14px; font-size: 13px; color: #bf360c;
+}
+body.archives-mode { background: #faf5ed; }
+.btn-export {
+  margin-left: auto; padding: 10px 22px;
+  background: #1d9e75; color: white; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 0.2s; display: none;
+}
+.btn-export:hover { background: #178a64; }
+.btn-new {
+  padding: 10px 22px;
+  background: #1a1a2e; color: white; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-new:hover { background: #2d2d4e; }
+
+.table-wrap { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; }
+.t-header {
+  display: grid; padding: 11px 20px;
+  background: #f8f9fa; border-bottom: 1px solid #e5e7eb;
+  font-size: 11px; font-weight: 600; color: #999;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.t-row {
+  display: grid; padding: 14px 20px;
+  border-bottom: 1px solid #f3f3f3;
+  cursor: pointer; transition: background 0.15s; align-items: center;
+}
+.t-row:last-child { border-bottom: none; }
+.t-row:hover { background: #f8f9fa; }
+.t-row.row-assigne { background: #fff8e1; }
+.t-row.row-assigne:hover { background: #fff3c4; }
+.t-row.row-pool { background: #e3f0ff; }
+.t-row.row-pool:hover { background: #d0e4fa; }
+
+.cols-gest { grid-template-columns: 92px 1fr 180px 130px 130px 130px 110px; gap: 12px; }
+.cols-tech { grid-template-columns: 92px 1fr 180px 130px 130px 130px; gap: 12px; }
+
+.badge {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.badge-logica { background: #e3f0ff; color: #1565c0; }
+.badge-geq    { background: #fdecea; color: #b71c1c; }
+.badge-soumission { display:inline-block; background:#fff3e0; color:#e65100; font-size:10px; font-weight:600; padding:2px 8px; border-radius:6px; margin-left:6px; vertical-align:middle; letter-spacing:0.3px; }
+.tab-count { display:inline-block; background:rgba(255,255,255,0.25); color:inherit; font-size:11px; font-weight:600; padding:1px 8px; border-radius:10px; margin-left:4px; min-width:18px; text-align:center; }
+.tab:not(.active) .tab-count { background:#e5e7eb; color:#666; }
+.tab-count:empty { display:none; }
+
+.assign-badge {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.assign-non_assigne { background: #f3f4f6; color: #6b7280; }
+.assign-assigne    { background: #ff9800; color: white; }
+.assign-reclame    { background: #e8f5e9; color: #2e7d32; }
+.assign-pool       { background: #1565c0; color: white; }
+
+.timer-text {
+  font-size: 11px; color: #e65100; margin-top: 4px; font-weight: 600;
+}
+.timer-text.expired { color: #c62828; }
+
+.statuts { display: flex; gap: 8px; }
+.s-dot { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #999; }
+.dot { width: 7px; height: 7px; border-radius: 50%; }
+.dot-green  { background: #4caf50; }
+.dot-orange { background: #ff9800; }
+.dot-gray   { background: #ddd; }
+
+.empty { text-align: center; padding: 56px 20px; color: #bbb; }
+.empty div { font-size: 40px; margin-bottom: 12px; }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal {
+  background: white; border-radius: 16px; padding: 36px;
+  width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.modal h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 8px; }
+.modal p { font-size: 14px; color: #888; margin-bottom: 24px; }
+.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn-logica {
+  padding: 16px; border: 2px solid #e3f0ff; border-radius: 12px;
+  background: #f0f7ff; cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.btn-logica:hover { border-color: #1565c0; background: #e3f0ff; }
+.btn-geq {
+  padding: 16px; border: 2px solid #fdecea; border-radius: 12px;
+  background: #fff5f5; cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.btn-geq:hover { border-color: #b71c1c; background: #fdecea; }
+.modal-comp-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.modal-comp-sub { font-size: 12px; color: #888; }
+.btn-cancel-modal {
+  margin-top: 16px; width: 100%; padding: 10px;
+  border: 1px solid #e5e7eb; border-radius: 10px;
+  background: none; color: #888; font-size: 14px; cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .pipeline-tiles { grid-template-columns: repeat(2, 1fr); }
+  .ministats { font-size: 11px; gap: 10px; padding: 8px 12px; }
+  .ministats b { font-size: 13px; }
+  .cols-gest, .cols-tech { grid-template-columns: 1fr; }
+  .t-header { display: none; }
+}
+@media (max-width: 600px) {
+  .pipeline-tiles { grid-template-columns: 1fr; }
+  .ptile-num { font-size: 32px; }
+}
 </style>
 </head>
 <body>
@@ -283,1581 +319,734 @@ input[type=file]{display:none;}
 </div>
 
 <div class="header">
-  <button class="btn-back" onclick="window.location.href='dashboard.html'">&#8592; Retour</button>
-  <div class="hcenter">
-    <span id="htitle">Nouveau mandat</span>
-    <span id="hbadge" class="badge" style="display:none"></span>
+  <div class="header-left">
+    <img src="https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg" alt="GEQ">
+    <div class="header-divider"></div>
+    <span class="header-title">Portail Mandats</span>
   </div>
-  <div class="hright">
-    <button id="btn-final" class="btn-final-header btn-final-pending" onclick="toggleFinal()">&#10003; FINAL</button>
-    <button id="btn-del" class="btn-del" style="display:none" onclick="deleteMandat()">&#128465;</button>
-    <button class="btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
+  <div class="header-right">
+    <button class="btn-view-as" id="btn-view-as" style="display:none" onclick="openViewAsModal()">&#128373;&#65039; Voir comme...</button>
+    <div class="user-info">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <span id="user-name">...</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">D&eacute;connexion</button>
   </div>
 </div>
 
-<div class="content">
-
-  <div class="sec alert-sec" id="sec-alerte" style="display:none">
-    <div class="sec-title"><span class="ic">&#128680;</span> Commission non inscrite</div>
-    <div class="alerte-commission">
-      <span class="alerte-msg" id="alerte-msg">Si ta commission n'a pas encore ete inscrite par le gestionnaire, tu peux envoyer une alerte.</span>
-      <button class="btn-alerte" id="btn-alerte-send" onclick="envoyerAlerte()">&#128680; Signaler commission manquante</button>
+<div class="main">
+  <div class="pipeline-tiles">
+    <div class="ptile ptile-tous active" data-tab="tous" onclick="setTab('tous')">
+      <div class="ptile-label">&#128203; TOUS</div>
+      <div class="ptile-num" id="ptile-tous">&mdash;</div>
+      <div class="ptile-sub">dossiers actifs</div>
+    </div>
+    <div class="ptile ptile-pool" data-tab="pool" id="ptile-pool-card" style="display:none" onclick="setTab('pool')">
+      <div class="ptile-label">&#127919; POOL</div>
+      <div class="ptile-num" id="ptile-pool">&mdash;</div>
+      <div class="ptile-sub">&agrave; r&eacute;clamer</div>
+    </div>
+    <div class="ptile ptile-mandats" data-tab="mandats" onclick="setTab('mandats')">
+      <div class="ptile-label">&#128197; MANDATS</div>
+      <div class="ptile-num" id="ptile-mandats">&mdash;</div>
+      <div class="ptile-sub">book&eacute;s avec date</div>
+    </div>
+    <div class="ptile ptile-soumissions" data-tab="soumissions" onclick="setTab('soumissions')">
+      <div class="ptile-label">&#128221; SOUMISSIONS ENVOY&Eacute;ES</div>
+      <div class="ptile-num" id="ptile-soumissions">&mdash;</div>
+      <div class="ptile-sub">en attente client</div>
     </div>
   </div>
 
-  <div class="sec reclamer-sec" id="sec-reclamer" style="display:none">
-    <div class="reclamer-content">
-      <div class="reclamer-info">
-        <span class="reclamer-icon" id="reclamer-icon">&#9201;</span>
-        <div class="reclamer-text">
-          <div class="reclamer-title" id="reclamer-title">Mandat &agrave; r&eacute;clamer</div>
-          <div class="reclamer-msg" id="reclamer-msg">...</div>
-        </div>
-      </div>
-      <button class="btn-reclamer" onclick="reclamerMandat()">&#10003; R&eacute;clamer ce mandat</button>
-    </div>
+  <div class="ministats" id="ministats-gest" style="display:none">
+    <span class="ms-label">&#128202; Stats du mois</span>
+    <span><b id="s-mois">&mdash;</b> mandats ce mois</span>
+    <span class="ms-sep"></span>
+    <span><b id="s-rapports">&mdash;</b> rapports en attente</span>
+    <span class="ms-sep"></span>
+    <span><b id="s-nonpaye">&mdash;</b> non pay&eacute;s</span>
+    <span class="ms-sep"></span>
+    <span><b id="s-revenus">&mdash;</b> revenus</span>
+    <span style="display:none" id="s-total">&mdash; au total</span>
   </div>
 
-  <div class="sec" id="sec-client">
-    <div class="sec-title"><span class="ic">&#128100;</span> Informations client</div>
-    <div class="grid2">
-      <div class="fg"><label>Compagnie</label>
-        <select id="f-compagnie" onchange="onCompagnieChange()">
-          <option value="logica">Logica Inspection</option>
-          <option value="geq">GEQ &ndash; B&acirc;timent Conseil</option>
-        </select>
-      </div>
-      <div class="fg" id="fg-type-geq" style="display:none"><label>Type de mandat</label>
-        <select id="f-type-mandat" onchange="onTypeMandatChange()">
-          <option value="Test de qualite de l air fongique">Test de qualit&eacute; de l'air fongique</option>
-          <option value="Test d air Fibre d Amiante">Test d'air Fibre d'Amiante</option>
-          <option value="Biotape">Biotape</option>
-          <option value="Echantillonnage Merule">Echantillonnage M&eacute;rule</option>
-          <option value="Expertise technique avec rapport">Expertise technique (avec rapport)</option>
-          <option value="Expertise technique sans rapport">Expertise technique (sans rapport)</option>
-          <option value="Prelevement Amiante">Pr&eacute;l&egrave;vement Amiante</option>
-          <option value="Peinture plomb">Peinture plomb</option>
-          <option value="Inspection parties communes">Inspection parties communes</option>
-          <option value="Redaction carnet etude">R&eacute;daction carnet / &eacute;tude</option>
-          <option value="Echantillonnage eau">Echantillonnage eau</option>
-          <option value="Inspection drain de fondation">Inspection drain de fondation</option>
-          <option value="Inspection batiment pre-achat GEQ">Inspection b&acirc;timent (pr&eacute;-achat GEQ)</option>
-        </select>
-      </div>
-      <div class="fg s2"><label>Nom du client *</label><input id="f-client-nom" type="text" placeholder="Prenom Nom"></div>
-      <div class="fg"><label>Telephone</label><input id="f-client-tel" type="tel" placeholder="418-000-0000"></div>
-      <div class="fg"><label>Courriel</label><input id="f-client-email" type="email" placeholder="client@email.com"></div>
-      <div class="fg s2"><label>Adresse du mandat</label><input id="f-adresse" type="text" placeholder="123 rue Exemple, Ville, QC"></div>
-      <div class="fg logica-only"><label>Nom du courtier acheteur</label><input id="f-courtier" type="text" placeholder="Prenom Nom"></div>
-      <div class="fg logica-only"><label>Refere par</label><input id="f-reference" type="text" placeholder="Qui vous a refere ?"></div>
-      <div class="fg s2 logica-only">
-        <label>Lien listing (fiche de vente)</label>
-        <div class="link-input">
-          <input id="f-listing" type="url" placeholder="https://centris.ca/...">
-          <button class="btn-link" onclick="openListing()">&#128279; Ouvrir</button>
-        </div>
-      </div>
-      <div class="fg logica-only"><label>Type de batiment</label>
-        <select id="f-type-batiment">
-          <option value="">&#8212; Selectionner &#8212;</option>
-          <option>Plain-Pied (Bungalow)</option>
-          <option>Maison a etage (Cottage)</option>
-          <option>Jumele</option>
-          <option>Jumele a etage</option>
-          <option>Maison en range</option>
-          <option>Maison en range a etage</option>
-          <option>Duplex</option><option>Triplex</option>
-          <option>Quadruplex</option><option>5 plex</option><option>6 plex</option>
-          <option>Maison mobile</option><option>Split level</option><option>Condo</option>
-        </select>
-      </div>
-    </div>
+  <div class="ministats" id="ministats-tech" style="display:none">
+    <span class="ms-label">&#128202; Mes stats</span>
+    <span><b id="t-annee">&mdash;</b> cette ann&eacute;e</span>
+    <span class="ms-sep"></span>
+    <span><b id="t-logica">&mdash;</b> Logica</span>
+    <span class="ms-sep"></span>
+    <span><b id="t-geq">&mdash;</b> GEQ</span>
+    <span class="ms-sep"></span>
+    <span><b id="t-comm">&mdash;</b> commissions</span>
+    <span style="display:none" id="t-mois-sub">&mdash; ce mois</span>
   </div>
 
-  <div class="sec" id="sec-planification">
-    <div class="sec-title"><span class="ic">&#128197;</span> Planification</div>
-    <div class="grid2">
-      <div class="fg"><label>Date</label><input id="f-date" type="date"></div>
-      <div class="fg"><label>Heure</label><input id="f-heure" type="time"></div>
-    </div>
-
-    <div style="margin-top:14px">
-      <label style="display:block;margin-bottom:8px;font-size:13px;color:#666;font-weight:500">Mode d'assignation</label>
-      <div class="assign-mode-group">
-        <button type="button" class="assign-mode-btn on" id="assign-mode-direct" onclick="setAssignMode('direct')">
-          &#128100; Assigner &agrave; un tech
-        </button>
-        <button type="button" class="assign-mode-btn" id="assign-mode-pool" onclick="setAssignMode('pool')">
-          &#127919; Pool ouvert
-        </button>
-      </div>
-    </div>
-
-    <div class="grid2" id="block-direct" style="margin-top:14px">
-      <div class="fg"><label id="lbl-tech">Technicien</label>
-        <select id="f-tech" onchange="updateAssignInfo()"><option value="">&#8212; Selectionner &#8212;</option></select>
-      </div>
-      <div class="fg"><label>D&eacute;lai pour r&eacute;clamer</label>
-        <select id="f-delai" onchange="updateAssignInfo()">
-          <option value="4">4h ouvrables</option>
-          <option value="6">6h ouvrables</option>
-          <option value="8" selected>8h ouvrables</option>
-          <option value="12">12h ouvrables</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="grid2" id="block-pool" style="display:none;margin-top:14px">
-      <div class="fg s2"><label>R&eacute;gion du pool</label>
-        <select id="f-region-pool" onchange="updateAssignInfo()">
-          <option value="quebec">Qu&eacute;bec</option>
-          <option value="estrie">Estrie</option>
-        </select>
-      </div>
-    </div>
-
-    <div id="assign-info" class="assign-info"></div>
+  <div class="toolbar">
+    <input type="text" class="search-input" id="search" placeholder="&#128269;  Rechercher client, adresse..." oninput="filterMandats()">
+    <select class="filter" id="f-compagnie" onchange="filterMandats()">
+      <option value="">Toutes compagnies</option>
+      <option value="logica">&#127968; Logica</option>
+      <option value="geq">&#127970; GEQ</option>
+    </select>
+    <select class="filter" id="f-statut" onchange="filterMandats()">
+      <option value="">Tous les statuts</option>
+      <option value="nonpaye">Non pay&eacute;</option>
+      <option value="paye">Pay&eacute;</option>
+      <option value="rapport_pending">Rapport &agrave; envoyer</option>
+      <option value="confirmation_pending">Confirmation &agrave; envoyer</option>
+    </select>
+    <select class="filter" id="f-assign" onchange="filterMandats()">
+      <option value="">Toutes les assignations</option>
+      <option value="non_assigne">Non assign&eacute;</option>
+      <option value="assigne">Assign&eacute; (timer actif)</option>
+      <option value="reclame">R&eacute;clam&eacute;</option>
+      <option value="pool">Dans le pool</option>
+    </select>
+    <select class="filter" id="f-tech" style="display:none" onchange="filterMandats()">
+      <option value="">Tous les techniciens</option>
+    </select>
+    <button class="btn-fdp" id="btn-fdp" style="display:none" onclick="goToFDP()">&#128202; Fonds de pr&eacute;voyance</button>
+    <button class="btn-archives" id="btn-archives" onclick="toggleArchives()">&#128193; Archives</button>
+    <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">&#128202; Exporter Excel</button>
+    <button class="btn-new" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
+      + Nouveau mandat
+    </button>
   </div>
 
-  <div class="sec finance-sec" id="sec-finances">
-    <div class="sec-title"><span class="ic">&#128176;</span> Finances</div>
-
-    <div class="fin-card">
-      <div class="fin-row">
-        <span class="fin-label">Prix de base</span>
-        <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()">
-      </div>
-      <div class="fin-row">
-        <span class="fin-label">Commission tech (base)</span>
-        <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()">
-      </div>
-    </div>
-
-    <div style="margin-bottom:6px"><label>Services supplementaires</label></div>
-    <div class="extras-wrap">
-      <div class="extras-list" id="extras-list"></div>
-      <button class="btn-add-extra geq-only" style="display:none" onclick="addExtra()">+ Ajouter un service</button>
-    </div>
-
-    <div class="special-btns" id="special-btns" style="display:none">
-      <div class="btn-echan" id="echan-wrap" style="display:none">
-        <span>Echantillon supp.</span>
-        <button class="btn-echan-pm minus" onclick="changeEchan(-1)">&#8722;</button>
-        <span class="echan-count" id="echan-count">0</span>
-        <button class="btn-echan-pm plus" onclick="changeEchan(1)">+</button>
-        <span style="font-size:12px;color:#999">x 125$ / +25$ comm</span>
-      </div>
-    </div>
-
-    <div class="fin-card" style="margin-top:14px">
-      <div class="fin-row">
-        <span class="fin-label">Transport</span>
-        <input class="fin-input" id="transport" type="number" min="0" step="0.01" value="0" oninput="recalc()">
-      </div>
-
-      <div id="frais-lab-section" style="display:none">
-        <div class="frais-lab-row">
-          <span class="frais-lab-label">&#128300; Frais de laboratoire</span>
-          <input class="fin-input small" id="frais-lab" type="number" min="0" step="0.01" value="0" oninput="recalc()">
-        </div>
-        <div class="sans-lettre-row" id="sans-lettre-row" style="display:none">
-          <input type="checkbox" id="sans-lettre" onchange="toggleSansLettre()">
-          <label for="sans-lettre" style="text-transform:none;font-size:13px;color:#666;font-weight:500;cursor:pointer">Sans lettre (-80$)</label>
-        </div>
-      </div>
-
-      <div class="fin-row" id="bonus-row" style="display:none">
-        <span class="fin-label">&#127881; Bonus paiement non-carte (+12$ comm)</span>
-        <span id="bonus-status" style="font-size:13px;color:#999">Auto si non-carte</span>
-      </div>
-
-      <div class="fin-row tax">
-        <span class="fin-label">Sous-total</span>
-        <span class="fin-value" id="sous-total">0,00 $</span>
-      </div>
-      <div class="fin-row tax">
-        <span class="fin-label">TPS (5%)</span>
-        <span class="fin-value" id="tps-val">0,00 $</span>
-      </div>
-      <div class="fin-row tax">
-        <span class="fin-label">TVQ (9,975%)</span>
-        <span class="fin-value" id="tvq-val">0,00 $</span>
-      </div>
-      <div class="fin-row total">
-        <span class="fin-label bold">Total TTC</span>
-        <span class="fin-value big" id="total-ttc">0,00 $</span>
-      </div>
-      <div class="fin-row comm">
-        <span class="fin-label comm-color">&#128188; Commission tech totale</span>
-        <span class="fin-value comm-val" id="total-comm">0,00 $</span>
-      </div>
-      <div class="fin-row profit" id="profit-row" style="display:none">
-        <span class="fin-label profit-color">&#128181; Mon profit</span>
-        <span class="fin-value profit-val" id="profit-val">0,00 $</span>
-      </div>
-    </div>
+  <div class="archive-banner" id="archive-banner" style="display:none">
+    <span>&#128193; <strong>Mode Archives</strong> &mdash; Affichage des dossiers finalis&eacute;s seulement.</span>
+    <button onclick="toggleArchives()" style="margin-left:auto;background:transparent;border:1px solid #f57c00;color:#e65100;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;">Revenir aux dossiers actifs</button>
   </div>
 
-  <div class="sec" id="sec-comm-tech" style="display:none">
-    <div class="sec-title"><span class="ic">&#128188;</span> Ma commission</div>
-    <div class="comm-tech-card">
-      <div class="comm-tech-val" id="tech-comm-val">&#8212;</div>
-      <div class="comm-tech-sub">Commission pour ce mandat</div>
-    </div>
+  <div class="table-wrap" id="table-wrap">
+    <div class="empty"><div>&#9203;</div><p>Chargement des mandats...</p></div>
   </div>
-
-  <div class="sec status-sec" id="sec-statuts">
-    <div class="sec-title"><span class="ic">&#9989;</span> Statuts</div>
-    <div class="statuts-grid">
-      <button class="btn-st st-soum" id="st-soum" onclick="toggleSt('statut_soumission_envoyee','st-soum')">
-        <div class="ck"></div> Soumission envoyee
-      </button>
-      <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
-        <div class="ck"></div> Confirmation envoyee
-      </button>
-      <button class="btn-st" id="st-fact" onclick="toggleSt('statut_facture_envoyee','st-fact')">
-        <div class="ck"></div> Facture envoyee
-      </button>
-      <button class="btn-st" id="st-paye" onclick="togglePaye()">
-        <div class="ck"></div> Paye
-      </button>
-      <button class="btn-st" id="st-rapp" onclick="toggleSt('statut_rapport_envoye','st-rapp')">
-        <div class="ck"></div> Rapport / Analyse envoye
-      </button>
-    </div>
-
-    <div class="paye-section" id="paye-section">
-      <div>
-        <label>Paye par</label>
-        <div class="par-row">
-          <button class="btn-par" id="par-client" onclick="setPar('client')">&#128100; <span id="par-client-nom">Client</span></button>
-          <button class="btn-par" id="par-autre" onclick="setPar('autre')">Autre...</button>
-        </div>
-        <input type="text" id="par-autre-input" style="display:none;margin-top:10px;max-width:300px;" placeholder="Nom de la personne" oninput="setParAutre(this.value)">
-      </div>
-      <div style="margin-top:16px">
-        <label>Mode de paiement</label>
-        <div class="mode-row">
-          <button class="btn-mode" onclick="setMode('comptant')">Comptant</button>
-          <button class="btn-mode" onclick="setMode('virement')">Virement Interac</button>
-          <button class="btn-mode" onclick="setMode('carte')">Carte</button>
-          <button class="btn-mode" onclick="setMode('debit')">Debit</button>
-          <button class="btn-mode" onclick="setMode('cheque')">Cheque</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="final-progress" id="final-progress" style="display:none">
-      <div style="font-size:13px;font-weight:700;color:#555;margin-bottom:12px;">Conditions pour FINAL :</div>
-      <div class="final-checks" id="final-checks"></div>
-    </div>
-  </div>
-
-  <div class="sec doc-sec" id="sec-docs" style="display:none">
-    <div class="sec-title"><span class="ic">&#128196;</span> Documents</div>
-    <div class="doc-section" id="doc-section"></div>
-  </div>
-
-  <div class="sec email-sec" id="sec-emails" style="display:none">
-    <div class="sec-title"><span class="ic">&#9993;</span> Courriels</div>
-    <div class="email-list" id="email-list"></div>
-  </div>
-
-  <div class="sec">
-    <div class="sec-title"><span class="ic">&#128221;</span> Notes internes</div>
-    <textarea id="f-notes" placeholder="Notes visibles seulement par l equipe..."></textarea>
-  </div>
-
-  <div class="sec histo-sec" id="sec-histo" style="display:none">
-    <div class="histo-toggle" onclick="toggleHistorique()">
-      <div class="sec-title" style="margin-bottom:0"><span class="ic">&#128214;</span> Historique du mandat <span id="histo-count" style="font-size:13px;color:#999;font-weight:500;margin-left:6px"></span></div>
-      <span class="histo-arrow" id="histo-arrow">&#9654;</span>
-    </div>
-    <div class="histo-content" id="histo-content">
-      <div class="histo-empty" id="histo-loading">Chargement...</div>
-    </div>
-  </div>
-
 </div>
 
-<div class="ov" id="modal-email" style="display:none">
+<div class="modal-overlay" id="modal-new" style="display:none" onclick="hideModal(event)">
   <div class="modal">
-    <h2 id="modal-email-title">Envoyer un courriel</h2>
-    <div class="gmail-bar" id="gmail-bar" style="display:none">
-      <span id="gmail-status">Gmail non connecte</span>
-      <button class="btn-gc" onclick="connectGmail()">Connecter Gmail</button>
+    <h2>Nouveau mandat</h2>
+    <p>Pour quelle compagnie ?</p>
+    <div class="modal-btns">
+      <div class="btn-logica" onclick="goNewMandat('logica')">
+        <div class="modal-comp-title" style="color:#1565c0">&#127968; Logica</div>
+        <div class="modal-comp-sub">Inspection pr&eacute;-achat</div>
+      </div>
+      <div class="btn-geq" onclick="goNewMandat('geq')">
+        <div class="modal-comp-title" style="color:#b71c1c">&#127970; GEQ</div>
+        <div class="modal-comp-sub">Expertise &amp; services</div>
+      </div>
     </div>
-    <div class="mfield"><label>Destinataire</label><input id="m-to" type="email"></div>
-    <div class="mfield"><label>Sujet</label><input id="m-subj" type="text"></div>
-    <div class="mfield"><label>Message</label><textarea id="m-body"></textarea></div>
-    <div id="m-attach-info" style="font-size:12px;color:#888;margin-bottom:10px;padding:10px;background:#f8f9fa;border-radius:8px;display:none;"></div>
-    <div class="mfooter">
-      <button class="btn-cancel" onclick="closeEmailModal()">Annuler</button>
-      <button class="btn-send" onclick="sendEmail()">&#128228; Envoyer</button>
-    </div>
+    <button class="btn-cancel-modal" onclick="document.getElementById('modal-new').style.display='none'">Annuler</button>
   </div>
 </div>
 
-<!-- Toast pour les notifications -->
-<div class="toast" id="toast"></div>
+<div id="modal-viewas-container"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-const SB_URL='https://mosgioiumzsewbzsydeh.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
-const GC_ID='706969065285-u6arf7jjof2t2sso4am0i8uaj6t167bk.apps.googleusercontent.com';
-const sb=window.supabase.createClient(SB_URL,SB_KEY);
+const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const BASS_UID='72fed940-9f61-471d-ad81-378af125146e';
-const VIEW_AS_KEY='view_as_user_id';
+const BASS_UID = '72fed940-9f61-471d-ad81-378af125146e';
+const VIEW_AS_KEY = 'view_as_user_id';
 
-let realProfile=null;
-let profile=null,mandat=null,extras=[],docs=[],isNew=false;
-let currentEmailType=null;
-let echantillonsSupp=0;
-let currentMode='';
+let realProfile = null;
+let profile = null;
+let allMandats = [];
+let currentTab = 'tous';
+let timerInterval = null;
 
-const FRAIS_LAB={
-  'Test de qualite de l air fongique':174,
-  'Biotape':33,
-  'Echantillonnage Merule':275,
-  'Echantillonnage eau':85.5,
-};
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
 
-const COMM_AUTO={
-  'Test de qualite de l air fongique':150,
-  'Test d air Fibre d Amiante':250,
-  'Biotape':70,
-  'Echantillonnage Merule':230,
-  'Expertise technique avec rapport':500,
-  'Expertise technique sans rapport':350,
-  'Echantillonnage eau':70,
-};
+  const { data: pReal } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+  if (!pReal) { window.location.href = 'index.html'; return; }
+  realProfile = pReal;
 
-const PRIX_AUTO={
-  'Test de qualite de l air fongique':555,
-  'Test d air Fibre d Amiante':700,
-  'Biotape':195,
-  'Echantillonnage Merule':800,
-  'Expertise technique avec rapport':825,
-  'Expertise technique sans rapport':575,
-};
+  const viewAsId = localStorage.getItem(VIEW_AS_KEY);
+  if (viewAsId && session.user.id === BASS_UID && viewAsId !== BASS_UID) {
+    const { data: pImpersonated } = await sb.from('profiles').select('*').eq('id', viewAsId).single();
+    if (pImpersonated) {
+      profile = pImpersonated;
+      enableTestMode(pImpersonated);
+    } else {
+      localStorage.removeItem(VIEW_AS_KEY);
+      profile = realProfile;
+    }
+  } else {
+    profile = realProfile;
+  }
 
-const TYPE_AVEC_BONUS=['Test de qualite de l air fongique','Expertise technique avec rapport','Expertise technique sans rapport','Test d air Fibre d Amiante'];
-const TYPE_AVEC_ECHAN=['Test de qualite de l air fongique','Test d air Fibre d Amiante'];
-const TYPE_AVEC_LETTRE=['Test de qualite de l air fongique'];
+  const hasAccess =
+    profile.role === 'gestionnaire' ||
+    profile.role === 'secretaire' ||
+    (profile.role === 'technicien' && profile.dashboard_access === true);
 
-const LOGICA_EXTRAS_DEFAULT=[
-  {service_nom:"Analyse d eau microbiologique",prix:195,commission:50,actif:false},
-  {service_nom:"Analyse eau metaux",prix:250,commission:70,actif:false},
-  {service_nom:"Inspection drain de fondation (pendant inspection)",prix:225,commission:100,actif:false},
-  {service_nom:"Inspection drain de fondation (avec deplacement)",prix:395,commission:175,actif:false},
-  {service_nom:"Analyse vermiculite (amiante)",prix:350,commission:100,actif:false},
-  {service_nom:"Inspection garage detache",prix:0,commission:0,actif:false},
-];
+  if (!hasAccess && !localStorage.getItem(VIEW_AS_KEY)) {
+    window.location.href = 'index.html';
+    return;
+  }
 
-function isInTestMode(){
-  return !!localStorage.getItem(VIEW_AS_KEY);
-}
+  const initiales = ((profile.prenom||'')[0] + (profile.nom||'')[0]).toUpperCase();
+  document.getElementById('user-avatar').textContent = initiales;
+  document.getElementById('user-name').textContent = `${profile.prenom} ${profile.nom}`;
 
-function enableTestMode(p){
+  if (session.user.id === BASS_UID) {
+    document.getElementById('btn-view-as').style.display = 'inline-block';
+  }
+
+  if (profile.role === 'gestionnaire' || profile.role === 'technicien') {
+    document.getElementById('btn-fdp').style.display = 'inline-block';
+    document.getElementById('ptile-pool-card').style.display = 'block';
+  }
+
+  if (profile.role === 'gestionnaire' || profile.role === 'secretaire' || profile.role === 'technicien') {
+    document.getElementById('btn-new').style.display = 'flex';
+  }
+
+  if (profile.role === 'gestionnaire') {
+    document.getElementById('ministats-gest').style.display = 'flex';
+    document.getElementById('f-tech').style.display = 'block';
+    await loadTechs();
+  } else if (profile.role === 'technicien') {
+    document.getElementById('ministats-tech').style.display = 'flex';
+  }
+
+  /* Show export button only for Bass (real gestionnaire, not impersonated) */
+  if (realProfile.role === 'gestionnaire' && session.user.id === BASS_UID) {
+    document.getElementById('btn-export-excel').style.display = 'inline-block';
+  }
+
+  await loadMandats();
+
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimers, 60000);
+})();
+
+function enableTestMode(impersonatedProfile) {
   document.body.classList.add('test-mode');
-  const banner=document.getElementById('test-banner');
-  banner.style.display='flex';
-  document.getElementById('test-as-name').textContent=p.prenom+' '+p.nom;
-  document.getElementById('test-as-role').textContent='('+p.role+')';
+  const banner = document.getElementById('test-banner');
+  banner.style.display = 'flex';
+  document.getElementById('test-as-name').textContent = `${impersonatedProfile.prenom} ${impersonatedProfile.nom}`;
+  document.getElementById('test-as-role').textContent = `(${impersonatedProfile.role})`;
 }
 
-function exitTestMode(){
+function exitTestMode() {
   localStorage.removeItem(VIEW_AS_KEY);
   window.location.reload();
 }
 
-async function confirmTestAction(actionLabel){
-  if(!isInTestMode()) return true;
-  return confirm('\u26A0\uFE0F MODE TEST ACTIF\n\nL\'action "'+actionLabel+'" va REELLEMENT modifier les donnees dans la base de donnees, malgre le mode test.\n\nEs-tu sur de vouloir continuer ?');
+async function openViewAsModal() {
+  const { data: profiles } = await sb
+    .from('profiles')
+    .select('id, nom, prenom, email, role, dashboard_access')
+    .order('role')
+    .order('nom');
+
+  const list = (profiles || []).filter(p => p.id !== BASS_UID);
+
+  const roleClass = r => `role-${['gestionnaire','technicien','secretaire'].includes(r) ? r : 'autre'}`;
+  const roleLabel = r => ({
+    'gestionnaire': 'Gestionnaire',
+    'technicien': 'Technicien',
+    'secretaire': 'Secr\u00e9taire'
+  }[r] || r || 'Autre');
+
+  let rowsHtml = list.map(p => {
+    const init = ((p.prenom||'')[0] + (p.nom||'')[0]).toUpperCase();
+    const access = p.dashboard_access === false ? ' <span style="color:#dc2626;font-size:11px">(pas d\'acc\u00e8s dashboard)</span>' : '';
+    return `<div class="profile-row" onclick="selectViewAs('${p.id}')">
+      <div class="profile-avatar">${init || '?'}</div>
+      <div class="profile-info">
+        <div class="profile-name">${p.prenom||''} ${p.nom||''}</div>
+        <div class="profile-meta">
+          <span class="role-badge ${roleClass(p.role)}">${roleLabel(p.role)}</span>
+          ${p.email||''}${access}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (!rowsHtml) rowsHtml = '<div class="empty"><p>Aucun autre profil</p></div>';
+
+  const html = `<div class="modal-viewas" onclick="closeViewAsModal(event)">
+    <div class="modal-viewas-box" onclick="event.stopPropagation()">
+      <h2>&#128373;&#65039; Voir comme...</h2>
+      <p>Choisis un profil pour voir l'app comme cette personne. Tu pourras sortir du mode test \u00e0 tout moment.</p>
+      ${rowsHtml}
+      <button class="btn-cancel-modal" onclick="closeViewAsModal()">Annuler</button>
+    </div>
+  </div>`;
+
+  document.getElementById('modal-viewas-container').innerHTML = html;
 }
 
-(async()=>{
-  const {data:{session}}=await sb.auth.getSession();
-  if(!session){window.location.href='index.html';return;}
-  const {data:pReal}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
-  if(!pReal){window.location.href='index.html';return;}
-  realProfile=pReal;
-
-  const viewAsId=localStorage.getItem(VIEW_AS_KEY);
-  if(viewAsId && session.user.id===BASS_UID && viewAsId!==BASS_UID){
-    const {data:pImp}=await sb.from('profiles').select('*').eq('id',viewAsId).single();
-    if(pImp){
-      profile=pImp;
-      enableTestMode(pImp);
-    } else {
-      localStorage.removeItem(VIEW_AS_KEY);
-      profile=pReal;
-    }
-  } else {
-    profile=pReal;
+function closeViewAsModal(e) {
+  if (!e || e.target.classList.contains('modal-viewas')) {
+    document.getElementById('modal-viewas-container').innerHTML = '';
   }
+}
 
-  const params=new URLSearchParams(location.search);
-  const id=params.get('id');
-  const comp=params.get('compagnie')||'logica';
+function selectViewAs(userId) {
+  localStorage.setItem(VIEW_AS_KEY, userId);
+  window.location.reload();
+}
 
-  const {data:techs}=await sb.from('profiles')
-    .select('id,nom,prenom')
-    .in('role',['technicien','gestionnaire'])
-    .eq('dashboard_access',true)
+async function loadTechs() {
+  const { data } = await sb
+    .from('profiles')
+    .select('id, nom, prenom')
+    .eq('role', 'technicien')
+    .eq('dashboard_access', true)
     .order('nom');
-  const tsel=document.getElementById('f-tech');
-  (techs||[]).forEach(t=>{
-    const o=document.createElement('option');
-    o.value=t.id;
-    o.textContent=t.prenom+' '+t.nom;
-    tsel.appendChild(o);
+  const sel = document.getElementById('f-tech');
+  (data || []).forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.id;
+    o.textContent = `${t.prenom} ${t.nom}`;
+    sel.appendChild(o);
   });
+}
 
-  if(id){
-    isNew=false;
-    const {data:m}=await sb.from('mandats').select('*').eq('id',id).single();
-    if(!m){toast('Mandat introuvable','err');return;}
-    mandat=m;
-    const {data:ex}=await sb.from('mandat_extras').select('*').eq('mandat_id',id).order('created_at');
-    extras=ex||[];
-    const {data:dc}=await sb.from('mandat_documents').select('*').eq('mandat_id',id).order('uploaded_at');
-    docs=dc||[];
-    echantillonsSupp=m.echantillons_supp||0;
-    fillForm();
-    document.getElementById('sec-docs').style.display='block';
-    document.getElementById('sec-emails').style.display='block';
-    if(profile.role==='gestionnaire') document.getElementById('btn-del').style.display='flex';
-  } else {
-    isNew=true;
-    document.getElementById('f-compagnie').value=comp;
-    if(profile.role==='technicien') document.getElementById('f-tech').value=profile.id;
-    if(comp==='logica') extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
-    onCompagnieChange();
+async function loadMandats() {
+  document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9203;</div><p>Chargement...</p></div>';
+  const { data, error } = await sb
+    .from('mandats')
+    .select('*, technicien:profiles!mandats_technicien_id_fkey(id, nom, prenom)')
+    .order('date_mandat', { ascending: false, nullsFirst: false });
+
+  if (error) {
+    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9888;&#65039;</div><p>Erreur de chargement</p></div>';
+    return;
   }
 
-  const isGest=profile.role==='gestionnaire';
-  const isTech=profile.role==='technicien';
+  let mandats = data || [];
+  if (profile.role === 'technicien') {
+    /* Tech voit: ses propres mandats + ceux du pool de sa region */
+    mandats = mandats.filter(m =>
+      m.technicien_id === profile.id ||
+      (m.statut_assignation === 'pool' && m.region_mandat === profile.region)
+    );
+  }
+  allMandats = mandats;
 
-  if(!isGest&&profile.role!=='secretaire'){
-    document.getElementById('sec-finances').style.display='none';
-  }
-  if(isTech){
-    document.getElementById('sec-comm-tech').style.display='block';
-    if(!mandat||!mandat.commission_totale||mandat.commission_totale===0){
-      document.getElementById('sec-alerte').style.display='block';
-    }
-    if(mandat&&mandat.alerte_commission){
-      document.getElementById('btn-alerte-send').textContent='Alerte envoyee';
-      document.getElementById('btn-alerte-send').className='btn-alerte sent';
-    }
-  }
-  if(isGest){
-    document.getElementById('frais-lab-section').style.display='block';
-    document.getElementById('profit-row').style.display='flex';
-  }
-  if(profile.role==='secretaire'){
-    var commBaseInput = document.getElementById('comm-base');
-    if(commBaseInput){
-      var commBaseRow = commBaseInput.closest('.fin-row');
-      if(commBaseRow) commBaseRow.style.display = 'none';
-    }
-    var totalCommEl = document.getElementById('total-comm');
-    if(totalCommEl){
-      var totalCommRow = totalCommEl.closest('.fin-row');
-      if(totalCommRow) totalCommRow.style.display = 'none';
-    }
-    var bonusRow = document.getElementById('bonus-row');
-    if(bonusRow) bonusRow.style.display = 'none';
-    var fraisLabSection = document.getElementById('frais-lab-section');
-    if(fraisLabSection) fraisLabSection.style.display = 'none';
-    document.body.classList.add('role-secretaire');
-  }
-  document.getElementById('final-progress').style.display='block';
-  renderExtras();
-  renderDocs();
-  renderEmails();
-  updateBadge();
-  updateFinalBtn();
-  updateReclamerBtn();
-  updateAssignInfo();
-  loadHistorique();
-})();
+  updateStats();
+  updateTabCounters();
+  filterMandats();
+}
 
-function fillForm(){
-  const m=mandat;
-  document.getElementById('f-compagnie').value=m.compagnie||'logica';
-  document.getElementById('f-client-nom').value=m.client_nom||'';
-  document.getElementById('f-client-tel').value=m.client_telephone||'';
-  document.getElementById('f-client-email').value=m.client_email||'';
-  document.getElementById('f-adresse').value=m.adresse||'';
-  document.getElementById('f-date').value=m.date_mandat||'';
-  document.getElementById('f-heure').value=m.heure_mandat?m.heure_mandat.substring(0,5):'';
-  document.getElementById('f-tech').value=m.technicien_id||'';
-  document.getElementById('f-notes').value=m.notes||'';
-  document.getElementById('prix-base').value=m.prix_base||0;
-  document.getElementById('comm-base').value=m.commission_manuelle||0;
-  document.getElementById('transport').value=m.transport_montant||0;
-  document.getElementById('frais-lab').value=m.frais_lab||0;
-  if(m.sans_lettre) document.getElementById('sans-lettre').checked=true;
-  if(m.type_batiment) document.getElementById('f-type-batiment').value=m.type_batiment;
-  if(m.type_mandat) document.getElementById('f-type-mandat').value=m.type_mandat;
-  if(m.courtier_nom) document.getElementById('f-courtier').value=m.courtier_nom;
-  if(m.reference_client) document.getElementById('f-reference').value=m.reference_client;
-  if(m.listing_url) document.getElementById('f-listing').value=m.listing_url;
+function updateTabCounters() {
+  /* Filtre de base selon mode (actifs vs archives) */
+  const baseFilter = viewArchives
+    ? (m => m.statut_final === true)
+    : (m => m.statut_final !== true);
+  /* Met a jour les compteurs des 4 grosses tuiles */
+  const c = (filterFn) => allMandats.filter(m => baseFilter(m) && filterFn(m)).length;
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  set('ptile-tous', c(() => true));
+  set('ptile-pool', c(m => m.statut_assignation === 'pool'));
+  set('ptile-mandats', c(m => !!m.date_mandat));
+  set('ptile-soumissions', c(m => m.statut_soumission_envoyee === true && !m.date_mandat));
+}
 
-  /* Etape 6: detection du mode d'assignation pour mandat existant */
-  document.getElementById('f-delai').value=m.delai_reclamation_heures||8;
-  if(m.region_mandat){
-    document.getElementById('f-region-pool').value=m.region_mandat;
+function updateStats() {
+  const now = new Date();
+  const annee = now.getFullYear();
+  const moisN = now.getMonth();
+
+  if (profile.role === 'gestionnaire') {
+    const mois = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getMonth() === moisN && new Date(m.date_mandat).getFullYear() === annee);
+    document.getElementById('s-mois').textContent = mois.length;
+    document.getElementById('s-total').textContent = `${allMandats.length} au total`;
+    document.getElementById('s-rapports').textContent = allMandats.filter(m => !m.statut_rapport_envoye).length;
+    document.getElementById('s-nonpaye').textContent = allMandats.filter(m => !m.statut_paye).length;
+    const rev = mois.reduce((s, m) => s + (parseFloat(m.total_ttc) || 0), 0);
+    document.getElementById('s-revenus').textContent = money(rev);
+  } else if (profile.role === 'technicien') {
+    const ann = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getFullYear() === annee);
+    const mois = ann.filter(m => new Date(m.date_mandat).getMonth() === moisN);
+    document.getElementById('t-annee').textContent = ann.length;
+    document.getElementById('t-mois-sub').textContent = `${mois.length} ce mois`;
+    document.getElementById('t-logica').textContent = ann.filter(m => m.compagnie === 'logica').length;
+    document.getElementById('t-geq').textContent = ann.filter(m => m.compagnie === 'geq').length;
+    const comm = ann.reduce((s, m) => s + (parseFloat(m.commission_totale) || 0), 0);
+    document.getElementById('t-comm').textContent = money(comm);
   }
-  if(m.statut_assignation==='pool'){
-    setAssignMode('pool');
-  } else {
-    setAssignMode('direct');
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.ptile').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  filterMandats();
+}
+
+/* ===== MODE ARCHIVES =====
+   Par defaut: on affiche les dossiers actifs (statut_final=false ou null).
+   Mode Archives: on affiche les dossiers finalises (statut_final=true).
+   La separation se fait via le bouton FINAL deja existant sur chaque mandat. */
+let viewArchives = false;
+
+function toggleArchives() {
+  viewArchives = !viewArchives;
+  const btn = document.getElementById('btn-archives');
+  btn.classList.toggle('on', viewArchives);
+  btn.innerHTML = viewArchives ? '\u{1F3E0} Dossiers actifs' : '\u{1F4C1} Archives';
+  document.getElementById('archive-banner').style.display = viewArchives ? 'flex' : 'none';
+  document.body.classList.toggle('archives-mode', viewArchives);
+  updateTabCounters();
+  updateStats();
+  filterMandats();
+}
+
+function getFilteredMandats() {
+  const s = document.getElementById('search').value.toLowerCase();
+  const st = document.getElementById('f-statut').value;
+  const assign = document.getElementById('f-assign').value;
+  const tech = document.getElementById('f-tech').value;
+  const compagnie = document.getElementById('f-compagnie').value;
+
+  let list = allMandats;
+  /* Filtre archives en premier (actifs vs finalises) */
+  list = viewArchives
+    ? list.filter(m => m.statut_final === true)
+    : list.filter(m => m.statut_final !== true);
+
+  /* Onglet pipeline (tuile cliquee) */
+  if (currentTab === 'soumissions') {
+    list = list.filter(m => m.statut_soumission_envoyee === true && !m.date_mandat);
+  } else if (currentTab === 'mandats') {
+    list = list.filter(m => !!m.date_mandat);
+  } else if (currentTab === 'pool') {
+    list = list.filter(m => m.statut_assignation === 'pool');
   }
-  /* Verrouillage si statut='reclame' et user n'est pas gestionnaire */
-  const isReclame=m.statut_assignation==='reclame';
-  const isGest=profile.role==='gestionnaire';
-  lockAssignControls(isReclame && !isGest);
-  updateAssignInfo();
+  /* Filtre compagnie (select separe) - applique en plus de l'onglet */
+  if (compagnie) list = list.filter(m => m.compagnie === compagnie);
+  if (s) list = list.filter(m =>
+    (m.client_nom||'').toLowerCase().includes(s) ||
+    (m.adresse||'').toLowerCase().includes(s) ||
+    (m.client_email||'').toLowerCase().includes(s) ||
+    (m.client_telephone||'').toLowerCase().includes(s)
+  );
+  if (st === 'nonpaye') list = list.filter(m => !m.statut_paye);
+  if (st === 'paye') list = list.filter(m => m.statut_paye);
+  if (st === 'rapport_pending') list = list.filter(m => !m.statut_rapport_envoye);
+  if (st === 'confirmation_pending') list = list.filter(m => !m.statut_confirmation_envoyee);
+  if (assign) list = list.filter(m => (m.statut_assignation || 'non_assigne') === assign);
+  if (tech) list = list.filter(m => m.technicien_id === tech);
 
-  setStBtn('st-soum',m.statut_soumission_envoyee);
-  setStBtn('st-conf',m.statut_confirmation_envoyee);
-  setStBtn('st-fact',m.statut_facture_envoyee);
-  setStBtn('st-paye',m.statut_paye);
-  setStBtn('st-rapp',m.statut_rapport_envoye);
+  return list;
+}
 
-  if(m.statut_paye){
-    document.getElementById('paye-section').classList.add('show');
-    if(m.paye_par){
-      const cn=m.client_nom||'Client';
-      document.getElementById('par-client-nom').textContent=cn;
-      if(m.paye_par===cn||m.paye_par==='client'){
-        document.getElementById('par-client').classList.add('on');
-      } else {
-        document.getElementById('par-autre').classList.add('on');
-        document.getElementById('par-autre-input').style.display='block';
-        document.getElementById('par-autre-input').value=m.paye_par;
+function filterMandats() {
+  renderTable(getFilteredMandats());
+}
+
+function getAssignBadge(m) {
+  const s = m.statut_assignation || 'non_assigne';
+  const labels = {
+    'non_assigne': 'Non assign\u00e9',
+    'assigne': 'Assign\u00e9',
+    'reclame': 'R\u00e9clam\u00e9',
+    'pool': 'Pool ' + (m.region_mandat === 'estrie' ? 'Estrie' : 'Qu\u00e9bec')
+  };
+  return `<span class="assign-badge assign-${s}">${labels[s] || s}</span>`;
+}
+
+function getTimerHtml(m) {
+  if (m.statut_assignation !== 'assigne' || !m.assigne_le || !m.delai_reclamation_heures) return '';
+  return `<div class="timer-text" data-assigne-le="${m.assigne_le}" data-delai="${m.delai_reclamation_heures}">${formatTimer(m.assigne_le, m.delai_reclamation_heures)}</div>`;
+}
+
+/* ===== HEURES OUVRABLES (Quebec) =====
+   Heures de bureau: 8h-18h lundi-vendredi, hors feries quebecois.
+   Replique la logique des fonctions SQL is_quebec_holiday() et add_business_hours()
+   pour permettre un timer cote frontend qui gele hors heures ouvrables. */
+
+function isQuebecHoliday(date) {
+  const yr = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const dow = date.getDay();
+
+  /* Feries a date fixe */
+  if (month === 1 && day === 1) return true;     /* Jour de l'An */
+  if (month === 6 && day === 24) return true;    /* Saint-Jean-Baptiste */
+  if (month === 7 && day === 1) return true;     /* Fete du Canada */
+  if (month === 12 && (day === 24 || day === 25 || day === 26 || day === 31)) return true;
+
+  /* Paques (algorithme de Gauss) */
+  const a = yr % 19;
+  const b = Math.floor(yr / 100);
+  const c = yr % 100;
+  const dd = Math.floor(b / 4);
+  const ee = b % 4;
+  const ff = Math.floor((b + 8) / 25);
+  const gg = Math.floor((b - ff + 1) / 3);
+  const hg = (19 * a + b - dd - gg + 15) % 30;
+  const ii = Math.floor(c / 4);
+  const kk = c % 4;
+  const ll = (32 + 2 * ee + 2 * ii - hg - kk) % 7;
+  const mm = Math.floor((a + 11 * hg + 22 * ll) / 451);
+  const easterMonth = Math.floor((hg + ll - 7 * mm + 114) / 31);
+  const easterDay = ((hg + ll - 7 * mm + 114) % 31) + 1;
+  const easter = new Date(yr, easterMonth - 1, easterDay);
+
+  /* Vendredi saint = 2 jours avant Paques */
+  const goodFriday = new Date(easter);
+  goodFriday.setDate(easter.getDate() - 2);
+  if (month === goodFriday.getMonth() + 1 && day === goodFriday.getDate()) return true;
+
+  /* Lundi de Paques = 1 jour apres Paques */
+  const easterMonday = new Date(easter);
+  easterMonday.setDate(easter.getDate() + 1);
+  if (month === easterMonday.getMonth() + 1 && day === easterMonday.getDate()) return true;
+
+  /* Journee nationale des Patriotes (lundi precedant le 25 mai) */
+  if (month === 5 && dow === 1 && day >= 18 && day <= 24) return true;
+
+  /* Fete du Travail (1er lundi de septembre) */
+  if (month === 9 && dow === 1 && day <= 7) return true;
+
+  /* Action de graces (2e lundi d'octobre) */
+  if (month === 10 && dow === 1 && day >= 8 && day <= 14) return true;
+
+  return false;
+}
+
+function isBusinessDay(date) {
+  const dow = date.getDay();
+  if (dow === 0 || dow === 6) return false;
+  return !isQuebecHoliday(date);
+}
+
+/* Calcule le nombre d'heures ouvrables ecoulees entre start et end (Date objects).
+   Heures ouvrables = 8h-18h, lun-ven, hors feries. */
+function businessHoursElapsed(start, end) {
+  if (end <= start) return 0;
+
+  let elapsed = 0;
+  const cursor = new Date(start);
+
+  while (cursor < end) {
+    if (isBusinessDay(cursor)) {
+      const dayStart = new Date(cursor);
+      dayStart.setHours(8, 0, 0, 0);
+      const dayEnd = new Date(cursor);
+      dayEnd.setHours(18, 0, 0, 0);
+
+      const overlapStart = Math.max(cursor.getTime(), dayStart.getTime());
+      const overlapEnd = Math.min(end.getTime(), dayEnd.getTime());
+
+      if (overlapEnd > overlapStart) {
+        elapsed += (overlapEnd - overlapStart) / 3600000;
       }
     }
-    if(m.mode_paiement){
-      currentMode=m.mode_paiement;
-      document.querySelectorAll('.btn-mode').forEach(b=>{
-        const t=b.textContent.toLowerCase();
-        if(t.includes(m.mode_paiement)||
-          (m.mode_paiement==='virement'&&t.includes('interac'))||
-          (m.mode_paiement==='debit'&&t.includes('debit'))){
-          b.classList.add('on');
-        }
-      });
-    }
-  }
-  document.getElementById('htitle').textContent=m.client_nom||'Mandat';
-  document.getElementById('par-client-nom').textContent=m.client_nom||'Client';
-  if(profile.role==='technicien') document.getElementById('tech-comm-val').textContent=money(m.commission_totale);
-  document.getElementById('echan-count').textContent=echantillonsSupp;
-  onCompagnieChange();
-  recalc();
-}
 
-function onCompagnieChange(){
-  const comp=document.getElementById('f-compagnie').value;
-  document.querySelectorAll('.logica-only').forEach(el=>el.style.display=comp==='logica'?'':'none');
-  document.querySelectorAll('.geq-only').forEach(el=>el.style.display=comp==='geq'?'':'none');
-  document.getElementById('fg-type-geq').style.display=comp==='geq'?'flex':'none';
-  const secClient=document.getElementById('sec-client');
-  secClient.className='sec '+(comp==='logica'?'logica-sec':'geq-sec');
-  if(comp==='logica'&&extras.length===0){
-    extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
-    renderExtras();
-  }
-  if(comp==='geq') onTypeMandatChange();
-  updateBadge();
-  renderEmails();
-}
-
-function onTypeMandatChange(){
-  const type=document.getElementById('f-type-mandat').value;
-  const isGest=profile.role==='gestionnaire';
-
-  if(PRIX_AUTO[type]&&parseFloat(document.getElementById('prix-base').value)===0){
-    document.getElementById('prix-base').value=PRIX_AUTO[type];
-  }
-  if(COMM_AUTO[type]&&isGest){
-    document.getElementById('comm-base').value=COMM_AUTO[type];
-  }
-  if(FRAIS_LAB[type]&&isGest){
-    document.getElementById('frais-lab').value=FRAIS_LAB[type];
+    /* Avancer au debut du jour suivant */
+    cursor.setDate(cursor.getDate() + 1);
+    cursor.setHours(0, 0, 0, 0);
   }
 
-  const avecEchan=TYPE_AVEC_ECHAN.includes(type);
-  const avecBonus=TYPE_AVEC_BONUS.includes(type);
-  const avecLettre=TYPE_AVEC_LETTRE.includes(type);
-
-  document.getElementById('special-btns').style.display=avecEchan?'flex':'none';
-  document.getElementById('echan-wrap').style.display=avecEchan?'flex':'none';
-  document.getElementById('bonus-row').style.display=avecBonus?'flex':'none';
-  document.getElementById('sans-lettre-row').style.display=avecLettre?'flex':'none';
-
-  recalc();
+  return elapsed;
 }
 
-function updateBadge(){
-  const comp=document.getElementById('f-compagnie').value;
-  const b=document.getElementById('hbadge');
-  b.style.display='inline-block';
-  b.textContent=comp==='logica'?'Logica':'GEQ';
-  b.className='badge '+(comp==='logica'?'badge-logica':'badge-geq');
+function formatTimer(assigneLe, delaiHeures) {
+  const start = new Date(assigneLe);
+  const now = new Date();
+
+  const elapsed = businessHoursElapsed(start, now);
+  const remaining = delaiHeures - elapsed;
+
+  if (remaining <= 0) return 'Bascule en pool imminente';
+
+  const totalMinutes = Math.floor(remaining * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+
+  if (h > 0) return `Reste ${h}h ${m}min ouvrables`;
+  return `Reste ${m}min ouvrables`;
 }
 
-function changeEchan(delta){
-  echantillonsSupp=Math.max(0,echantillonsSupp+delta);
-  document.getElementById('echan-count').textContent=echantillonsSupp;
-  recalc();
-}
-
-function toggleSansLettre(){
-  recalc();
-}
-
-function renderExtras(){
-  const list=document.getElementById('extras-list');
-  const isGest=profile.role==='gestionnaire';
-  list.innerHTML='';
-  if(!extras.length){
-    list.innerHTML='<div style="font-size:13px;color:#bbb;padding:8px 0;text-align:center;">Aucun service supplementaire</div>';
-    return;
-  }
-  const hdr=document.createElement('div');
-  hdr.style.cssText='display:grid;grid-template-columns:32px 1fr 110px 110px 36px;gap:10px;padding:4px;margin-bottom:4px;';
-  hdr.innerHTML='<div></div><div style="font-size:11px;color:#999;font-weight:700;text-transform:uppercase;">Service</div><div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Prix client</div>'+(isGest?'<div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Commission</div>':'<div></div>')+'<div></div>';
-  list.appendChild(hdr);
-
-  extras.forEach((ex,i)=>{
-    const row=document.createElement('div');
-    row.className='extra-row';
-    row.innerHTML=
-      '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)">'+
-      '<span class="extra-name">'+ex.service_nom+'</span>'+
-      '<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value)">'+
-      (isGest?'<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)">':'<span></span>')+
-      ((profile.role==='gestionnaire'||profile.role==='secretaire')?'<button class="btn-rm" onclick="removeExtra('+i+')">&#10005;</button>':'<span></span>');
-    list.appendChild(row);
-  });
-
-  if(document.getElementById('f-compagnie').value==='geq'){
-    document.querySelector('.btn-add-extra').style.display='block';
-  }
-  recalc();
-}
-
-function extraToggle(i,v){extras[i].actif=v;recalc();}
-function extraSetPrix(i,v){extras[i].prix=parseFloat(v)||0;recalc();}
-function extraSetComm(i,v){extras[i].commission=parseFloat(v)||0;recalcComm();}
-function removeExtra(i){extras.splice(i,1);renderExtras();}
-function addExtra(){
-  extras.push({id:Math.random().toString(36).substr(2,9),service_nom:'Nouveau service',prix:0,commission:0,actif:false});
-  renderExtras();
-}
-
-function recalc(){
-  const base=parseFloat(document.getElementById('prix-base').value)||0;
-  const trans=parseFloat(document.getElementById('transport').value)||0;
-  const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
-  const echanPrix=echantillonsSupp*125;
-  const st=base+extrasSum+trans+echanPrix;
-  const tps=st*0.05;
-  const tvq=st*0.09975;
-  const ttc=st+tps+tvq;
-  document.getElementById('sous-total').textContent=money(st);
-  document.getElementById('tps-val').textContent=money(tps);
-  document.getElementById('tvq-val').textContent=money(tvq);
-  document.getElementById('total-ttc').textContent=money(ttc);
-  recalcComm();
-  recalcProfit();
-}
-
-function recalcComm(){
-  const trans=parseFloat(document.getElementById('transport').value)||0;
-  const baseComm=parseFloat(document.getElementById('comm-base').value)||0;
-  const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
-  const echanComm=echantillonsSupp*25;
-  const bonus=getBonusNonCarte();
-  const total=baseComm+extComm+trans+echanComm+bonus;
-  document.getElementById('total-comm').textContent=money(total);
-  if(bonus>0){
-    document.getElementById('bonus-status').textContent='+12$ inclus';
-    document.getElementById('bonus-status').style.color='#e65100';
-  } else {
-    document.getElementById('bonus-status').textContent='Auto si non-carte';
-    document.getElementById('bonus-status').style.color='#999';
-  }
-  recalcProfit();
-}
-
-function getBonusNonCarte(){
-  const type=document.getElementById('f-compagnie').value==='geq'?document.getElementById('f-type-mandat').value:'';
-  const comp=document.getElementById('f-compagnie').value;
-  const avecBonus=comp==='geq'?TYPE_AVEC_BONUS.includes(type):false;
-  if(!avecBonus) return 0;
-  return(currentMode&&currentMode!=='carte')?12:0;
-}
-
-function recalcProfit(){
-  if(profile.role!=='gestionnaire') return;
-  const base=parseFloat(document.getElementById('prix-base').value)||0;
-  const trans=parseFloat(document.getElementById('transport').value)||0;
-  const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
-  const echanPrix=echantillonsSupp*125;
-  const totalFacture=base+extrasSum+echanPrix;
-  const fraisLab=parseFloat(document.getElementById('frais-lab').value)||0;
-  const baseComm=parseFloat(document.getElementById('comm-base').value)||0;
-  const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
-  const echanComm=echantillonsSupp*25;
-  const bonus=getBonusNonCarte();
-  const commTotale=baseComm+extComm+echanComm+bonus;
-  const comp=document.getElementById('f-compagnie').value;
-  let profit=0;
-  if(comp==='geq'){
-    const avantRedevance=totalFacture-fraisLab;
-    const redevance=avantRedevance*0.10;
-    profit=avantRedevance-redevance-commTotale;
-  } else {
-    profit=totalFacture-commTotale-trans;
-  }
-  document.getElementById('profit-val').textContent=money(profit);
-  updateFinalBtn();
-}
-
-function setStBtn(id,val){
-  const btn=document.getElementById(id);
-  btn.classList.toggle('on',!!val);
-  const ck=btn.querySelector('.ck');
-  ck.textContent=val?'&#10003;':'';
-  ck.innerHTML=val?'&#10003;':'';
-  updateFinalBtn();
-}
-
-async function toggleSt(field,btnId){
-  const btn=document.getElementById(btnId);
-  const newVal=!btn.classList.contains('on');
-  setStBtn(btnId,newVal);
-  if(!isNew&&mandat){
-    const up={};up[field]=newVal;
-    await sb.from('mandats').update(up).eq('id',mandat.id);
-    mandat[field]=newVal;
-    toast(newVal?'Statut active':'Statut desactive');
-  }
-  updateFinalBtn();
-}
-
-function togglePaye(){
-  const btn=document.getElementById('st-paye');
-  const newVal=!btn.classList.contains('on');
-  setStBtn('st-paye',newVal);
-  document.getElementById('paye-section').classList.toggle('show',newVal);
-  if(!isNew&&mandat){
-    sb.from('mandats').update({statut_paye:newVal}).eq('id',mandat.id);
-    mandat.statut_paye=newVal;
-    toast(newVal?'Marque paye':'Statut paye retire');
-  }
-  updateFinalBtn();
-}
-
-function setPar(type){
-  document.querySelectorAll('.btn-par').forEach(b=>b.classList.remove('on'));
-  const cn=document.getElementById('f-client-nom').value||'Client';
-  document.getElementById('par-client-nom').textContent=cn;
-  if(type==='client'){
-    document.getElementById('par-client').classList.add('on');
-    document.getElementById('par-autre-input').style.display='none';
-    if(!isNew&&mandat) sb.from('mandats').update({paye_par:cn}).eq('id',mandat.id);
-  } else {
-    document.getElementById('par-autre').classList.add('on');
-    document.getElementById('par-autre-input').style.display='block';
-    document.getElementById('par-autre-input').focus();
-  }
-}
-
-function setParAutre(v){
-  if(!isNew&&mandat) sb.from('mandats').update({paye_par:v}).eq('id',mandat.id);
-}
-
-function setMode(mode){
-  document.querySelectorAll('.btn-mode').forEach(b=>b.classList.remove('on'));
-  event.target.classList.add('on');
-  currentMode=mode;
-  if(!isNew&&mandat) sb.from('mandats').update({mode_paiement:mode,bonus_non_carte:mode!=='carte'}).eq('id',mandat.id);
-  recalcComm();
-}
-
-function getFinalConditions(){
-  const m=mandat;
-  const commOk=(parseFloat(document.getElementById('comm-base').value)||0)>0;
-  const totalOk=(parseFloat(document.getElementById('total-ttc').textContent.replace(/[^0-9.]/g,''))||0)>0;
-  return [
-    {label:'Rapport / Analyse envoye',ok:m?m.statut_rapport_envoye:document.getElementById('st-rapp').classList.contains('on')},
-    {label:'Client paye',ok:m?m.statut_paye:document.getElementById('st-paye').classList.contains('on')},
-    {label:'Facture envoyee',ok:m?m.statut_facture_envoyee:document.getElementById('st-fact').classList.contains('on')},
-    {label:'Total entre',ok:totalOk},
-    {label:'Commission entree',ok:commOk},
-  ];
-}
-
-function updateFinalBtn(){
-  const conds=getFinalConditions();
-  const allOk=conds.every(c=>c.ok);
-  const btn=document.getElementById('btn-final');
-  const isFinal=mandat&&mandat.statut_final;
-
-  if(isFinal){
-    btn.textContent='FINAL';
-    btn.className='btn-final-header btn-final-done';
-  } else if(allOk){
-    btn.textContent='Marquer FINAL';
-    btn.className='btn-final-header btn-final-ready';
-  } else {
-    const done=conds.filter(c=>c.ok).length;
-    btn.textContent=done+'/'+conds.length+' FINAL';
-    btn.className='btn-final-header btn-final-pending';
-  }
-
-  const container=document.getElementById('final-checks');
-  container.innerHTML='';
-  conds.forEach(c=>{
-    const div=document.createElement('div');
-    div.className='final-check-item'+(c.ok?' ok':'');
-    div.innerHTML='<div class="chk">'+(c.ok?'&#10003;':'')+'</div>'+c.label;
-    container.appendChild(div);
+function updateTimers() {
+  document.querySelectorAll('.timer-text').forEach(el => {
+    const assigneLe = el.dataset.assigneLe;
+    const delai = parseInt(el.dataset.delai || '6');
+    if (!assigneLe) return;
+    const txt = formatTimer(assigneLe, delai);
+    el.textContent = txt;
+    el.classList.toggle('expired', txt.includes('imminente'));
   });
 }
 
-async function toggleFinal(){
-  const conds=getFinalConditions();
-  const allOk=conds.every(c=>c.ok);
-  if(!allOk){toast('Completez toutes les conditions avant de marquer FINAL','err');return;}
-  if(!mandat){toast('Sauvegardez le mandat avant','err');return;}
-  if(!await confirmTestAction('Marquer le mandat comme FINAL')) return;
-  const newVal=!mandat.statut_final;
-  await sb.from('mandats').update({statut_final:newVal}).eq('id',mandat.id);
-  mandat.statut_final=newVal;
-  toast(newVal?'Mandat marque FINAL !':'Statut FINAL retire');
-  updateFinalBtn();
-}
+function renderTable(list) {
+  const isGest = profile.role === 'gestionnaire';
+  const cols = isGest ? 'cols-gest' : 'cols-tech';
 
-async function envoyerAlerte(){
-  if(!mandat){toast('Sauvegardez le mandat avant','err');return;}
-  if(!await confirmTestAction('Envoyer une alerte au gestionnaire')) return;
-  await sb.from('mandats').update({alerte_commission:true}).eq('id',mandat.id);
-  document.getElementById('btn-alerte-send').textContent='Alerte envoyee';
-  document.getElementById('btn-alerte-send').className='btn-alerte sent';
-  toast('Alerte envoyee au gestionnaire !');
-}
-
-/* ===== ETAPE 6 - MODE D'ASSIGNATION =====
-   Permet de choisir entre 2 modes a la creation/modification d'un mandat:
-   - 'direct': assigner a un tech specifique avec delai pour reclamer (4/6/8/12h)
-   - 'pool':   mettre directement dans le pool ouvert avec choix de region
-
-   Le gestionnaire peut tout changer meme apres reclamation.
-   Tech/secretaire: blocage si statut='reclame' (pour eviter qu'un tech reclame
-   et qu'un autre vienne tout casser). */
-
-let currentAssignMode='direct';
-let assignLocked=false;
-
-function setAssignMode(mode){
-  if(assignLocked) return;
-  currentAssignMode=mode;
-  document.getElementById('assign-mode-direct').classList.toggle('on',mode==='direct');
-  document.getElementById('assign-mode-pool').classList.toggle('on',mode==='pool');
-  document.getElementById('block-direct').style.display=mode==='direct'?'':'none';
-  document.getElementById('block-pool').style.display=mode==='pool'?'':'none';
-  updateAssignInfo();
-}
-
-function updateAssignInfo(){
-  const info=document.getElementById('assign-info');
-  if(!info) return;
-
-  if(assignLocked){
-    info.className='assign-info warn';
-    info.textContent='Ce mandat a deja ete reclame par un technicien. Seul un gestionnaire peut modifier l\u0027assignation.';
-    info.style.display='block';
+  if (!list.length) {
+    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#128203;</div><p>Aucun mandat trouv&eacute;</p></div>';
     return;
   }
 
-  if(currentAssignMode==='direct'){
-    const techSel=document.getElementById('f-tech');
-    const delaiSel=document.getElementById('f-delai');
-    const techId=techSel?techSel.value:'';
-    const delaiH=delaiSel?delaiSel.value:'8';
-    if(!techId){
-      info.className='assign-info';
-      info.textContent='Aucun tech selectionne : le mandat sera enregistre comme "Non assigne". Tu pourras l\u0027assigner plus tard.';
-    } else if(profile && techId===profile.id){
-      info.className='assign-info';
-      info.textContent='Tu te l\u0027assignes a toi-meme : le mandat sera directement marque comme "Reclame" (pas de timer).';
-    } else {
-      info.className='assign-info';
-      info.textContent='Le tech aura '+delaiH+'h ouvrables pour reclamer le mandat. S\u0027il ne reclame pas a temps, ca bascule automatiquement dans le pool ouvert.';
-    }
-  } else {
-    info.className='assign-info pool';
-    info.textContent='Mandat directement disponible dans le pool. Premier tech qui le reclame, le prend.';
-  }
-  info.style.display='block';
+  let html = `<div class="t-header ${cols}">
+    <div>Date</div><div>Client</div><div>Adresse</div>
+    <div>Type</div><div>Technicien</div><div>Assignation</div>
+    ${isGest ? '<div>Total TTC</div>' : ''}
+  </div>`;
+
+  list.forEach(m => {
+    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA', {day:'numeric', month:'long', year:'numeric'}) : '&mdash;';
+    const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
+    const tech = m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : (m.statut_assignation === 'pool' ? '<span style="color:#1565c0;font-style:italic">Pool</span>' : '<span style="color:#bbb">&mdash;</span>');
+    const badge = m.compagnie === 'logica'
+      ? '<span class="badge badge-logica">Logica</span>'
+      : '<span class="badge badge-geq">GEQ</span>';
+
+    const rowClass = m.statut_assignation === 'assigne' ? ' row-assigne'
+                   : m.statut_assignation === 'pool' ? ' row-pool'
+                   : '';
+
+    html += `<div class="t-row ${cols}${rowClass}" onclick="window.location.href='mandat.html?id=${m.id}'">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#333">${date}</div>
+        ${heure ? `<div style="font-size:11px;color:#999">${heure}</div>` : ''}
+      </div>
+      <div>
+        <div style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:2px">
+          ${m.client_nom}
+          ${m.statut_soumission_envoyee === true && !m.date_mandat ? '<span class="badge-soumission">&#128221; Soumission</span>' : ''}
+        </div>
+        <div style="font-size:12px;color:#999">${m.client_telephone||''}</div>
+      </div>
+      <div style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.adresse||'&mdash;'}</div>
+      <div>
+        ${badge}
+        <div style="font-size:11px;color:#999;margin-top:4px">${m.type_mandat||''}</div>
+      </div>
+      <div style="font-size:13px;color:#555">${tech}</div>
+      <div>
+        ${getAssignBadge(m)}
+        ${getTimerHtml(m)}
+      </div>
+      ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</div>` : ''}
+    </div>`;
+  });
+
+  document.getElementById('table-wrap').innerHTML = html;
 }
 
-function lockAssignControls(locked){
-  assignLocked=locked;
-  document.getElementById('assign-mode-direct').disabled=locked;
-  document.getElementById('assign-mode-pool').disabled=locked;
-  document.getElementById('f-tech').disabled=locked;
-  document.getElementById('f-delai').disabled=locked;
-  document.getElementById('f-region-pool').disabled=locked;
-}
+/* ===== EXCEL EXPORT ===== */
+function exportToExcel() {
+  const list = getFilteredMandats();
 
-/* ===== ETAPE 4 - BOUTON RECLAMER =====
-   Affiche une banniere avec bouton "Reclamer ce mandat" pour les techs:
-   - Si mandat assigne (statut='assigne') au tech connecte (priorite avec timer actif)
-   - Si mandat dans le pool (statut='pool') - tous les techs peuvent reclamer
-   La fonction reclamerMandat() bascule statut a 'reclame', set technicien_id et reclame_le,
-   log dans mandats_historique. */
-
-function updateReclamerBtn(){
-  const sec=document.getElementById('sec-reclamer');
-  if(!sec) return;
-  if(isNew||!mandat||profile.role!=='technicien'){
-    sec.style.display='none';
+  if (list.length === 0) {
+    alert('Aucun mandat \u00e0 exporter dans la s\u00e9lection actuelle.');
     return;
   }
 
-  const isAssigneToMe=mandat.statut_assignation==='assigne' && mandat.technicien_id===profile.id;
-  const isInPool=mandat.statut_assignation==='pool';
-
-  if(isAssigneToMe){
-    sec.classList.remove('pool-mode');
-    document.getElementById('reclamer-icon').innerHTML='&#9201;';
-    document.getElementById('reclamer-title').textContent='Mandat assigne - confirme ta prise en charge';
-    document.getElementById('reclamer-msg').textContent='Tu es le technicien prioritaire. Reclame avant l\u0027expiration du timer pour eviter qu\u0027il bascule dans le pool.';
-    sec.style.display='block';
-  } else if(isInPool){
-    sec.classList.add('pool-mode');
-    document.getElementById('reclamer-icon').innerHTML='&#127919;';
-    const region=mandat.region_mandat==='estrie'?'Estrie':'Quebec';
-    document.getElementById('reclamer-title').textContent='Mandat disponible dans le pool '+region;
-    document.getElementById('reclamer-msg').textContent='Premier arrive, premier servi - clique pour le reclamer et te l\u0027assigner.';
-    sec.style.display='block';
-  } else {
-    sec.style.display='none';
-  }
-}
-
-async function reclamerMandat(){
-  if(!mandat||isNew){toast('Mandat introuvable','err');return;}
-
-  const isAssigneToMe=mandat.statut_assignation==='assigne' && mandat.technicien_id===profile.id;
-  const isInPool=mandat.statut_assignation==='pool';
-  if(!isAssigneToMe && !isInPool){
-    toast('Ce mandat ne peut pas etre reclame','err');
-    return;
-  }
-
-  const msg=isInPool?'Reclamer ce mandat du pool (te l\u0027assigner)':'Confirmer la prise en charge de ce mandat';
-  if(!await confirmTestAction(msg)) return;
-
-  const {data:{session}}=await sb.auth.getSession();
-  const nowIso=new Date().toISOString();
-  const previousStatus=mandat.statut_assignation;
-
-  const updates={
-    statut_assignation:'reclame',
-    reclame_le:nowIso,
-    technicien_id:profile.id
+  const assignLabels = {
+    'non_assigne': 'Non assign\u00e9',
+    'assigne': 'Assign\u00e9',
+    'reclame': 'R\u00e9clam\u00e9',
+    'pool': 'Pool'
   };
 
-  const {error}=await sb.from('mandats').update(updates).eq('id',mandat.id);
-  if(error){toast('Erreur: '+error.message,'err');return;}
+  const rows = list.map(m => ({
+    'Date mandat': m.date_mandat || '',
+    'Heure': m.heure_mandat ? m.heure_mandat.substring(0,5) : '',
+    'Compagnie': m.compagnie === 'logica' ? 'Logica' : 'GEQ',
+    'Type mandat': m.type_mandat || '',
+    'Client': m.client_nom || '',
+    'T\u00e9l\u00e9phone': m.client_telephone || '',
+    'Courriel': m.client_email || '',
+    'Adresse': m.adresse || '',
+    'Type b\u00e2timent': m.type_batiment || '',
+    'Courtier': m.courtier_nom || '',
+    'R\u00e9f\u00e9rence client': m.reference_client || '',
+    'Lien listing': m.listing_url || '',
+    'Technicien': m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : '',
+    'Statut assignation': assignLabels[m.statut_assignation] || m.statut_assignation || '',
+    'R\u00e9gion': m.region_mandat || '',
+    'D\u00e9lai r\u00e9clamation (h)': m.delai_reclamation_heures || '',
+    'Assign\u00e9 le': m.assigne_le ? new Date(m.assigne_le).toLocaleString('fr-CA') : '',
+    'R\u00e9clam\u00e9 le': m.reclame_le ? new Date(m.reclame_le).toLocaleString('fr-CA') : '',
+    'Prix base ($)': parseFloat(m.prix_base) || 0,
+    'Transport ($)': parseFloat(m.transport_montant) || 0,
+    'Frais lab ($)': parseFloat(m.frais_lab) || 0,
+    'Sans lettre': m.sans_lettre ? 'Oui' : 'Non',
+    '\u00c9chantillons supp.': m.echantillons_supp || 0,
+    'Bonus non cart\u00e9': parseFloat(m.bonus_non_carte) || 0,
+    'Sous-total ($)': parseFloat(m.sous_total) || 0,
+    'TPS ($)': parseFloat(m.tps) || 0,
+    'TVQ ($)': parseFloat(m.tvq) || 0,
+    'Total TTC ($)': parseFloat(m.total_ttc) || 0,
+    'Commission tech ($)': parseFloat(m.commission_totale) || 0,
+    'Profit ($)': parseFloat(m.profit) || 0,
+    'Mode paiement': m.mode_paiement || '',
+    'Pay\u00e9 par': m.paye_par || '',
+    'Soumission envoy\u00e9e': m.statut_soumission_envoyee ? 'Oui' : 'Non',
+    'Confirmation envoy\u00e9e': m.statut_confirmation_envoyee ? 'Oui' : 'Non',
+    'Facture envoy\u00e9e': m.statut_facture_envoyee ? 'Oui' : 'Non',
+    'Pay\u00e9': m.statut_paye ? 'Oui' : 'Non',
+    'Rapport envoy\u00e9': m.statut_rapport_envoye ? 'Oui' : 'Non',
+    'Final': m.statut_final ? 'Oui' : 'Non',
+    'Alerte commission': m.alerte_commission ? 'Oui' : 'Non',
+    'Notes': m.notes || ''
+  }));
 
-  await sb.from('mandats_historique').insert({
-    mandat_id:mandat.id,
-    action:'reclamation',
-    effectue_par:session.user.id,
-    technicien_concerne:profile.id,
-    details:{previous_status:previousStatus,via:'btn-reclamer'}
-  });
+  const ws = XLSX.utils.json_to_sheet(rows);
 
-  mandat={...mandat,...updates};
-
-  const tsel=document.getElementById('f-tech');
-  if(tsel) tsel.value=profile.id;
-
-  toast(isInPool?'Mandat reclame du pool !':'Prise en charge confirmee !');
-  updateReclamerBtn();
-  loadHistorique();
-}
-
-/* ===== ETAPE 8 - HISTORIQUE DU MANDAT =====
-   Section repliable affichant tous les evenements de mandats_historique pour ce mandat.
-   Permissions:
-   - Gestionnaire et secretaire: voient toujours l'historique
-   - Tech: voit l'historique seulement s'il est implique (cree, assigne, ou concerne) */
-
-async function loadHistorique(){
-  if(!mandat||isNew) return;
-  const sec=document.getElementById('sec-histo');
-  if(!sec) return;
-
-  const {data:histoData,error}=await sb.from('mandats_historique')
-    .select('*')
-    .eq('mandat_id',mandat.id)
-    .order('created_at',{ascending:true});
-
-  if(error||!histoData){
-    sec.style.display='none';
-    return;
-  }
-
-  /* Charger les profils referencEs (deduplique les IDs) */
-  const profileIds=new Set();
-  histoData.forEach(e=>{
-    if(e.effectue_par) profileIds.add(e.effectue_par);
-    if(e.technicien_concerne) profileIds.add(e.technicien_concerne);
-  });
-
-  let profilesMap={};
-  if(profileIds.size>0){
-    const {data:profData}=await sb.from('profiles')
-      .select('id, prenom, nom')
-      .in('id',Array.from(profileIds));
-    if(profData) profData.forEach(p=>profilesMap[p.id]=p);
-  }
-
-  /* Permissions */
-  const isGest=profile.role==='gestionnaire';
-  const isSecr=profile.role==='secretaire';
-  const isTech=profile.role==='technicien';
-  let canView=isGest||isSecr;
-  if(isTech){
-    const isInHisto=histoData.some(e=>e.technicien_concerne===profile.id||e.effectue_par===profile.id);
-    const isCurrentTech=mandat.technicien_id===profile.id;
-    canView=isInHisto||isCurrentTech;
-  }
-
-  if(!canView){
-    sec.style.display='none';
-    return;
-  }
-
-  sec.style.display='block';
-  document.getElementById('histo-count').textContent='('+histoData.length+' \u00e9v\u00e9nement'+(histoData.length>1?'s':'')+')';
-  renderHistorique(histoData,profilesMap);
-}
-
-function renderHistorique(events,profMap){
-  const content=document.getElementById('histo-content');
-
-  if(!events||events.length===0){
-    content.innerHTML='<div class="histo-empty">Aucun \u00e9v\u00e9nement enregistr\u00e9</div>';
-    return;
-  }
-
-  const ICONS={
-    creation:'\u2728',
-    assignation:'\u{1F464}',
-    reclamation:'\u2713',
-    bascule_pool_auto:'\u{1F300}',
-    bascule_pool_manuel:'\u{1F300}',
-    mise_pool_initiale:'\u{1F3AF}',
-    desassignation:'\u2715',
-    changement_delai:'\u23F1'
-  };
-
-  const LABELS={
-    creation:'Cr\u00e9ation du mandat',
-    assignation:'Assignation \u00e0 un tech',
-    reclamation:'Mandat r\u00e9clam\u00e9',
-    bascule_pool_auto:'Bascule automatique vers le pool',
-    bascule_pool_manuel:'Bascule manuelle vers le pool',
-    mise_pool_initiale:'Mis directement dans le pool',
-    desassignation:'D\u00e9sassignation',
-    changement_delai:'Changement de d\u00e9lai'
-  };
-
-  let html='';
-  events.forEach(e=>{
-    const icon=ICONS[e.action]||'\u2022';
-    const label=LABELS[e.action]||e.action;
-    const date=new Date(e.created_at);
-    const dateStr=date.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
-    const timeStr=date.toLocaleTimeString('fr-CA',{hour:'2-digit',minute:'2-digit'});
-
-    const effPar=e.effectue_par&&profMap[e.effectue_par]?profMap[e.effectue_par]:null;
-    const techConc=e.technicien_concerne&&profMap[e.technicien_concerne]?profMap[e.technicien_concerne]:null;
-
-    /* Construction du detail */
-    let detailParts=[];
-    if(techConc && (!effPar || techConc.id!==e.effectue_par)){
-      detailParts.push('Tech concern\u00e9 : '+techConc.prenom+' '+techConc.nom);
-    }
-    if(e.details && typeof e.details==='object'){
-      const d=e.details;
-      if(d.delai_heures) detailParts.push('D\u00e9lai : '+d.delai_heures+'h');
-      if(d.region) detailParts.push('R\u00e9gion : '+(d.region==='estrie'?'Estrie':'Qu\u00e9bec'));
-      if(d.previous_status && d.new_status) detailParts.push('Statut : '+d.previous_status+' \u2192 '+d.new_status);
-      if(d.auto_creation) detailParts.push('Auto-r\u00e9clam\u00e9 \u00e0 la cr\u00e9ation');
-      if(d.via==='btn-reclamer') detailParts.push('Via le bouton R\u00e9clamer');
-    }
-    const detail=detailParts.join(' \u2022 ');
-
-    /* effectue_par : si AUCUN profil (cron par exemple), on indique "Systeme" */
-    const effLabel=e.effectue_par
-      ? (effPar?'par '+effPar.prenom+' '+effPar.nom:'par utilisateur supprim\u00e9')
-      : (e.action==='bascule_pool_auto'?'par le syst\u00e8me (cron)':'');
-
-    html+='<div class="histo-event">'+
-      '<div class="histo-icon-box histo-ic-'+e.action+'">'+icon+'</div>'+
-      '<div class="histo-body">'+
-        '<div class="histo-action">'+label+'</div>'+
-        (detail?'<div class="histo-detail">'+detail+'</div>':'')+
-        '<div class="histo-meta">'+
-          '<span>'+dateStr+' \u00e0 '+timeStr+'</span>'+
-          (effLabel?'<span>'+effLabel+'</span>':'')+
-        '</div>'+
-      '</div>'+
-    '</div>';
-  });
-
-  content.innerHTML=html;
-}
-
-function toggleHistorique(){
-  const content=document.getElementById('histo-content');
-  const arrow=document.getElementById('histo-arrow');
-  const isOpen=content.classList.toggle('open');
-  arrow.classList.toggle('open',isOpen);
-}
-
-async function saveMandat(){
-  const nom=document.getElementById('f-client-nom').value.trim();
-  if(!nom){toast('Le nom du client est requis','err');return;}
-  if(!await confirmTestAction(isNew?'Creer un nouveau mandat':'Sauvegarder les modifications')) return;
-  const comp=document.getElementById('f-compagnie').value;
-  const typeMand=comp==='logica'?'Inspection pre-achat':document.getElementById('f-type-mandat').value;
-  const base=parseFloat(document.getElementById('prix-base').value)||0;
-  const trans=parseFloat(document.getElementById('transport').value)||0;
-  const commBase=parseFloat(document.getElementById('comm-base').value)||0;
-  const fraisLab=parseFloat(document.getElementById('frais-lab').value)||0;
-  const sansLettre=document.getElementById('sans-lettre').checked;
-  const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
-  const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
-  const echanPrix=echantillonsSupp*125;
-  const echanComm=echantillonsSupp*25;
-  const bonus=getBonusNonCarte();
-  const st=base+extrasSum+trans+echanPrix;
-  const tps=st*0.05;
-  const tvq=st*0.09975;
-  const ttc=st+tps+tvq;
-  const commTot=commBase+extComm+echanComm+bonus;
-
-  let profit=0;
-  if(comp==='geq'){
-    const avantR=base+extrasSum+echanPrix-fraisLab;
-    profit=avantR-(avantR*0.10)-commTot;
-  } else {
-    profit=(base+extrasSum+echanPrix)-commTot-trans;
-  }
-
-  const {data:{session}}=await sb.auth.getSession();
-  const nowIso=new Date().toISOString();
-
-  /* ===== Calcul du statut d'assignation =====
-     Logique normale d'assignation (etape 6) */
-  let techId=null;
-  let statutAssign='non_assigne',assigneLe=null,reclameLe=null;
-  let delaiHeures=parseInt(document.getElementById('f-delai').value)||8;
-  let regionMandat=mandat?(mandat.region_mandat||null):null;
-  let dateMandat=document.getElementById('f-date').value||null;
-  let heureMandat=document.getElementById('f-heure').value||null;
-
-  if(currentAssignMode==='pool'){
-    techId=null;
-    statutAssign='pool';
-    regionMandat=document.getElementById('f-region-pool').value||'quebec';
-  } else {
-    techId=document.getElementById('f-tech').value||null;
-    if(techId && techId===profile.id){
-      statutAssign='reclame';
-      reclameLe=nowIso;
-    } else if(techId){
-      statutAssign='assigne';
-      assigneLe=nowIso;
-    } else {
-      statutAssign='non_assigne';
-    }
-  }
-
-  /* Preserver les timestamps si statut inchange sur un UPDATE */
-  if(!isNew && mandat){
-    if(mandat.statut_assignation===statutAssign){
-      if(statutAssign==='assigne') assigneLe=mandat.assigne_le;
-      if(statutAssign==='reclame') reclameLe=mandat.reclame_le;
-    }
-  }
-
-  const payload={
-    compagnie:comp,type_mandat:typeMand,technicien_id:techId,
-    date_mandat:dateMandat,
-    heure_mandat:heureMandat,
-    client_nom:nom,
-    client_telephone:document.getElementById('f-client-tel').value||null,
-    client_email:document.getElementById('f-client-email').value||null,
-    adresse:document.getElementById('f-adresse').value||null,
-    courtier_nom:document.getElementById('f-courtier').value||null,
-    reference_client:document.getElementById('f-reference').value||null,
-    listing_url:document.getElementById('f-listing').value||null,
-    type_batiment:document.getElementById('f-type-batiment').value||null,
-    prix_base:base,transport_montant:trans,commission_manuelle:commBase,
-    frais_lab:fraisLab,sans_lettre:sansLettre,echantillons_supp:echantillonsSupp,
-    bonus_non_carte:bonus>0,
-    sous_total:st,tps:tps,tvq:tvq,total_ttc:ttc,
-    commission_totale:commTot,profit:profit,
-    notes:document.getElementById('f-notes').value||null,
-    statut_assignation:statutAssign,
-    assigne_le:assigneLe,
-    reclame_le:reclameLe,
-    delai_reclamation_heures:delaiHeures,
-    ...(regionMandat?{region_mandat:regionMandat}:{}),
-  };
-
-  if(isNew){
-    const {data,error}=await sb.from('mandats').insert({...payload,created_by:session.user.id}).select().single();
-    if(error){toast('Erreur: '+error.message,'err');return;}
-    mandat=data;
-    if(extras.length){
-      const exI=extras.map(e=>({mandat_id:data.id,service_nom:e.service_nom,prix:e.prix,commission:e.commission,actif:e.actif}));
-      await sb.from('mandat_extras').insert(exI);
-    }
-    isNew=false;
-
-    /* Log dans mandats_historique */
-    await sb.from('mandats_historique').insert({
-      mandat_id:data.id,action:'creation',
-      effectue_par:session.user.id,
-      details:{statut_initial:statutAssign,technicien_id:techId,delai_heures:delaiHeures}
+  /* Auto-size columns */
+  const headers = Object.keys(rows[0]);
+  const colWidths = headers.map(h => {
+    let maxLen = h.length;
+    rows.forEach(r => {
+      const val = String(r[h] || '');
+      if (val.length > maxLen) maxLen = val.length;
     });
-    /* Log specifique selon le statut initial */
-    if(statutAssign==='pool'){
-      await sb.from('mandats_historique').insert({
-        mandat_id:data.id,action:'mise_pool_initiale',
-        effectue_par:session.user.id,
-        details:{region:regionMandat}
-      });
-    } else if(statutAssign==='reclame'){
-      await sb.from('mandats_historique').insert({
-        mandat_id:data.id,action:'reclamation',
-        effectue_par:session.user.id,technicien_concerne:techId,
-        details:{auto_creation:true}
-      });
-    } else if(statutAssign==='assigne'){
-      await sb.from('mandats_historique').insert({
-        mandat_id:data.id,action:'assignation',
-        effectue_par:session.user.id,technicien_concerne:techId,
-        details:{delai_heures:delaiHeures}
-      });
-    }
-
-    toast('Mandat cree !');
-    history.replaceState(null,'','?id='+data.id);
-    document.getElementById('htitle').textContent=nom;
-    if(profile.role==='gestionnaire') document.getElementById('btn-del').style.display='flex';
-    document.getElementById('sec-docs').style.display='block';
-    document.getElementById('sec-emails').style.display='block';
-    renderDocs();renderEmails();
-    loadHistorique();
-  } else {
-    const previousStatus=mandat.statut_assignation;
-    const {error}=await sb.from('mandats').update(payload).eq('id',mandat.id);
-    if(error){toast('Erreur: '+error.message,'err');return;}
-    mandat={...mandat,...payload};
-    await sb.from('mandat_extras').delete().eq('mandat_id',mandat.id);
-    if(extras.length){
-      const exI=extras.map(e=>({mandat_id:mandat.id,service_nom:e.service_nom,prix:e.prix,commission:e.commission,actif:e.actif}));
-      await sb.from('mandat_extras').insert(exI);
-    }
-    /* Log si le statut d'assignation a change */
-    if(previousStatus!==statutAssign){
-      let action='assignation';
-      if(statutAssign==='pool') action='bascule_pool_manuel';
-      else if(statutAssign==='reclame') action='reclamation';
-      else if(statutAssign==='non_assigne') action='desassignation';
-      await sb.from('mandats_historique').insert({
-        mandat_id:mandat.id,action:action,
-        effectue_par:session.user.id,
-        technicien_concerne:techId,
-        details:{previous_status:previousStatus,new_status:statutAssign,via:'mandat-edit'}
-      });
-    }
-    /* Mise a jour banniere reclamer si visible */
-    updateReclamerBtn();
-    /* Rafraichir l'historique pour voir les nouveaux evenements */
-    loadHistorique();
-    toast('Sauvegarde !');
-  }
-  document.getElementById('par-client-nom').textContent=nom;
-  if(profile.role==='technicien') document.getElementById('tech-comm-val').textContent=money(commTot);
-  updateFinalBtn();
-}
-
-async function deleteMandat(){
-  if(!await confirmTestAction('Supprimer definitivement ce mandat')) return;
-  if(!confirm('Supprimer ce mandat ?')) return;
-  await sb.from('mandats').delete().eq('id',mandat.id);
-  window.location.href='dashboard.html';
-}
-
-const DOC_TYPES_LOGICA=[
-  {key:'rapport_inspection',label:'Rapport d inspection'},
-  {key:'declaration_vendeur',label:'Declaration du vendeur'},
-  {key:'autre',label:'Autres documents'},
-];
-const DOC_TYPES_GEQ=[
-  {key:'rapport',label:'Rapport'},
-  {key:'resultat_analyse',label:'Resultats d analyse'},
-  {key:'autre',label:'Autres documents'},
-];
-
-function renderDocs(){
-  const comp=mandat?mandat.compagnie:document.getElementById('f-compagnie').value;
-  const types=comp==='logica'?DOC_TYPES_LOGICA:DOC_TYPES_GEQ;
-  const sec=document.getElementById('doc-section');
-  sec.innerHTML='';
-  types.forEach(t=>{
-    const typeDocs=docs.filter(d=>d.type_document===t.key);
-    const block=document.createElement('div');
-    let html='<div class="doc-block-title">&#128196; '+t.label+'</div>';
-    typeDocs.forEach(d=>{
-      html+='<div class="doc-file">'+
-        '<span class="doc-fn">'+d.nom_fichier+'</span>'+
-        '<button class="btn-dl" onclick="downloadDoc(\''+d.storage_path+'\',\''+d.nom_fichier+'\')">&#8595; Telecharger</button>'+
-        ((profile.role==='gestionnaire'||profile.role==='secretaire')?
-          '<button class="btn-deldoc" onclick="deleteDoc(\''+d.id+'\',\''+d.storage_path+'\')">&#10005;</button>':'')+
-        '</div>';
-    });
-    html+='<div class="doc-drop" onclick="triggerUpload(\''+t.key+'\')">+ Televerser un fichier'+
-      '<input type="file" id="file-'+t.key+'" onchange="uploadDoc(\''+t.key+'\',this)"></div>';
-    block.innerHTML=html;
-    sec.appendChild(block);
+    return { wch: Math.min(maxLen + 2, 50) };
   });
+  ws['!cols'] = colWidths;
+
+  const wb = XLSX.utils.book_new();
+  const sheetName = currentTab === 'tous' ? 'Tous les mandats' : (currentTab === 'logica' ? 'Logica' : 'GEQ');
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-'
+    + String(today.getMonth()+1).padStart(2,'0') + '-'
+    + String(today.getDate()).padStart(2,'0');
+  const tabSuffix = currentTab === 'tous' ? '' : '_' + currentTab;
+  const filename = `Mandats${tabSuffix}_${dateStr}.xlsx`;
+
+  XLSX.writeFile(wb, filename);
 }
 
-function triggerUpload(key){document.getElementById('file-'+key).click();}
-
-async function uploadDoc(key,input){
-  if(!input.files[0]||!mandat) return;
-  if(!await confirmTestAction('Televerser un fichier')){input.value='';return;}
-  const file=input.files[0];
-  const path=mandat.id+'/'+key+'_'+Date.now()+'_'+file.name;
-  toast('Telechargement...');
-  const {error}=await sb.storage.from('mandat-documents').upload(path,file);
-  if(error){toast('Erreur: '+error.message,'err');return;}
-  const {data:{session}}=await sb.auth.getSession();
-  const {data:docData}=await sb.from('mandat_documents').insert({
-    mandat_id:mandat.id,type_document:key,
-    nom_fichier:file.name,storage_path:path,
-    taille_fichier:file.size,uploaded_by:session.user.id
-  }).select().single();
-  docs.push(docData);
-  renderDocs();
-  toast('Fichier televerse !');
+function showModalNouveauMandat() {
+  document.getElementById('modal-new').style.display = 'flex';
 }
-
-async function downloadDoc(path,nom){
-  const {data}=await sb.storage.from('mandat-documents').createSignedUrl(path,300);
-  if(data){const a=document.createElement('a');a.href=data.signedUrl;a.download=nom;a.click();}
+function hideModal(e) {
+  if (e.target.id === 'modal-new') document.getElementById('modal-new').style.display = 'none';
 }
-
-async function deleteDoc(id,path){
-  if(!await confirmTestAction('Supprimer un fichier')) return;
-  if(!confirm('Supprimer ce fichier ?')) return;
-  await sb.storage.from('mandat-documents').remove([path]);
-  await sb.from('mandat_documents').delete().eq('id',id);
-  docs=docs.filter(d=>d.id!==id);
-  renderDocs();
-  toast('Fichier supprime');
+function goNewMandat(comp) {
+  window.location.href = `mandat.html?mode=new&compagnie=${comp}`;
 }
-
-function renderEmails(){
-  const comp=mandat?mandat.compagnie:document.getElementById('f-compagnie').value;
-  const list=document.getElementById('email-list');
-  list.innerHTML='';
-  const btns=comp==='logica'?[
-    {type:'conf_logica',icon:'&#128231;',title:'Confirmation d inspection',sub:'Convention de service + Norme de pratique en pieces jointes',field:'statut_confirmation_envoyee'},
-    {type:'rapp_logica',icon:'&#128203;',title:'Voici votre rapport d inspection',sub:'Rapport d inspection en piece jointe',field:'statut_rapport_envoye'},
-  ]:[
-    {type:'conf_geq_inspection',icon:'&#128231;',title:'Confirmation d inspection GEQ',sub:'Convention + Norme en pieces jointes',field:'statut_confirmation_envoyee'},
-    {type:'conf_geq_expertise',icon:'&#128231;',title:'Confirmation d expertise technique',sub:'',field:'statut_confirmation_envoyee'},
-    {type:'rapp_geq_expertise',icon:'&#128203;',title:'Rapport d expertise technique',sub:'Rapport en piece jointe',field:'statut_rapport_envoye'},
-    {type:'rapp_geq_analyse',icon:'&#9878;',title:'Resultats d analyse de qualite de l air fongique',sub:'Resultats en piece jointe',field:'statut_rapport_envoye'},
-  ];
-  btns.forEach(b=>{
-    const sent=mandat&&mandat[b.field];
-    const btn=document.createElement('button');
-    btn.className='btn-email'+(sent?' sent':'');
-    btn.innerHTML=
-      '<span class="ei">'+b.icon+'</span>'+
-      '<div><div class="et">'+b.title+'</div><div class="es">'+b.sub+'</div></div>'+
-      (sent?'<span style="margin-left:auto;font-size:12px;color:#4caf50;font-weight:700;">&#10003; Envoye</span>':'<span style="margin-left:auto;font-size:20px;color:#ccc;">&#8250;</span>');
-    btn.onclick=()=>openEmailModal(b.type);
-    list.appendChild(btn);
-  });
+function goToFDP() {
+  window.location.href = 'https://geq-suivi-app.vercel.app/dashboard.html';
 }
-
-function getEmailContent(type){
-  if(!mandat) return null;
-  const dateStr=mandat.date_mandat?new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'[DATE a confirmer]';
-  const heureStr=mandat.heure_mandat?mandat.heure_mandat.substring(0,5):'[HEURE a confirmer]';
-  const adresse=mandat.adresse||'[ADRESSE]';
-  const googleGeq=profile.google_review_url_geq||'https://g.page/r/CcwF17qG5ZPEEBM/review';
-  const googleLogica=profile.google_review_url_logica||'https://g.page/r/Cc71RgXYNZtdEBM/review';
-  const techSelect=document.getElementById('f-tech');
-  const techNom=techSelect.selectedIndex>0?techSelect.options[techSelect.selectedIndex].text:profile.prenom+' '+profile.nom;
-
-  if(type==='conf_logica') return {
-    subj:'Confirmation d inspection',
-    body:'Bonjour,\n\nFelicitation et merci de confier a Logica Inspection en batiment la delicate tache d inspecter votre nouvelle propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs a l inspection qui seront remplis lors de l inspection. Nous vous invitons a en prendre connaissance.\n6. De votre cote, nous vous demandons de nous faire parvenir par courriel une copie de la Declaration des Vendeurs (DV), la fiche de vente et des rapports d inspection anterieurs (si disponibles et moins de 5 ans) des que possible.\n7. La facture sera envoyee dans un Email distinct et les informations pour virement bancaire sont ecrites au bas de cette derniere.\n8. Les frais de l inspection sont payables le jour meme de l inspection.\n9. Frais pour services supplementaires ;\n- Inspection de drain de fondation par camera : 225 $ + taxes\n- Test de potabilite de l eau (Microbiologique) : 200 $ + taxes\n- Test d eau (metaux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la presence d amiante : 350 $ + taxes\n- Garage detache : (Varie entre 125$ et 250$)\n\nS il vous plait n hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
-    attachNote:'Pieces jointes : Convention de service + Norme de pratique'
-  };
-  if(type==='rapp_logica') return {
-    subj:'Voici votre rapport d inspection',
-    body:'Bonjour,\n\nMerci d avoir choisi Logica Inspection en batiment. Il nous fait plaisir de vous faire parvenir votre rapport d inspection.\n\nDe plus, si vous avez ete satisfait par notre service, n hesitez pas a nous laisser un commentaire sur notre page en cliquant ici : '+googleLogica+'\n\nSi vous avez des questions concernant votre rapport d inspection, n hesitez pas a communiquer avec votre inspecteur et il se fera un plaisir de repondre a vos questions.\n\nBien a vous,',
-    attachNote:'Piece jointe : Rapport d inspection'
-  };
-  if(type==='conf_geq_inspection') return {
-    subj:'Confirmation d inspection',
-    body:'Bonjour,\n\nFelicitation et merci de confier a GEQ - Batiment Conseil la delicate tache d inspecter votre nouvelle propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs a l inspection.\n6. De votre cote, nous vous demandons de nous faire parvenir une copie de la Declaration des Vendeurs (DV) et des rapports d inspection anterieurs des que possible.\n7. La facture sera envoyee dans un Email distinct.\n8. Les frais de l inspection sont payables le jour meme.\n\nS il vous plait n hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
-    attachNote:'Pieces jointes : Convention de service + Norme de pratique'
-  };
-  if(type==='conf_geq_expertise') return {
-    subj:'Confirmation d expertise technique',
-    body:'Bonjour,\n\nMerci de confier a GEQ - Batiment Conseil l investigation de la problematique qui affecte votre propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre technicien : '+techNom+'\n5. Mandat : '+(mandat.type_mandat||'')+'\n6. Tarifs : 575 + txs (Sans rapport) ou 825 + txs (Avec rapport)\n7. Les frais sont payables le jour meme. (Par virement Interac, Debit ou cheque)\n\nS il vous plait n hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
-    attachNote:''
-  };
-  if(type==='rapp_geq_expertise') return {
-    subj:'Rapport d expertise technique',
-    body:'Bonjour, tel que convenu vous trouverez en piece jointe votre rapport d investigation.\n\nDe plus, si vous avez ete satisfait par notre service, n hesitez pas a nous laisser un commentaire sur notre page en cliquant ici : '+googleGeq+'\n\nNous vous remercions de votre confiance et reiterons notre engagement a vous satisfaire.\n\nMerci !',
-    attachNote:'Piece jointe : Rapport d expertise'
-  };
-  if(type==='rapp_geq_analyse') return {
-    subj:'Resultat d analyse de qualite de l air fongique',
-    body:'Bonjour,\nvous trouverez ci-joint les certificats d analyse des tests de qualite de l air fongique. N hesitez pas a communiquer avec nous pour toute question. De plus, si vous avez ete satisfait par notre service, n hesitez pas a nous laisser un commentaire : '+googleGeq+'\n\nMerci !',
-    attachNote:'Piece jointe : Resultats d analyse'
-  };
-  return null;
+async function logout() {
+  localStorage.removeItem(VIEW_AS_KEY);
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
 }
-
-function openEmailModal(type){
-  currentEmailType=type;
-  const content=getEmailContent(type);
-  if(!content) return;
-  document.getElementById('modal-email-title').textContent=content.subj;
-  document.getElementById('m-to').value=mandat.client_email||'';
-  document.getElementById('m-subj').value=content.subj;
-  document.getElementById('m-body').value=content.body;
-  const ai=document.getElementById('m-attach-info');
-  if(content.attachNote){ai.textContent=content.attachNote;ai.style.display='block';}
-  else{ai.style.display='none';}
-  const token=localStorage.getItem('portail_gmail_token');
-  const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
-  const bar=document.getElementById('gmail-bar');
-  bar.style.display='flex';
-  if(token&&Date.now()<expiry){
-    document.getElementById('gmail-status').textContent='Gmail: '+(localStorage.getItem('portail_gmail_email')||'');
-    bar.querySelector('.btn-gc').textContent='Changer';
-  } else {
-    document.getElementById('gmail-status').textContent='Gmail non connecte';
-    bar.querySelector('.btn-gc').textContent='Connecter Gmail';
-  }
-  document.getElementById('modal-email').style.display='flex';
-}
-
-function closeEmailModal(){document.getElementById('modal-email').style.display='none';}
-
-function connectGmail(){
-  const client=google.accounts.oauth2.initTokenClient({
-    client_id:GC_ID,
-    scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly',
-    callback:async(resp)=>{
-      if(resp.error) return;
-      localStorage.setItem('portail_gmail_token',resp.access_token);
-      localStorage.setItem('portail_gmail_expiry',Date.now()+3500*1000);
-      try{
-        const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile',{headers:{Authorization:'Bearer '+resp.access_token}});
-        const d=await r.json();
-        localStorage.setItem('portail_gmail_email',d.emailAddress||'');
-        document.getElementById('gmail-status').textContent='Gmail: '+d.emailAddress;
-      }catch(e){}
-      document.getElementById('gmail-bar').querySelector('.btn-gc').textContent='Changer';
-    }
-  });
-  client.requestAccessToken();
-}
-
-async function sendEmail(){
-  const token=localStorage.getItem('portail_gmail_token');
-  const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
-  if(!token||Date.now()>=expiry){toast('Veuillez connecter Gmail','err');return;}
-  const to=document.getElementById('m-to').value.trim();
-  const subj=document.getElementById('m-subj').value.trim();
-  const body=document.getElementById('m-body').value.trim();
-  if(!to){toast('Adresse courriel requise','err');return;}
-  if(!await confirmTestAction('Envoyer un VRAI courriel a '+to)) return;
-  toast('Envoi en cours...');
-  const mime=['Content-Type: text/plain; charset="UTF-8"','MIME-Version: 1.0','To: '+to,'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=','',body].join('\r\n');
-  const encoded=btoa(unescape(encodeURIComponent(mime))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  const resp=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
-    body:JSON.stringify({raw:encoded})
-  });
-  if(resp.ok){
-    toast('Courriel envoye !');
-    closeEmailModal();
-    const field=currentEmailType.includes('conf')?'statut_confirmation_envoyee':'statut_rapport_envoye';
-    const btnId=currentEmailType.includes('conf')?'st-conf':'st-rapp';
-    if(mandat){
-      await sb.from('mandats').update({[field]:true}).eq('id',mandat.id);
-      mandat[field]=true;
-      setStBtn(btnId,true);
-    }
-    renderEmails();
-    updateFinalBtn();
-  } else {
-    const err=await resp.json();
-    toast('Erreur: '+(err.error?.message||'Erreur inconnue'),'err');
-  }
-}
-
-function openListing(){
-  const url=document.getElementById('f-listing').value;
-  if(url) window.open(url,'_blank');
-}
-
-function money(n){
-  return new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD',minimumFractionDigits:2}).format(n||0);
-}
-
-function toast(msg,type){
-  const el=document.getElementById('toast');
-  el.textContent=msg;
-  el.style.background=type==='err'?'#c62828':'#1a1a2e';
-  el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),2800);
+function money(n) {
+  return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n||0);
 }
 </script>
 </body>
