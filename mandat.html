@@ -107,6 +107,7 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 .btn-link:hover{background:#e3f0ff;border-color:#1565c0;}
 
 .statuts-grid{display:flex;gap:10px;flex-wrap:wrap;}
+.statuts-grid .btn-st{flex:1 1 180px;justify-content:center;}
 .btn-st{
   display:flex;align-items:center;gap:8px;padding:11px 18px;
   border-radius:10px;border:2px solid #e8eaed;background:white;
@@ -335,6 +336,53 @@ input[type=file]{display:none;}
     </div>
   </div>
 
+  <div class="sec status-sec" id="sec-statuts">
+    <div class="sec-title"><span class="ic">&#9989;</span> Statuts</div>
+    <div class="statuts-grid">
+      <button class="btn-st st-soum" id="st-soum" onclick="toggleSoumissionEnvoyee()">
+        <div class="ck"></div> Soumission envoyee
+      </button>
+      <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
+        <div class="ck"></div> Confirmation envoyee
+      </button>
+      <button class="btn-st" id="st-fact" onclick="toggleSt('statut_facture_envoyee','st-fact')">
+        <div class="ck"></div> Facture envoyee
+      </button>
+      <button class="btn-st" id="st-paye" onclick="togglePaye()">
+        <div class="ck"></div> Paye
+      </button>
+      <button class="btn-st" id="st-rapp" onclick="toggleSt('statut_rapport_envoye','st-rapp')">
+        <div class="ck"></div> Rapport / Analyse envoye
+      </button>
+    </div>
+
+    <div class="paye-section" id="paye-section">
+      <div>
+        <label>Paye par</label>
+        <div class="par-row">
+          <button class="btn-par" id="par-client" onclick="setPar('client')">&#128100; <span id="par-client-nom">Client</span></button>
+          <button class="btn-par" id="par-autre" onclick="setPar('autre')">Autre...</button>
+        </div>
+        <input type="text" id="par-autre-input" style="display:none;margin-top:10px;max-width:300px;" placeholder="Nom de la personne" oninput="setParAutre(this.value)">
+      </div>
+      <div style="margin-top:16px">
+        <label>Mode de paiement</label>
+        <div class="mode-row">
+          <button class="btn-mode" onclick="setMode('comptant')">Comptant</button>
+          <button class="btn-mode" onclick="setMode('virement')">Virement Interac</button>
+          <button class="btn-mode" onclick="setMode('carte')">Carte</button>
+          <button class="btn-mode" onclick="setMode('debit')">Debit</button>
+          <button class="btn-mode" onclick="setMode('cheque')">Cheque</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="final-progress" id="final-progress" style="display:none">
+      <div style="font-size:13px;font-weight:700;color:#555;margin-bottom:12px;">Conditions pour FINAL :</div>
+      <div class="final-checks" id="final-checks"></div>
+    </div>
+  </div>
+
   <div class="grid-3col">
 
     <!-- ===== COLONNE 1 (gauche): Client / Planification / Statuts ===== -->
@@ -438,53 +486,6 @@ input[type=file]{display:none;}
     </div>
 
     <div id="assign-info" class="assign-info"></div>
-  </div>
-
-  <div class="sec status-sec" id="sec-statuts">
-    <div class="sec-title"><span class="ic">&#9989;</span> Statuts</div>
-    <div class="statuts-grid">
-      <button class="btn-st st-soum" id="st-soum" onclick="toggleSoumissionEnvoyee()">
-        <div class="ck"></div> Soumission envoyee
-      </button>
-      <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
-        <div class="ck"></div> Confirmation envoyee
-      </button>
-      <button class="btn-st" id="st-fact" onclick="toggleSt('statut_facture_envoyee','st-fact')">
-        <div class="ck"></div> Facture envoyee
-      </button>
-      <button class="btn-st" id="st-paye" onclick="togglePaye()">
-        <div class="ck"></div> Paye
-      </button>
-      <button class="btn-st" id="st-rapp" onclick="toggleSt('statut_rapport_envoye','st-rapp')">
-        <div class="ck"></div> Rapport / Analyse envoye
-      </button>
-    </div>
-
-    <div class="paye-section" id="paye-section">
-      <div>
-        <label>Paye par</label>
-        <div class="par-row">
-          <button class="btn-par" id="par-client" onclick="setPar('client')">&#128100; <span id="par-client-nom">Client</span></button>
-          <button class="btn-par" id="par-autre" onclick="setPar('autre')">Autre...</button>
-        </div>
-        <input type="text" id="par-autre-input" style="display:none;margin-top:10px;max-width:300px;" placeholder="Nom de la personne" oninput="setParAutre(this.value)">
-      </div>
-      <div style="margin-top:16px">
-        <label>Mode de paiement</label>
-        <div class="mode-row">
-          <button class="btn-mode" onclick="setMode('comptant')">Comptant</button>
-          <button class="btn-mode" onclick="setMode('virement')">Virement Interac</button>
-          <button class="btn-mode" onclick="setMode('carte')">Carte</button>
-          <button class="btn-mode" onclick="setMode('debit')">Debit</button>
-          <button class="btn-mode" onclick="setMode('cheque')">Cheque</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="final-progress" id="final-progress" style="display:none">
-      <div style="font-size:13px;font-weight:700;color:#555;margin-bottom:12px;">Conditions pour FINAL :</div>
-      <div class="final-checks" id="final-checks"></div>
-    </div>
   </div>
     </div>
 
