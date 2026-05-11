@@ -147,6 +147,36 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 .fin-input:focus{border-color:#1a1a2e;}
 .fin-input.small{width:100%;font-size:13px;padding:6px 8px;}
 
+.fin-type-display{
+  background:linear-gradient(to right,#fff3e0,#fff8f0);
+  border-left:4px solid #ff9800;
+  border-radius:8px;
+  padding:10px 14px;
+  margin-bottom:14px;
+  font-size:13px;
+  font-weight:600;
+  color:#bf360c;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.fin-type-display:before{content:"\1F4CB";font-size:14px;}
+.fin-type-display.empty{display:none;}
+
+.extra-name-input{
+  width:100%;
+  font-size:13px;
+  padding:6px 8px;
+  border:1.5px solid #e8eaed;
+  border-radius:6px;
+  background:white;
+  outline:none;
+  transition:border 0.2s;
+  font-weight:500;
+  color:#333;
+}
+.extra-name-input:focus{border-color:#1a1a2e;}
+
 .extras-wrap{background:#f8f9fa;border-radius:12px;padding:14px 12px;margin:12px 0;}
 .extra-row{display:grid;grid-template-columns:26px 1fr 72px 72px 30px;gap:6px;align-items:center;padding:9px 4px;border-bottom:1px solid #eee;}
 .extra-row:last-child{border:none;}
@@ -518,6 +548,7 @@ input[type=file]{display:none;}
 
   <div class="sec finance-sec" id="sec-finances">
     <div class="sec-title"><span class="ic">&#128176;</span> Finances</div>
+    <div id="fin-type-display" class="fin-type-display"></div>
 
     <div class="fin-card">
       <div class="fin-row">
@@ -906,6 +937,26 @@ function onCompagnieChange(){
   if(comp==='geq') onTypeMandatChange();
   updateBadge();
   renderEmails();
+  updateFinTypeDisplay();
+}
+
+/* Met a jour l'en-tete de la section Finances pour afficher le type de mandat actuel */
+function updateFinTypeDisplay(){
+  const el=document.getElementById('fin-type-display');
+  if(!el) return;
+  const comp=document.getElementById('f-compagnie').value;
+  let txt='';
+  if(comp==='logica') txt='Inspection pre-achat';
+  else if(comp==='geq'){
+    const sel=document.getElementById('f-type-mandat');
+    txt=sel?(sel.options[sel.selectedIndex]?.text||sel.value||''):'';
+  }
+  if(txt){
+    el.textContent=txt;
+    el.classList.remove('empty');
+  } else {
+    el.classList.add('empty');
+  }
 }
 
 function onTypeMandatChange(){
@@ -932,6 +983,7 @@ function onTypeMandatChange(){
   document.getElementById('sans-lettre-row').style.display=avecLettre?'flex':'none';
 
   recalc();
+  updateFinTypeDisplay();
 }
 
 function updateBadge(){
@@ -961,16 +1013,20 @@ function renderExtras(){
     return;
   }
   const hdr=document.createElement('div');
-  hdr.style.cssText='display:grid;grid-template-columns:32px 1fr 110px 110px 36px;gap:10px;padding:4px;margin-bottom:4px;';
+  hdr.style.cssText='display:grid;grid-template-columns:26px 1fr 72px 72px 30px;gap:6px;padding:4px;margin-bottom:4px;';
   hdr.innerHTML='<div></div><div style="font-size:11px;color:#999;font-weight:700;text-transform:uppercase;">Service</div><div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Prix client</div>'+(isGest?'<div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Commission</div>':'<div></div>')+'<div></div>';
   list.appendChild(hdr);
 
   extras.forEach((ex,i)=>{
     const row=document.createElement('div');
     row.className='extra-row';
+    /* Nom du service: input editable si service custom, span fige sinon */
+    const nameHtml = ex.custom
+      ? '<input class="extra-name-input" type="text" placeholder="Nom du service..." value="'+escapeAttr(ex.service_nom||'')+'" oninput="extraSetNom('+i+',this.value)">'
+      : '<span class="extra-name">'+escapeHtml(ex.service_nom||'')+'</span>';
     row.innerHTML=
       '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)">'+
-      '<span class="extra-name">'+ex.service_nom+'</span>'+
+      nameHtml+
       '<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value)">'+
       (isGest?'<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)">':'<span></span>')+
       ((profile.role==='gestionnaire'||profile.role==='secretaire')?'<button class="btn-rm" onclick="removeExtra('+i+')">&#10005;</button>':'<span></span>');
@@ -983,13 +1039,23 @@ function renderExtras(){
   recalc();
 }
 
+/* Helpers pour echapper le HTML/attributs */
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function escapeAttr(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
 function extraToggle(i,v){extras[i].actif=v;recalc();}
 function extraSetPrix(i,v){extras[i].prix=parseFloat(v)||0;recalc();}
 function extraSetComm(i,v){extras[i].commission=parseFloat(v)||0;recalcComm();}
+function extraSetNom(i,v){extras[i].service_nom=v;}
 function removeExtra(i){extras.splice(i,1);renderExtras();}
 function addExtra(){
-  extras.push({id:Math.random().toString(36).substr(2,9),service_nom:'Nouveau service',prix:0,commission:0,actif:false});
+  extras.push({id:Math.random().toString(36).substr(2,9),service_nom:'',prix:0,commission:0,actif:true,custom:true});
   renderExtras();
+  /* Focus auto sur le nouvel input de nom */
+  setTimeout(()=>{
+    const inputs=document.querySelectorAll('.extra-name-input');
+    if(inputs.length) inputs[inputs.length-1].focus();
+  },50);
 }
 
 function recalc(){
