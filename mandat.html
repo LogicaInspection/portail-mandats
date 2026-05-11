@@ -509,7 +509,7 @@ input[type=file]{display:none;}
   <div class="sec status-sec" id="sec-statuts">
     <div class="sec-title"><span class="ic">&#9989;</span> Statuts</div>
     <div class="statuts-grid">
-      <button class="btn-st st-soum" id="st-soum" onclick="toggleSt('statut_soumission_envoyee','st-soum')">
+      <button class="btn-st st-soum" id="st-soum" onclick="toggleSoumissionEnvoyee()">
         <div class="ck"></div> Soumission envoyee
       </button>
       <button class="btn-st" id="st-conf" onclick="toggleSt('statut_confirmation_envoyee','st-conf')">
@@ -1052,6 +1052,66 @@ async function toggleSt(field,btnId){
     mandat[field]=newVal;
     toast(newVal?'Statut active':'Statut desactive');
   }
+  updateFinalBtn();
+}
+
+/* Statut "Soumission envoyee" avec auto-reclamation:
+   - Si un TECHNICIEN active le statut sur un mandat sans tech assigne (pool/non_assigne),
+     le mandat est automatiquement reclame au profit du tech qui clique.
+   - Les gestionnaires/secretaires ne declenchent pas l'auto-reclamation. */
+async function toggleSoumissionEnvoyee(){
+  const btn=document.getElementById('st-soum');
+  const newVal=!btn.classList.contains('on');
+  setStBtn('st-soum',newVal);
+
+  if(isNew||!mandat){updateFinalBtn();return;}
+
+  const updates={statut_soumission_envoyee:newVal};
+  let autoReclame=false;
+
+  /* Auto-reclamation seulement si: on active le statut + user est technicien + pas de tech assigne */
+  if(newVal && profile.role==='technicien' && !mandat.technicien_id){
+    const nowIso=new Date().toISOString();
+    updates.technicien_id=profile.id;
+    updates.statut_assignation='reclame';
+    updates.reclame_le=nowIso;
+    autoReclame=true;
+  }
+
+  const {error}=await sb.from('mandats').update(updates).eq('id',mandat.id);
+  if(error){
+    toast('Erreur: '+error.message,'err');
+    /* Revert visual toggle si echec */
+    setStBtn('st-soum',!newVal);
+    return;
+  }
+
+  /* Sync l'objet mandat local */
+  Object.assign(mandat,updates);
+
+  if(autoReclame){
+    /* Log l'auto-reclamation dans l'historique */
+    const {data:{session}}=await sb.auth.getSession();
+    await sb.from('mandats_historique').insert({
+      mandat_id:mandat.id,action:'reclamation',
+      effectue_par:session.user.id,
+      technicien_concerne:profile.id,
+      details:{via:'soumission_envoyee_auto'}
+    });
+    /* Rafraichir UI pour refleter la nouvelle assignation */
+    updateReclamerBtn();
+    updateAssignInfo();
+    loadHistorique();
+    /* Mettre a jour le selecteur tech dans la section planification si visible */
+    const fTech=document.getElementById('f-tech');
+    if(fTech) fTech.value=profile.id;
+    /* Mettre a jour le statut visible */
+    if(typeof setAssignMode==='function') setAssignMode('direct');
+    toast('Soumission envoyee + mandat reclame');
+  } else {
+    toast(newVal?'Soumission envoyee':'Statut desactive');
+  }
+
   updateFinalBtn();
 }
 
