@@ -44,6 +44,11 @@ body.test-mode .content { padding-top: 18px; }
 .hright{display:flex;gap:8px;align-items:center;}
 .btn-save{background:#4caf50;border:none;color:white;padding:10px 22px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 2px 8px rgba(76,175,80,0.3);}
 .btn-save:hover{background:#43a047;}
+.btn-save.dirty{box-shadow:0 0 0 3px rgba(255,152,0,0.4),0 2px 8px rgba(76,175,80,0.3);animation:save-pulse 2s ease-in-out infinite;}
+@keyframes save-pulse{0%,100%{box-shadow:0 0 0 3px rgba(255,152,0,0.4),0 2px 8px rgba(76,175,80,0.3);}50%{box-shadow:0 0 0 6px rgba(255,152,0,0.2),0 2px 8px rgba(76,175,80,0.3);}}
+
+.dirty-indicator{color:#ff9800;font-size:12px;font-weight:600;margin-right:10px;animation:dirty-blink 1.6s ease-in-out infinite;}
+@keyframes dirty-blink{0%,100%{opacity:1;}50%{opacity:0.55;}}
 .btn-del{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:white;padding:10px 16px;border-radius:9px;cursor:pointer;font-size:13px;}
 .btn-del:hover{background:#c62828;border-color:#c62828;}
 
@@ -344,15 +349,16 @@ input[type=file]{display:none;}
 </div>
 
 <div class="header">
-  <button class="btn-back" onclick="window.location.href='dashboard.html'">&#8592; Retour</button>
+  <button class="btn-back" onclick="goBack()">&#8592; Retour</button>
   <div class="hcenter">
     <span id="htitle">Nouveau mandat</span>
     <span id="hbadge" class="badge" style="display:none"></span>
   </div>
   <div class="hright">
+    <span id="dirty-indicator" class="dirty-indicator" style="display:none">&#9679; Modifications non sauvegard&eacute;es</span>
     <button id="btn-final" class="btn-final-header btn-final-pending" onclick="toggleFinal()">&#10003; FINAL</button>
     <button id="btn-del" class="btn-del" style="display:none" onclick="deleteMandat()">&#128465;</button>
-    <button class="btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
+    <button class="btn-save" id="btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
   </div>
 </div>
 
@@ -868,6 +874,9 @@ async function confirmTestAction(actionLabel){
   updateReclamerBtn();
   updateAssignInfo();
   loadHistorique();
+  /* Activer la detection des modifications APRES l'init complete
+     pour eviter de marquer dirty pendant le chargement initial */
+  setTimeout(()=>{formInitialized=true;},400);
 })();
 
 function fillForm(){
@@ -1766,6 +1775,7 @@ async function saveMandat(){
     }
 
     toast('Mandat cree !');
+    markClean();
     setTimeout(()=>window.location.href='dashboard.html',800);
     return;
   } else {
@@ -1796,6 +1806,7 @@ async function saveMandat(){
     /* Rafraichir l'historique pour voir les nouveaux evenements */
     loadHistorique();
     toast('Sauvegarde !');
+    markClean();
     setTimeout(()=>window.location.href='dashboard.html',800);
   }
   document.getElementById('par-client-nom').textContent=nom;
@@ -2276,6 +2287,62 @@ function updateGcalStatus(){
     status.textContent='Pas encore ajoute';
   }
 }
+
+/* ===== DIRTY TRACKING =====
+   Detecte les modifications non sauvegardees pour eviter la perte de donnees.
+   - Affiche un indicateur visuel "Modifications non sauvegardees"
+   - Confirme avant de quitter (bouton Retour)
+   - Avertit le navigateur si fermeture d'onglet/refresh */
+
+let formDirty=false;
+let formInitialized=false;
+
+function markDirty(){
+  if(!formInitialized||formDirty) return;
+  formDirty=true;
+  document.getElementById('dirty-indicator').style.display='inline';
+  document.getElementById('btn-save').classList.add('dirty');
+}
+
+function markClean(){
+  formDirty=false;
+  const ind=document.getElementById('dirty-indicator');
+  const btn=document.getElementById('btn-save');
+  if(ind) ind.style.display='none';
+  if(btn) btn.classList.remove('dirty');
+}
+
+async function goBack(){
+  if(formDirty){
+    const ok=confirm('Vous avez des modifications non sauvegardees.\n\nVoulez-vous vraiment quitter sans sauvegarder ?\n\n(Cliquez Annuler pour revenir au mandat, ou OK pour quitter)');
+    if(!ok) return;
+  }
+  /* Desactive le beforeunload puisqu'on quitte volontairement */
+  formDirty=false;
+  window.location.href='dashboard.html';
+}
+
+/* Detection globale de modifications sur tous les champs du form principal.
+   Exclut les champs dans les modals (courriel, conversion, etc.) */
+document.addEventListener('input',e=>{
+  if(!e.target.matches('input, textarea, select')) return;
+  if(e.target.closest('.ov, .modal')) return; /* Ignore les modals */
+  markDirty();
+});
+document.addEventListener('change',e=>{
+  if(!e.target.matches('input, textarea, select')) return;
+  if(e.target.closest('.ov, .modal')) return;
+  markDirty();
+});
+
+/* Avertit le navigateur si on essaie de fermer/refresh avec des modifs */
+window.addEventListener('beforeunload',e=>{
+  if(formDirty){
+    e.preventDefault();
+    e.returnValue='';
+    return '';
+  }
+});
 
 function toast(msg,type){
   const el=document.getElementById('toast');
