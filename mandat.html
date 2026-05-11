@@ -2072,9 +2072,14 @@ function money(n){
 
 function buildGcalEventBody(){
   const clientNom=document.getElementById('f-client-nom').value||'Client';
-  const adresse=document.getElementById('f-adresse').value||'';
+  const clientEmail=document.getElementById('f-client-email').value||'';
   const tel=document.getElementById('f-client-tel').value||'';
+  const adresse=document.getElementById('f-adresse').value||'';
   const courtier=document.getElementById('f-courtier').value||'';
+  const reference=document.getElementById('f-reference').value||'';
+  const listing=document.getElementById('f-listing').value||'';
+  const typeBat=document.getElementById('f-type-batiment').value||'';
+  const notes=document.getElementById('f-notes').value||'';
   const date=document.getElementById('f-date').value;
   const heure=document.getElementById('f-heure').value;
   const comp=document.getElementById('f-compagnie').value;
@@ -2085,32 +2090,82 @@ function buildGcalEventBody(){
     typeM=sel?(sel.options[sel.selectedIndex]?.text||sel.value||''):'';
   }
   const total=mandat?mandat.total_ttc:0;
+  const compNom=comp==='logica'?'Logica Inspection':'GEQ - Batiment Conseil';
 
   if(!date||!heure) throw new Error('Date et heure obligatoires');
 
-  /* Calcul de la plage horaire (2h par defaut) */
+  /* Plage horaire 2h par defaut */
   const startDt=new Date(date+'T'+heure+':00');
   const endDt=new Date(startDt.getTime()+2*60*60*1000);
-  /* Format ISO local avec offset Toronto */
   const fmt=d=>d.getFullYear()+'-'+
     String(d.getMonth()+1).padStart(2,'0')+'-'+
     String(d.getDate()).padStart(2,'0')+'T'+
     String(d.getHours()).padStart(2,'0')+':'+
     String(d.getMinutes()).padStart(2,'0')+':00';
 
-  const descLines=[
-    typeM?'Type: '+typeM:null,
-    tel?'Telephone: '+tel:null,
-    courtier?'Courtier: '+courtier:null,
-    total?'Total TTC: '+money(total):null,
-    '',
-    mandat?'Mandat: https://portail-mandats.vercel.app/mandat.html?id='+mandat.id:null,
-  ].filter(Boolean);
+  /* Helper: echappe HTML et convertit retours de ligne en <br> */
+  const h=s=>escapeHtml(String(s||'')).replace(/\n/g,'<br>');
+
+  /* Construction de la description en HTML pour mise en forme dans Google Calendar */
+  const parts=[];
+
+  parts.push('<b>\uD83D\uDCCB INSPECTION</b>');
+  if(typeM) parts.push(h(typeM)+' &mdash; '+h(compNom));
+  parts.push('');
+
+  parts.push('<b>\uD83D\uDC64 CLIENT</b>');
+  parts.push(h(clientNom));
+  if(tel) parts.push('\uD83D\uDCDE '+h(tel));
+  if(clientEmail) parts.push('\u2709\uFE0F <a href="mailto:'+escapeAttr(clientEmail)+'">'+h(clientEmail)+'</a>');
+  parts.push('');
+
+  if(adresse||typeBat){
+    parts.push('<b>\uD83D\uDCCD ADRESSE</b>');
+    if(adresse){
+      const mapUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(adresse);
+      parts.push('<a href="'+escapeAttr(mapUrl)+'">'+h(adresse)+'</a>');
+    }
+    if(typeBat) parts.push('Type de batiment : '+h(typeBat));
+    parts.push('');
+  }
+
+  if(courtier||reference||listing){
+    parts.push('<b>\uD83C\uDFE2 COURTIER / REFERENCE</b>');
+    if(courtier) parts.push('Courtier : '+h(courtier));
+    if(reference) parts.push('Refere par : '+h(reference));
+    if(listing) parts.push('Fiche : <a href="'+escapeAttr(listing)+'">'+h(listing)+'</a>');
+    parts.push('');
+  }
+
+  if(total){
+    parts.push('<b>\uD83D\uDCB0 MONTANT</b>');
+    parts.push('Total TTC : '+h(money(total)));
+    parts.push('');
+  }
+
+  if(notes){
+    parts.push('<b>\uD83D\uDCDD NOTES INTERNES</b>');
+    parts.push(h(notes));
+    parts.push('');
+  }
+
+  if(mandat){
+    parts.push('&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;');
+    parts.push('\uD83D\uDD17 <a href="https://portail-mandats.vercel.app/mandat.html?id='+mandat.id+'"><b>Ouvrir le mandat dans le portail</b></a>');
+  }
+
+  /* Couleur d'evenement Google Calendar selon la compagnie:
+     7=Peacock (bleu turquoise) pour Logica, 11=Tomato (rouge) pour GEQ */
+  const colorId=comp==='logica'?'7':'11';
+
+  /* Emoji prefix dans le titre selon la compagnie pour reperage rapide dans l'agenda */
+  const emoji=comp==='logica'?'\uD83D\uDD0D':'\uD83D\uDD2C'; /* loupe / microscope */
 
   return {
-    summary:clientNom+(typeM?' - '+typeM:''),
+    summary:emoji+' '+clientNom+(typeM?' \u2014 '+typeM:''),
     location:adresse,
-    description:descLines.join('\n'),
+    description:parts.join('<br>'),
+    colorId:colorId,
     start:{dateTime:fmt(startDt),timeZone:'America/Toronto'},
     end:{dateTime:fmt(endDt),timeZone:'America/Toronto'},
     reminders:{
