@@ -1118,6 +1118,7 @@ function recalc(){
   const trans=parseFloat(document.getElementById('transport').value)||0;
   const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
   const echanPrix=echantillonsSupp*125;
+  /* Frais de labo INCLUS dans le prix de base, donc PAS ajoutes au sous-total */
   const st=base+extrasSum+trans+echanPrix;
   const tps=st*0.05;
   const tvq=st*0.09975;
@@ -1162,8 +1163,9 @@ function recalcProfit(){
   const trans=parseFloat(document.getElementById('transport').value)||0;
   const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
   const echanPrix=echantillonsSupp*125;
-  const totalFacture=base+extrasSum+echanPrix;
   const fraisLab=parseFloat(document.getElementById('frais-lab').value)||0;
+  /* Sous-total facture au client (frais de labo deja inclus dans le prix de base) */
+  const totalFacture=base+extrasSum+echanPrix;
   const baseComm=parseFloat(document.getElementById('comm-base').value)||0;
   const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
   const echanComm=echantillonsSupp*25;
@@ -1172,6 +1174,7 @@ function recalcProfit(){
   const comp=document.getElementById('f-compagnie').value;
   let profit=0;
   if(comp==='geq'){
+    /* Frais de labo soustraits avant calcul de la redevance (pass-through au labo) */
     const avantRedevance=totalFacture-fraisLab;
     const redevance=avantRedevance*0.10;
     profit=avantRedevance-redevance-commTotale;
@@ -1682,6 +1685,7 @@ async function saveMandat(){
   const echanPrix=echantillonsSupp*125;
   const echanComm=echantillonsSupp*25;
   const bonus=getBonusNonCarte();
+  /* Frais de labo deja inclus dans le prix de base (donc PAS ajoutes au sous-total) */
   const st=base+extrasSum+trans+echanPrix;
   const tps=st*0.05;
   const tvq=st*0.09975;
@@ -1690,6 +1694,7 @@ async function saveMandat(){
 
   let profit=0;
   if(comp==='geq'){
+    /* Frais de labo soustraits avant redevance (pass-through au labo) */
     const avantR=base+extrasSum+echanPrix-fraisLab;
     profit=avantR-(avantR*0.10)-commTot;
   } else {
