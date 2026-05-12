@@ -858,11 +858,16 @@ function render() {
 
 function getAssignBadge(m) {
   const s = m.statut_assignation || 'non_assigne';
+  const regionLabels = {
+    'estrie': 'Estrie',
+    'monteregie': 'Mont\u00e9r\u00e9gie',
+    'quebec': 'Qu\u00e9bec'
+  };
   const labels = {
     'non_assigne': 'Non assign\u00e9',
     'assigne': 'Assign\u00e9',
     'reclame': 'R\u00e9clam\u00e9',
-    'pool': 'Pool ' + (m.region_mandat === 'estrie' ? 'Estrie' : 'Qu\u00e9bec')
+    'pool': 'Pool ' + (regionLabels[m.region_mandat] || 'Qu\u00e9bec')
   };
   return `<span class="assign-badge assign-${s}">${labels[s] || s}</span>`;
 }
