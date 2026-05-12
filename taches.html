@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mes taches - Portail GEQ</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f3f4f6;color:#1a1a2e;line-height:1.5;min-height:100vh;}
+
+/* Header */
+.topbar{background:#1a1a2e;color:white;padding:12px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;text-decoration:none;display:inline-block;}
+.btn-back:hover{background:rgba(255,255,255,0.2);}
+.topbar h1{font-size:18px;font-weight:600;flex:1;}
+.btn-add{background:#4caf50;border:none;color:white;padding:10px 18px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 2px 8px rgba(76,175,80,0.3);}
+.btn-add:hover{background:#43a047;}
+
+/* Container */
+.main{max-width:960px;margin:0 auto;padding:24px;}
+
+/* Filters bar */
+.filters-bar{background:white;border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.tab-toggle{display:inline-flex;background:#f3f4f6;border-radius:9px;padding:3px;}
+.tab-toggle button{background:transparent;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;color:#666;transition:all 0.15s;}
+.tab-toggle button.on{background:white;color:#1a1a2e;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+.filter-pill{padding:6px 14px;border-radius:18px;border:1.5px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#666;transition:all 0.15s;}
+.filter-pill:hover{border-color:#1a1a2e;}
+.filter-pill.on{background:#1a1a2e;color:white;border-color:#1a1a2e;}
+.filter-pill .pill-count{display:inline-block;margin-left:6px;background:rgba(255,255,255,0.25);padding:1px 7px;border-radius:10px;font-size:11px;}
+.filter-pill:not(.on) .pill-count{background:#f3f4f6;color:#666;}
+
+/* Task list */
+.task-section{margin-bottom:24px;}
+.task-section-title{font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;padding-left:4px;display:flex;align-items:center;gap:8px;}
+.task-card{background:white;border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;border-left:4px solid #ccc;transition:all 0.15s;cursor:pointer;}
+.task-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);transform:translateY(-1px);}
+.task-card.complete{opacity:0.6;}
+.task-card.complete .task-titre{text-decoration:line-through;}
+.task-card.urgente{border-left-color:#c62828;background:linear-gradient(to right,#fff5f5,white 60px);}
+.task-card.haute{border-left-color:#e65100;}
+.task-card.normale{border-left-color:#1976d2;}
+.task-card.basse{border-left-color:#9e9e9e;}
+.task-card.echue:not(.complete){background:linear-gradient(to right,#fee2e2,white 80px);}
+
+.task-check{width:24px;height:24px;border-radius:50%;border:2px solid #ccc;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;flex-shrink:0;margin-top:1px;transition:all 0.15s;}
+.task-check:hover{border-color:#4caf50;}
+.task-check.on{background:#4caf50;border-color:#4caf50;}
+
+.task-body{flex:1;min-width:0;}
+.task-titre{font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:4px;}
+.task-desc{font-size:13px;color:#666;margin-bottom:6px;white-space:pre-wrap;}
+.task-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:#888;align-items:center;}
+.task-meta-item{display:inline-flex;align-items:center;gap:4px;}
+.task-meta-item.echeance.echue{color:#c62828;font-weight:600;}
+.task-mandat-link{color:#1565c0;text-decoration:none;font-weight:600;font-size:12px;}
+.task-mandat-link:hover{text-decoration:underline;}
+.task-pri-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
+.task-pri-badge.urgente{background:#fee2e2;color:#c62828;}
+.task-pri-badge.haute{background:#fff3e0;color:#bf360c;}
+.task-pri-badge.normale{background:#e3f2fd;color:#1565c0;}
+.task-pri-badge.basse{background:#f5f5f5;color:#666;}
+
+.task-actions{display:flex;gap:4px;flex-shrink:0;}
+.btn-icon{background:transparent;border:1px solid #e5e7eb;color:#666;width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.btn-icon:hover{background:#f5f5f5;border-color:#ccc;}
+.btn-icon.btn-del:hover{background:#fee2e2;border-color:#c62828;color:#c62828;}
+
+.empty-state{background:white;border-radius:12px;padding:48px 24px;text-align:center;color:#bbb;}
+.empty-state-icon{font-size:48px;margin-bottom:12px;}
+.empty-state-text{font-size:15px;font-weight:500;margin-bottom:6px;color:#999;}
+.empty-state-sub{font-size:13px;color:#bbb;}
+
+/* Modal */
+.ov{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:white;border-radius:18px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:18px;color:#1a1a2e;margin-bottom:20px;font-weight:700;}
+.mfield{margin-bottom:14px;}
+.mfield label{display:block;font-size:12px;color:#666;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.3px;}
+.mfield input[type=text],.mfield input[type=date],.mfield select,.mfield textarea{width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:14px;font-family:inherit;outline:none;transition:border 0.15s;background:white;}
+.mfield input:focus,.mfield select:focus,.mfield textarea:focus{border-color:#1a1a2e;}
+.mfield textarea{resize:vertical;min-height:80px;}
+.priorite-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.pri-btn{padding:10px 6px;border:1.5px solid #e5e7eb;background:white;border-radius:9px;cursor:pointer;font-size:12px;font-weight:600;color:#666;text-align:center;transition:all 0.15s;}
+.pri-btn:hover{border-color:#1a1a2e;}
+.pri-btn.on.basse{background:#f5f5f5;border-color:#9e9e9e;color:#555;}
+.pri-btn.on.normale{background:#e3f2fd;border-color:#1976d2;color:#1565c0;}
+.pri-btn.on.haute{background:#fff3e0;border-color:#e65100;color:#bf360c;}
+.pri-btn.on.urgente{background:#fee2e2;border-color:#c62828;color:#c62828;}
+.checkbox-row{display:flex;align-items:center;gap:8px;margin:14px 0;font-size:13px;color:#444;cursor:pointer;}
+.checkbox-row input{width:18px;height:18px;cursor:pointer;}
+.mfooter{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid #f3f4f6;}
+.btn-cancel{padding:10px 16px;border:1.5px solid #e5e7eb;border-radius:9px;background:white;color:#666;font-size:14px;cursor:pointer;}
+.btn-cancel:hover{background:#f5f5f5;}
+.btn-save{padding:10px 22px;background:#4caf50;color:white;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-save:hover{background:#43a047;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;color:white;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,0.2);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Responsive */
+@media (max-width:640px){
+  .main{padding:16px;}
+  .topbar{padding:10px 16px;}
+  .topbar h1{font-size:15px;}
+  .filters-bar{flex-direction:column;align-items:stretch;}
+  .priorite-row{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="dashboard.html" class="btn-back">&#8592; Dashboard</a>
+  <h1>&#128203; Mes t&acirc;ches</h1>
+  <button class="btn-add" onclick="openTacheModal()">&#10133; Nouvelle t&acirc;che</button>
+</div>
+
+<div class="main">
+
+  <div class="filters-bar">
+    <div class="tab-toggle">
+      <button id="tab-mine" class="on" onclick="setTab('mine')">Pour moi</button>
+      <button id="tab-assigned" onclick="setTab('assigned')">Que j'ai assign&eacute;es</button>
+    </div>
+    <div id="filter-pills">
+      <button class="filter-pill on" data-filter="active" onclick="setFilter('active')">
+        &#9203; &Agrave; faire <span class="pill-count" id="cnt-active">0</span>
+      </button>
+      <button class="filter-pill" data-filter="echue" onclick="setFilter('echue')">
+        &#128293; En retard <span class="pill-count" id="cnt-echue">0</span>
+      </button>
+      <button class="filter-pill" data-filter="complete" onclick="setFilter('complete')">
+        &#9989; Faites <span class="pill-count" id="cnt-complete">0</span>
+      </button>
+      <button class="filter-pill" data-filter="all" onclick="setFilter('all')">
+        Toutes <span class="pill-count" id="cnt-all">0</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="taches-list">
+    <div class="empty-state">
+      <div class="empty-state-icon">&#9203;</div>
+      <div class="empty-state-text">Chargement...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal creation/edition de tache -->
+<div class="ov" id="modal-tache" style="display:none">
+  <div class="modal">
+    <h2 id="modal-title">Nouvelle t&acirc;che</h2>
+
+    <div class="mfield">
+      <label>Titre *</label>
+      <input type="text" id="f-titre" placeholder="Ex: Rappeler Plani Studio pour facturation" maxlength="200">
+    </div>
+
+    <div class="mfield">
+      <label>Description (optionnel)</label>
+      <textarea id="f-description" placeholder="D&eacute;tails additionnels..."></textarea>
+    </div>
+
+    <div class="mfield">
+      <label>Assigner &agrave;</label>
+      <select id="f-assignee"></select>
+    </div>
+
+    <div class="mfield">
+      <label>Priorit&eacute;</label>
+      <div class="priorite-row">
+        <button class="pri-btn basse" data-val="basse" onclick="setPriorite('basse')">&#9202; Basse</button>
+        <button class="pri-btn normale on" data-val="normale" onclick="setPriorite('normale')">&#128280; Normale</button>
+        <button class="pri-btn haute" data-val="haute" onclick="setPriorite('haute')">&#9888;&#65039; Haute</button>
+        <button class="pri-btn urgente" data-val="urgente" onclick="setPriorite('urgente')">&#128293; Urgente</button>
+      </div>
+    </div>
+
+    <div class="mfield">
+      <label>&Eacute;ch&eacute;ance (optionnel)</label>
+      <input type="date" id="f-echeance">
+    </div>
+
+    <label class="checkbox-row" id="lbl-lier-mandat">
+      <input type="checkbox" id="f-lier-mandat" onchange="onLierMandatChange()">
+      Lier &agrave; un mandat
+    </label>
+    <div class="mfield" id="block-mandat" style="display:none;">
+      <label>Mandat associ&eacute;</label>
+      <select id="f-mandat">
+        <option value="">&mdash; S&eacute;lectionner &mdash;</option>
+      </select>
+    </div>
+
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeTacheModal()">Annuler</button>
+      <button class="btn-save" onclick="submitTache()">&#10003; Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const VIEW_AS_KEY = 'view_as_user_id';
+
+let profile = null;
+let realProfile = null;
+let taches = [];
+let teamMembers = [];
+let mandatsForLink = [];
+let currentTab = 'mine';     /* 'mine' ou 'assigned' */
+let currentFilter = 'active'; /* 'active' / 'echue' / 'complete' / 'all' */
+let editingId = null;
+let modalPriorite = 'normale';
+
+const PRI_LABELS = {
+  'urgente': {icon:'\uD83D\uDD25', label:'Urgente'},
+  'haute':   {icon:'\u26A0\uFE0F', label:'Haute'},
+  'normale': {icon:'\uD83D\uDD18', label:'Normale'},
+  'basse':   {icon:'\u23F2',       label:'Basse'},
+};
+const PRI_ORDER = {'urgente':0,'haute':1,'normale':2,'basse':3};
+
+(async function init(){
+  const {data:{session}} = await sb.auth.getSession();
+  if(!session){window.location.href='index.html';return;}
+
+  /* Profil reel */
+  const {data:pReal} = await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  if(!pReal){window.location.href='index.html';return;}
+  realProfile = pReal;
+
+  /* Mode 'Voir comme...' */
+  const viewAsId = localStorage.getItem(VIEW_AS_KEY);
+  if(viewAsId && realProfile.id === '72fed940-9f61-471d-ad81-378af125146e'){
+    const {data:pView} = await sb.from('profiles').select('*').eq('id',viewAsId).single();
+    if(pView) profile = pView;
+    else profile = realProfile;
+  } else {
+    profile = realProfile;
+  }
+
+  /* Membres de l'equipe pour le selecteur d'assignation */
+  const {data:team} = await sb.from('profiles')
+    .select('id, prenom, nom, role')
+    .order('prenom');
+  teamMembers = team || [];
+  populateAssigneeSelect();
+
+  await loadTaches();
+})();
+
+function populateAssigneeSelect(){
+  const sel = document.getElementById('f-assignee');
+  sel.innerHTML = teamMembers.map(p=>{
+    const isMe = p.id === profile.id;
+    return `<option value="${p.id}" ${isMe?'selected':''}>${escapeHtml(p.prenom||'')} ${escapeHtml(p.nom||'')}${isMe?' (moi)':''}</option>`;
+  }).join('');
+}
+
+async function loadTaches(){
+  /* Filter selon onglet:
+     - mine: assignee_id = profile.id
+     - assigned: creee_par = profile.id ET assignee_id != profile.id */
+  let query = sb.from('taches')
+    .select('*, assignee:assignee_id(prenom,nom), createur:creee_par(prenom,nom), mandat:mandat_id(id,client_nom)')
+    .order('complete',{ascending:true})
+    .order('date_echeance',{ascending:true,nullsFirst:false})
+    .order('created_at',{ascending:false});
+
+  if(currentTab === 'mine'){
+    query = query.eq('assignee_id', profile.id);
+  } else {
+    query = query.eq('creee_par', profile.id).neq('assignee_id', profile.id);
+  }
+
+  const {data, error} = await query;
+  if(error){toast('Erreur: '+error.message,'err');return;}
+  taches = data || [];
+  renderTaches();
+}
+
+function setTab(tab){
+  currentTab = tab;
+  document.getElementById('tab-mine').classList.toggle('on', tab==='mine');
+  document.getElementById('tab-assigned').classList.toggle('on', tab==='assigned');
+  loadTaches();
+}
+
+function setFilter(f){
+  currentFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(b=>{
+    b.classList.toggle('on', b.dataset.filter===f);
+  });
+  renderTaches();
+}
+
+function isEchue(t){
+  if(!t.date_echeance || t.complete) return false;
+  return new Date(t.date_echeance) < new Date(new Date().toDateString());
+}
+
+function getFilteredTaches(){
+  return taches.filter(t=>{
+    if(currentFilter==='active') return !t.complete;
+    if(currentFilter==='echue') return isEchue(t);
+    if(currentFilter==='complete') return t.complete;
+    return true; /* all */
+  }).sort((a,b)=>{
+    /* Trie: incomplets d'abord, puis par echue, puis par priorite, puis par echeance */
+    if(a.complete !== b.complete) return a.complete?1:-1;
+    const aEchue = isEchue(a), bEchue = isEchue(b);
+    if(aEchue !== bEchue) return aEchue?-1:1;
+    const aPri = PRI_ORDER[a.priorite]??2, bPri = PRI_ORDER[b.priorite]??2;
+    if(aPri !== bPri) return aPri-bPri;
+    if(a.date_echeance && b.date_echeance) return a.date_echeance.localeCompare(b.date_echeance);
+    if(a.date_echeance) return -1;
+    if(b.date_echeance) return 1;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+}
+
+function updateCounts(){
+  document.getElementById('cnt-active').textContent = taches.filter(t=>!t.complete).length;
+  document.getElementById('cnt-echue').textContent = taches.filter(isEchue).length;
+  document.getElementById('cnt-complete').textContent = taches.filter(t=>t.complete).length;
+  document.getElementById('cnt-all').textContent = taches.length;
+}
+
+function renderTaches(){
+  updateCounts();
+  const list = document.getElementById('taches-list');
+  const filtered = getFilteredTaches();
+
+  if(!filtered.length){
+    let msg, sub;
+    if(currentFilter==='active'){msg='Aucune tache active'; sub=currentTab==='mine'?'Tu es a jour ! \uD83C\uDF89':'Tu n as aucune tache assignee a d autres pour l instant.';}
+    else if(currentFilter==='echue'){msg='Aucune tache en retard';sub='Bravo, tout est sous controle !';}
+    else if(currentFilter==='complete'){msg='Aucune tache complete';sub='Marque tes premieres taches comme faites pour les voir ici.';}
+    else {msg='Aucune tache';sub='Clique sur "Nouvelle tache" pour commencer.';}
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">&#128203;</div>
+      <div class="empty-state-text">${msg}</div>
+      <div class="empty-state-sub">${sub}</div>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(t => renderTacheCard(t)).join('');
+}
+
+function renderTacheCard(t){
+  const echue = isEchue(t);
+  const cls = [
+    'task-card',
+    t.priorite || 'normale',
+    t.complete?'complete':'',
+    echue?'echue':''
+  ].filter(Boolean).join(' ');
+
+  const assignee = t.assignee ? `${t.assignee.prenom||''} ${t.assignee.nom||''}`.trim() : '?';
+  const createur = t.createur ? `${t.createur.prenom||''} ${t.createur.nom||''}`.trim() : '?';
+  const showAssignee = currentTab==='assigned'; /* dans "que j'ai assignees", on montre l'assignee */
+  const showCreateur = currentTab==='mine' && t.creee_par !== profile.id;
+
+  let echeanceHtml = '';
+  if(t.date_echeance){
+    const d = new Date(t.date_echeance+'T12:00:00');
+    const dateStr = d.toLocaleDateString('fr-CA',{day:'numeric',month:'short',year:'numeric'});
+    echeanceHtml = `<span class="task-meta-item echeance ${echue?'echue':''}">&#128197; ${escapeHtml(dateStr)}${echue?' (en retard)':''}</span>`;
+  }
+
+  const mandatLink = t.mandat
+    ? `<a href="mandat.html?id=${t.mandat.id}" class="task-mandat-link" onclick="event.stopPropagation()">&#128279; ${escapeHtml(t.mandat.client_nom||'Mandat')}</a>`
+    : '';
+
+  const canEdit = t.creee_par===profile.id || t.assignee_id===profile.id || profile.role==='gestionnaire';
+  const canDelete = t.creee_par===profile.id || profile.role==='gestionnaire';
+
+  const priInfo = PRI_LABELS[t.priorite]||PRI_LABELS.normale;
+
+  return `<div class="${cls}" onclick="${canEdit?`editTache('${t.id}')`:''}">
+    <div class="task-check ${t.complete?'on':''}" onclick="event.stopPropagation();toggleComplete('${t.id}',${!t.complete})">
+      ${t.complete?'&#10003;':''}
+    </div>
+    <div class="task-body">
+      <div class="task-titre">${escapeHtml(t.titre)}</div>
+      ${t.description?`<div class="task-desc">${escapeHtml(t.description)}</div>`:''}
+      <div class="task-meta">
+        <span class="task-pri-badge ${t.priorite||'normale'}">${priInfo.icon} ${priInfo.label}</span>
+        ${echeanceHtml}
+        ${showAssignee?`<span class="task-meta-item">&#128100; Pour ${escapeHtml(assignee)}</span>`:''}
+        ${showCreateur?`<span class="task-meta-item">&#10133; Cr&eacute;e par ${escapeHtml(createur)}</span>`:''}
+        ${mandatLink}
+      </div>
+    </div>
+    <div class="task-actions" onclick="event.stopPropagation()">
+      ${canDelete?`<button class="btn-icon btn-del" onclick="deleteTache('${t.id}')" title="Supprimer">&#128465;</button>`:''}
+    </div>
+  </div>`;
+}
+
+async function toggleComplete(id, newVal){
+  const t = taches.find(x=>x.id===id);
+  if(!t) return;
+  const updates = {complete: newVal, complete_le: newVal?new Date().toISOString():null};
+  const {error} = await sb.from('taches').update(updates).eq('id',id);
+  if(error){toast('Erreur: '+error.message,'err');return;}
+  Object.assign(t, updates);
+  renderTaches();
+  toast(newVal?'\u2705 Tache complete':'T\u00e2che remise en cours');
+}
+
+async function openTacheModal(){
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Nouvelle t\u00e2che';
+  document.getElementById('f-titre').value = '';
+  document.getElementById('f-description').value = '';
+  document.getElementById('f-assignee').value = profile.id;
+  document.getElementById('f-echeance').value = '';
+  document.getElementById('f-lier-mandat').checked = false;
+  document.getElementById('block-mandat').style.display = 'none';
+  setPriorite('normale');
+  await loadMandatsForLink();
+  document.getElementById('modal-tache').style.display = 'flex';
+  setTimeout(()=>document.getElementById('f-titre').focus(),50);
+}
+
+async function editTache(id){
+  const t = taches.find(x=>x.id===id);
+  if(!t) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Modifier la t\u00e2che';
+  document.getElementById('f-titre').value = t.titre||'';
+  document.getElementById('f-description').value = t.description||'';
+  document.getElementById('f-assignee').value = t.assignee_id;
+  document.getElementById('f-echeance').value = t.date_echeance||'';
+  setPriorite(t.priorite||'normale');
+  await loadMandatsForLink();
+  if(t.mandat_id){
+    document.getElementById('f-lier-mandat').checked = true;
+    document.getElementById('block-mandat').style.display = 'block';
+    document.getElementById('f-mandat').value = t.mandat_id;
+  } else {
+    document.getElementById('f-lier-mandat').checked = false;
+    document.getElementById('block-mandat').style.display = 'none';
+  }
+  document.getElementById('modal-tache').style.display = 'flex';
+}
+
+function closeTacheModal(){
+  document.getElementById('modal-tache').style.display = 'none';
+  editingId = null;
+}
+
+function setPriorite(p){
+  modalPriorite = p;
+  document.querySelectorAll('.pri-btn').forEach(b=>{
+    b.classList.toggle('on', b.dataset.val===p);
+  });
+}
+
+function onLierMandatChange(){
+  const checked = document.getElementById('f-lier-mandat').checked;
+  document.getElementById('block-mandat').style.display = checked?'block':'none';
+  if(!checked) document.getElementById('f-mandat').value = '';
+}
+
+async function loadMandatsForLink(){
+  if(mandatsForLink.length) return;
+  const {data} = await sb.from('mandats')
+    .select('id, client_nom, date_mandat')
+    .neq('statut_final', true)
+    .order('created_at',{ascending:false})
+    .limit(200);
+  mandatsForLink = data || [];
+  const sel = document.getElementById('f-mandat');
+  sel.innerHTML = '<option value="">&mdash; S&eacute;lectionner &mdash;</option>' +
+    mandatsForLink.map(m=>{
+      const date = m.date_mandat?` (${m.date_mandat})`:'';
+      return `<option value="${m.id}">${escapeHtml(m.client_nom||'Sans nom')}${date}</option>`;
+    }).join('');
+}
+
+async function submitTache(){
+  const titre = document.getElementById('f-titre').value.trim();
+  if(!titre){toast('Le titre est requis','err');return;}
+  const assigneeId = document.getElementById('f-assignee').value;
+  const echeance = document.getElementById('f-echeance').value || null;
+  const lierMandat = document.getElementById('f-lier-mandat').checked;
+  const mandatId = lierMandat?(document.getElementById('f-mandat').value||null):null;
+
+  const payload = {
+    titre,
+    description: document.getElementById('f-description').value.trim() || null,
+    assignee_id: assigneeId,
+    priorite: modalPriorite,
+    date_echeance: echeance,
+    mandat_id: mandatId,
+  };
+
+  if(editingId){
+    const {error} = await sb.from('taches').update(payload).eq('id',editingId);
+    if(error){toast('Erreur: '+error.message,'err');return;}
+    toast('T\u00e2che mise \u00e0 jour');
+  } else {
+    payload.creee_par = profile.id;
+    const {error} = await sb.from('taches').insert(payload);
+    if(error){toast('Erreur: '+error.message,'err');return;}
+    toast('T\u00e2che cr\u00e9\u00e9e');
+  }
+
+  closeTacheModal();
+  await loadTaches();
+}
+
+async function deleteTache(id){
+  if(!confirm('Supprimer cette t\u00e2che ?')) return;
+  const {error} = await sb.from('taches').delete().eq('id',id);
+  if(error){toast('Erreur: '+error.message,'err');return;}
+  toast('T\u00e2che supprim\u00e9e');
+  await loadTaches();
+}
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function toast(msg, type){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type==='err'?'#c62828':'#1a1a2e';
+  el.classList.add('show');
+  const dur = Math.min(5000, Math.max(2500, msg.length*70));
+  setTimeout(()=>el.classList.remove('show'), dur);
+}
+</script>
+</body>
+</html>
