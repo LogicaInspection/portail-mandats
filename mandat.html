@@ -502,6 +502,7 @@ input[type=file]{display:none;}
           <option value="Echantillonnage eau">Echantillonnage eau</option>
           <option value="Inspection drain de fondation">Inspection drain de fondation</option>
           <option value="Inspection batiment pre-achat GEQ">Inspection b&acirc;timent (pr&eacute;-achat GEQ)</option>
+          <option value="Suivi de chantier">Suivi de chantier</option>
         </select>
       </div>
       <div class="fg s2"><label>Nom du client *</label><input id="f-client-nom" type="text" placeholder="Prenom Nom"></div>
@@ -582,6 +583,7 @@ input[type=file]{display:none;}
         <select id="f-region-pool" onchange="updateAssignInfo()">
           <option value="quebec">Qu&eacute;bec</option>
           <option value="estrie">Estrie</option>
+          <option value="monteregie">Mont&eacute;r&eacute;gie</option>
         </select>
       </div>
     </div>
@@ -1447,16 +1449,21 @@ function updateFinalBtn(){
   const allOk=conds.every(c=>c.ok);
   const btn=document.getElementById('btn-final');
   const isFinal=mandat&&mandat.statut_final;
+  /* Vocabulaire different si Suivi de chantier (multi-visites) */
+  const typeM=document.getElementById('f-type-mandat')?.value||'';
+  const isSuivi=typeM==='Suivi de chantier';
+  const labelFinal=isSuivi?'COMPLETE':'FINAL';
+  const labelAction=isSuivi?'Marquer mandat complete':'Marquer FINAL';
 
   if(isFinal){
-    btn.textContent='FINAL';
+    btn.textContent=labelFinal;
     btn.className='btn-final-header btn-final-done';
   } else if(allOk){
-    btn.textContent='Marquer FINAL';
+    btn.textContent=labelAction;
     btn.className='btn-final-header btn-final-ready';
   } else {
     const done=conds.filter(c=>c.ok).length;
-    btn.textContent=done+'/'+conds.length+' FINAL';
+    btn.textContent=done+'/'+conds.length+' '+labelFinal;
     btn.className='btn-final-header btn-final-pending';
   }
 
