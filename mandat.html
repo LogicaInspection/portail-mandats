@@ -139,6 +139,9 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 .fin-row.comm{background:#e3f0ff;border-radius:10px;padding:14px 16px;border:none;}
 .fin-row.profit{background:#fff3e0;border-radius:10px;padding:14px 16px;border:none;margin-top:4px;}
 .fin-row.tax{color:#999;font-size:13px;}
+
+.bonus-label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;}
+.bonus-label input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:#4caf50;flex-shrink:0;}
 .fin-label{font-size:14px;color:#444;display:flex;align-items:center;gap:8px;}
 .fin-label.bold{font-weight:700;color:#1a1a2e;font-size:15px;}
 .fin-label.comm-color{color:#1565c0;font-weight:700;}
@@ -652,7 +655,7 @@ input[type=file]{display:none;}
         <span class="fin-label">Prix de base</span>
         <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()">
       </div>
-      <div class="fin-row">
+      <div class="fin-row" id="comm-base-row">
         <span class="fin-label">Commission tech (base)</span>
         <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()">
       </div>
@@ -692,8 +695,11 @@ input[type=file]{display:none;}
       </div>
 
       <div class="fin-row" id="bonus-row" style="display:none">
-        <span class="fin-label">&#127881; Bonus paiement non-carte (+12$ comm)</span>
-        <span id="bonus-status" style="font-size:13px;color:#999">Auto si non-carte</span>
+        <label class="bonus-label" for="bonus-check">
+          <input type="checkbox" id="bonus-check" onchange="onBonusManuelChange()">
+          <span class="fin-label" style="cursor:pointer">&#127881; Bonus paiement non-carte (+12$ comm)</span>
+        </label>
+        <span id="bonus-status" style="font-size:12px;color:#999">&mdash;</span>
       </div>
 
       <div class="fin-row tax">
@@ -712,7 +718,7 @@ input[type=file]{display:none;}
         <span class="fin-label bold">Total TTC</span>
         <span class="fin-value big" id="total-ttc">0,00 $</span>
       </div>
-      <div class="fin-row comm">
+      <div class="fin-row comm" id="comm-totale-row">
         <span class="fin-label comm-color">&#128188; Commission tech totale</span>
         <span class="fin-value comm-val" id="total-comm">0,00 $</span>
       </div>
@@ -977,7 +983,27 @@ async function confirmTestAction(actionLabel){
   const isGest=profile.role==='gestionnaire';
   const isTech=profile.role==='technicien';
 
-  if(!isGest&&profile.role!=='secretaire'){
+  /* Pour le tech: garde Finances visible mais cache uniquement les elements sensibles
+     - Commission tech (base): VISIBLE en lecture seule (le tech voit sa commission mais ne peut pas la modifier)
+     - Frais de labo: cachee (info interne)
+     - Commission tech totale: VISIBLE (mise a jour en temps reel selon le bonus)
+     - Bonus non-carte: VISIBLE avec case a cocher manuelle
+     - Mon profit: cachee
+     Le tech peut DONC modifier: Prix de base, Transport, prix des services extras, cocher le bonus
+     Et VOIT: Commission base, Commission totale, Sous-total, TPS, TVQ, Total TTC */
+  if(isTech){
+    /* Met la commission de base en lecture seule (visible mais non modifiable) */
+    const commBaseInput=document.getElementById('comm-base');
+    if(commBaseInput){
+      commBaseInput.readOnly=true;
+      commBaseInput.style.background='#f5f5f5';
+      commBaseInput.style.cursor='not-allowed';
+    }
+    /* frais-lab-section reste cachee par defaut (non remis a 'block' pour tech) */
+    /* profit-row reste cachee par defaut */
+    /* Commission tech totale et bonus-row restent visibles */
+  } else if(profile.role!=='secretaire' && !isGest){
+    /* Autres roles non prevus: cache tout par securite */
     document.getElementById('sec-finances').style.display='none';
   }
   if(isTech){
@@ -1097,6 +1123,9 @@ function fillForm(){
         }
       });
     }
+    /* Charge l'etat du checkbox bonus */
+    const chk=document.getElementById('bonus-check');
+    if(chk) chk.checked=!!m.bonus_non_carte;
   }
   document.getElementById('htitle').textContent=m.client_nom||'Mandat';
   document.getElementById('par-client-nom').textContent=m.client_nom||'Client';
@@ -1158,12 +1187,12 @@ function onTypeMandatChange(){
   }
 
   const avecEchan=TYPE_AVEC_ECHAN.includes(type);
-  const avecBonus=TYPE_AVEC_BONUS.includes(type);
   const avecLettre=TYPE_AVEC_LETTRE.includes(type);
 
   document.getElementById('special-btns').style.display=avecEchan?'flex':'none';
   document.getElementById('echan-wrap').style.display=avecEchan?'flex':'none';
-  document.getElementById('bonus-row').style.display=avecBonus?'flex':'none';
+  /* Bonus visible pour tous les mandats GEQ (pas seulement certains types) */
+  document.getElementById('bonus-row').style.display='flex';
   document.getElementById('sans-lettre-row').style.display=avecLettre?'flex':'none';
 
   recalc();
@@ -1268,22 +1297,44 @@ function recalcComm(){
   const bonus=getBonusNonCarte();
   const total=baseComm+extComm+trans+echanComm+bonus;
   document.getElementById('total-comm').textContent=money(total);
-  if(bonus>0){
-    document.getElementById('bonus-status').textContent='+12$ inclus';
-    document.getElementById('bonus-status').style.color='#e65100';
-  } else {
-    document.getElementById('bonus-status').textContent='Auto si non-carte';
-    document.getElementById('bonus-status').style.color='#999';
+  /* Met a jour aussi l'affichage Commission tech pour le role technicien */
+  const techCommVal=document.getElementById('tech-comm-val');
+  if(techCommVal && profile.role==='technicien') techCommVal.textContent=money(total);
+  /* Texte sous le checkbox bonus */
+  const status=document.getElementById('bonus-status');
+  if(status){
+    if(bonus>0){
+      status.textContent='+12$ inclus';
+      status.style.color='#e65100';
+    } else {
+      status.textContent='&mdash;';
+      status.style.color='#999';
+    }
   }
   recalcProfit();
 }
 
 function getBonusNonCarte(){
-  const type=document.getElementById('f-compagnie').value==='geq'?document.getElementById('f-type-mandat').value:'';
   const comp=document.getElementById('f-compagnie').value;
-  const avecBonus=comp==='geq'?TYPE_AVEC_BONUS.includes(type):false;
-  if(!avecBonus) return 0;
-  return(currentMode&&currentMode!=='carte')?12:0;
+  /* Bonus applique uniquement aux mandats GEQ (tous types) */
+  if(comp!=='geq') return 0;
+  /* Checkbox manuelle prioritaire si presente et cochee */
+  const chk=document.getElementById('bonus-check');
+  if(chk && chk.checked) return 12;
+  return 0;
+}
+
+/* Quand l'utilisateur (tech ou gestionnaire) coche/decoche manuellement le bonus */
+function onBonusManuelChange(){
+  const chk=document.getElementById('bonus-check');
+  if(!chk) return;
+  /* Sauvegarde en DB si mandat existe */
+  if(!isNew && mandat){
+    sb.from('mandats').update({bonus_non_carte:chk.checked}).eq('id',mandat.id).then(()=>{
+      mandat.bonus_non_carte=chk.checked;
+    });
+  }
+  recalcComm();
 }
 
 function recalcProfit(){
@@ -1427,6 +1478,11 @@ function setMode(mode){
   document.querySelectorAll('.btn-mode').forEach(b=>b.classList.remove('on'));
   event.target.classList.add('on');
   currentMode=mode;
+  /* Auto-coche le bonus si paiement non-carte (mais l'utilisateur peut decocher manuellement apres) */
+  const chk=document.getElementById('bonus-check');
+  if(chk){
+    chk.checked=(mode!=='carte');
+  }
   if(!isNew&&mandat) sb.from('mandats').update({mode_paiement:mode,bonus_non_carte:mode!=='carte'}).eq('id',mandat.id);
   recalcComm();
 }
