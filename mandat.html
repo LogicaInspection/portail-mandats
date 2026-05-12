@@ -2499,8 +2499,34 @@ async function changeStatutContact(newId){
   /* Si mandat existe deja: sauvegarde direct + log */
   if(!isNew&&mandat){
     const {data:{session}}=await sb.auth.getSession();
-    await sb.from('mandats').update({statut_contact:newId}).eq('id',mandat.id);
-    mandat.statut_contact=newId;
+
+    /* Auto-reclamation si on passe a 'confirme' et que c'est un tech qui clique
+       sur un mandat 'assigne' ou 'pool' sans tech ou avec un autre tech.
+       Permet d'arreter le timer + officialiser la prise en charge. */
+    const updates={statut_contact:newId};
+    let autoReclame=false;
+    if(newId==='confirme' && profile.role==='technicien'){
+      const statut=mandat.statut_assignation;
+      const sameTech=mandat.technicien_id===profile.id;
+      /* Cas 1: mandat dans le pool (pas de tech) -> reclame */
+      /* Cas 2: mandat assigne a ce tech avec timer -> passe en reclame (stop timer) */
+      if(statut==='pool' || (statut==='assigne' && sameTech)){
+        updates.technicien_id=profile.id;
+        updates.statut_assignation='reclame';
+        updates.reclame_le=new Date().toISOString();
+        autoReclame=true;
+      }
+    }
+
+    const {error}=await sb.from('mandats').update(updates).eq('id',mandat.id);
+    if(error){
+      toast('Erreur: '+error.message,'err');
+      currentStatutContact=oldId;
+      renderStatutContactPills();
+      return;
+    }
+    Object.assign(mandat,updates);
+
     /* Log dans contacts_log pour traçabilite */
     await sb.from('mandats_contacts_log').insert({
       mandat_id:mandat.id,
@@ -2509,10 +2535,25 @@ async function changeStatutContact(newId){
       resultat:'autre',
       ancien_statut:oldId,
       nouveau_statut:newId,
-      note:null,
+      note:autoReclame?'(mandat auto-reclame suite a la confirmation)':null,
     });
+
+    if(autoReclame){
+      /* Log aussi dans mandats_historique */
+      await sb.from('mandats_historique').insert({
+        mandat_id:mandat.id,action:'reclamation',
+        effectue_par:session.user.id,
+        technicien_concerne:profile.id,
+        details:{via:'confirmation_client'}
+      });
+      applyReclameUI(profile.id);
+      updateReclamerBtn();
+      loadHistorique();
+      toast('Mandat confirme et reclame');
+    } else {
+      toast('Statut mis a jour');
+    }
     loadContactsLog();
-    toast('Statut mis a jour');
   }
 }
 
