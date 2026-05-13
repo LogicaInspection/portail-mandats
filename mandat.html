@@ -167,6 +167,36 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 }
 .btn-facture.sent:hover{box-shadow:0 4px 14px rgba(67,160,71,0.4);}
 
+/* Case "Ajouter a ma facture" dans section Ma commission */
+.add-facture-wrap{
+  margin-top:14px;padding:12px 14px;
+  background:#f3e5f5;border-radius:9px;border:1.5px solid #ce93d8;
+}
+.add-facture-label{
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  font-size:13px;color:#4a148c;font-weight:600;
+}
+.add-facture-label input[type=checkbox]{
+  width:20px;height:20px;cursor:pointer;accent-color:#6a1b9a;flex-shrink:0;
+}
+.add-facture-label:hover{color:#6a1b9a;}
+.add-facture-info{
+  font-size:12px;color:#888;margin-top:8px;line-height:1.4;
+}
+.add-facture-info.facturee{color:#2e7d32;font-weight:600;}
+.add-facture-info.facturee:before{content:"\2705 ";}
+.add-facture-info.pending:before{content:"\1F4DD ";}
+
+.add-facture-wrap.locked{
+  background:#e8f5e9;border-color:#a5d6a7;
+}
+.add-facture-wrap.locked .add-facture-label{
+  color:#2e7d32;cursor:not-allowed;
+}
+.add-facture-wrap.locked .add-facture-label input{
+  pointer-events:none;opacity:0.5;
+}
+
 /* Modal facture - preview avant envoi */
 .facture-preview-info{
   background:#f0f7ff;border-left:4px solid #1565c0;border-radius:8px;
@@ -678,6 +708,14 @@ input[type=file]{display:none;}
     <div class="comm-tech-card">
       <div class="comm-tech-val" id="tech-comm-val">&#8212;</div>
       <div class="comm-tech-sub">Commission pour ce mandat</div>
+    </div>
+    <!-- Case a cocher: Ajouter ce mandat a ma facture de commission -->
+    <div class="add-facture-wrap" id="add-facture-wrap" style="display:none;">
+      <label class="add-facture-label" for="cf-check" id="cf-label">
+        <input type="checkbox" id="cf-check" onchange="onAddFactureChange()">
+        <span>&#128188; Ajouter ce mandat &agrave; ma facture de commission</span>
+      </label>
+      <div class="add-facture-info" id="cf-info"></div>
     </div>
   </div>
 
@@ -1217,6 +1255,7 @@ function fillForm(){
   recalc();
   updateGcalStatus();
   updateFactureStatus();
+  updateAddFactureUI();
 }
 
 function onCompagnieChange(){
@@ -3522,6 +3561,89 @@ function updateFactureStatus(){
     btn.innerHTML='<span>&#128190;</span> Envoyer la facture';
     btn.title='Generer et envoyer la facture au client';
   }
+}
+
+/* ============================================================
+   AJOUT A MA FACTURE DE COMMISSION (cote tech)
+   ============================================================ */
+
+/* Met a jour l'UI de la case "Ajouter a ma facture" selon le contexte */
+function updateAddFactureUI(){
+  const wrap=document.getElementById('add-facture-wrap');
+  const chk=document.getElementById('cf-check');
+  const info=document.getElementById('cf-info');
+  if(!wrap||!chk||!info) return;
+
+  /* Visible UNIQUEMENT pour le technicien assigne (celui qui touche la commission) */
+  const isAssignedTech = mandat && mandat.technicien_id===profile.id && profile.role==='technicien';
+  if(!isAssignedTech || isNew){
+    wrap.style.display='none';
+    return;
+  }
+  wrap.style.display='block';
+
+  /* Cas 1: deja facturee (verrouille) */
+  if(mandat.commission_facturee){
+    wrap.classList.add('locked');
+    chk.checked=true;
+    chk.disabled=true;
+    info.className='add-facture-info facturee';
+    info.textContent='D\u00e9j\u00e0 inclus dans une de tes factures envoy\u00e9es';
+    return;
+  }
+
+  /* Cas 2: marquee pour facturation (sera dans prochaine facture) */
+  wrap.classList.remove('locked');
+  chk.disabled=false;
+  chk.checked=!!mandat.commission_a_facturer;
+  if(mandat.commission_a_facturer){
+    info.className='add-facture-info pending';
+    info.innerHTML='Sera inclus dans ta prochaine facture. <a href="ma-facturation.html" style="color:#6a1b9a;font-weight:600">Voir ma facturation &rarr;</a>';
+  } else {
+    info.className='add-facture-info';
+    info.textContent='Coche pour inclure ce mandat dans ta prochaine facture de commission a Bass.';
+  }
+}
+
+/* Quand le tech change l'etat de la case */
+async function onAddFactureChange(){
+  if(!mandat){return;}
+  const chk=document.getElementById('cf-check');
+  const newVal=chk.checked;
+
+  /* Securite supplementaire: empeche de changer si deja facturee */
+  if(mandat.commission_facturee){
+    toast('Ce mandat est deja facture','err');
+    chk.checked=true;
+    return;
+  }
+
+  /* Verifie que le tech a configure son entreprise */
+  if(newVal){
+    const {data:p}=await sb.from('profiles')
+      .select('entreprise_nom, entreprise_adresse_l1')
+      .eq('id',profile.id).single();
+    if(!p||!p.entreprise_nom||!p.entreprise_adresse_l1){
+      toast('Configure d\u0027abord les coordonnees de ton entreprise','err');
+      chk.checked=false;
+      setTimeout(()=>{
+        if(confirm('Tu n\u0027as pas configure les coordonnees de ton entreprise.\n\nAller a la page de configuration maintenant ?')){
+          window.location.href='mon-entreprise.html';
+        }
+      },300);
+      return;
+    }
+  }
+
+  const {error}=await sb.from('mandats').update({commission_a_facturer:newVal}).eq('id',mandat.id);
+  if(error){
+    toast('Erreur: '+error.message,'err');
+    chk.checked=!newVal;
+    return;
+  }
+  mandat.commission_a_facturer=newVal;
+  updateAddFactureUI();
+  toast(newVal?'Ajout\u00e9 \u00e0 ta prochaine facture':'Retir\u00e9 de ta facture');
 }
 
 
