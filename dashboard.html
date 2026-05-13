@@ -228,6 +228,23 @@ body.archives-mode { background: #faf5ed; }
 .btn-tasks .task-badge.urgent { background: #c62828; animation: pulse-badge 1.5s infinite; }
 @keyframes pulse-badge { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
 
+.btn-facturation {
+  position: relative;
+  padding: 10px 18px;
+  background: linear-gradient(135deg,#1565c0,#1976d2); color: white; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 0.2s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-facturation:hover { background: linear-gradient(135deg,#0d47a1,#1565c0); }
+.btn-facturation .fact-badge {
+  background: #ffc107; color: #1a1a2e;
+  font-size: 11px; font-weight: 700;
+  padding: 2px 7px; border-radius: 10px;
+  min-width: 18px; text-align: center;
+}
+.btn-facturation .fact-badge.zero { display: none; }
+
 .table-wrap { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; }
 .t-header {
   display: grid; padding: 11px 20px;
@@ -525,6 +542,9 @@ body.archives-mode { background: #faf5ed; }
     <a class="btn-tasks" href="taches.html" title="Mes t&acirc;ches">
       &#128203; T&acirc;ches <span class="task-badge zero" id="task-badge">0</span>
     </a>
+    <a class="btn-facturation" href="ma-facturation.html" title="Ma facturation de commission">
+      &#128184; Ma facturation <span class="fact-badge zero" id="fact-badge">0</span>
+    </a>
     <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">&#128202; Exporter Excel</button>
     <button class="btn-new" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
       + Nouveau mandat
@@ -769,12 +789,33 @@ async function updateTaskBadge(){
   const total = (data||[]).length;
   const hasUrgent = (data||[]).some(t => {
     if(t.priorite === 'urgente') return true;
-    /* Echue compte aussi comme urgent */
     if(t.date_echeance && new Date(t.date_echeance) < new Date(new Date().toDateString())) return true;
     return false;
   });
   badge.textContent = total;
   badge.className = 'task-badge' + (total===0?' zero':'') + (hasUrgent?' urgent':'');
+  /* Met aussi a jour le badge facturation */
+  updateFactBadge();
+}
+
+/* Compteur de mandats coches "Ajouter a ma facture" non encore factures */
+async function updateFactBadge(){
+  const badge = document.getElementById('fact-badge');
+  if(!badge) return;
+  /* Seulement pour les techniciens (Bass voit pas son propre badge) */
+  if(profile.role !== 'technicien'){
+    badge.className = 'fact-badge zero';
+    return;
+  }
+  const {data, error} = await sb.from('mandats')
+    .select('id')
+    .eq('technicien_id', profile.id)
+    .eq('commission_a_facturer', true)
+    .eq('commission_facturee', false);
+  if(error){console.error(error);return;}
+  const total = (data||[]).length;
+  badge.textContent = total;
+  badge.className = 'fact-badge' + (total===0?' zero':'');
 }
 
 function updateTabCounters() {
