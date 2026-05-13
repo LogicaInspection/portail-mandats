@@ -3193,19 +3193,20 @@ async function generateFacturePDF(numeroFacture){
   doc.setFontSize(9);
   doc.setTextColor(150,150,150);
   doc.setFont('helvetica','bold');
-  doc.text('MODALITES',pageW-65,y);
+  /* Label MODALITES a gauche du bloc de droite, valeur sur ligne suivante pour eviter chevauchement */
+  doc.text('MODALITES',pageW-85,y);
   doc.setFont('helvetica','normal');
   doc.setTextColor(0,0,0);
   doc.text(ci.modalites,pageW-15,y,{align:'right'});
 
   /* Ligne separation */
-  y+=8;
+  y+=6;
   doc.setDrawColor(...ci.couleur_rgb);
   doc.setLineWidth(0.3);
   doc.line(15,y,pageW-15,y);
 
   /* ===== TABLEAU DES SERVICES ===== */
-  y+=8;
+  y+=6;
   const tableBody=lines.map(l=>{
     const desc=l.adresse?(l.description+'\n'+l.adresse):l.description;
     return [l.date, desc, 'TPS/TVQ QC - 9,975', l.montant.toFixed(2)];
@@ -3245,8 +3246,8 @@ async function generateFacturePDF(numeroFacture){
   doc.setLineDashPattern([],0); /* reset */
 
   /* ===== TOTAUX (alignes a droite) ===== */
-  y+=10;
-  const totColX=pageW-65; /* labels */
+  y+=8;
+  const totColX=pageW-75; /* labels - decales plus a gauche pour eviter chevauchement */
   const totValX=pageW-15; /* valeurs */
   doc.setFontSize(10);
   doc.setFont('helvetica','normal');
@@ -3254,31 +3255,32 @@ async function generateFacturePDF(numeroFacture){
 
   doc.text('TOTAL PARTIEL',totColX,y);
   doc.text(sousTotal.toFixed(2),totValX,y,{align:'right'});
-  y+=6;
+  y+=5;
   doc.text('TPS @ 5%',totColX,y);
   doc.text(tps.toFixed(2),totValX,y,{align:'right'});
-  y+=6;
+  y+=5;
   doc.text('TVQ @ 9,975%',totColX,y);
   doc.text(tvq.toFixed(2),totValX,y,{align:'right'});
-  y+=6;
+  y+=5;
   doc.text('TOTAL',totColX,y);
   doc.text(total.toFixed(2),totValX,y,{align:'right'});
 
-  /* Solde a payer en gros */
-  y+=8;
+  /* Solde a payer en gros - label sur ligne, valeur en gros en dessous pour eviter chevauchement */
+  y+=10;
   doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
   doc.text('SOLDE A PAYER',totColX,y);
-  doc.setFontSize(18);
-  doc.text(total.toFixed(2)+' $',totValX,y+2,{align:'right'});
+  doc.setFontSize(16);
+  doc.text(total.toFixed(2)+' $',totValX,y,{align:'right'});
 
   /* ===== SOMMAIRE TAXES ===== */
-  y+=18;
+  y+=12;
   doc.setFontSize(9);
   doc.setFont('helvetica','bold');
   doc.setTextColor(40,40,40);
   doc.text('SOMMAIRE DE LA TAXE DE VENTE',15,y);
 
-  y+=4;
+  y+=3;
   doc.autoTable({
     startY:y,
     head:[['TAUX','TAXE','NET']],
@@ -3293,11 +3295,11 @@ async function generateFacturePDF(numeroFacture){
       fontSize:8,
       fontStyle:'bold',
       halign:'center',
-      cellPadding:2,
+      cellPadding:1.5,
     },
     bodyStyles:{
       fontSize:9,
-      cellPadding:2.5,
+      cellPadding:2,
       halign:'center',
     },
     columnStyles:{
@@ -3307,36 +3309,29 @@ async function generateFacturePDF(numeroFacture){
     margin:{left:15,right:15},
   });
 
-  /* ===== MODALITES DE PAIEMENT (pied) ===== */
-  y=doc.lastAutoTable.finalY+25;
-  /* Si pas assez de place pour le pied, on saute en bas */
+  /* ===== MODALITES DE PAIEMENT (pied compact) ===== */
+  y=doc.lastAutoTable.finalY+12;
   const pageH=doc.internal.pageSize.getHeight();
-  if(y>pageH-60){
+  /* Si pas assez de place pour le pied compact (besoin ~50mm), on saute */
+  if(y>pageH-50){
     doc.addPage();
     y=20;
   }
 
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont('helvetica','normal');
   doc.setTextColor(60,60,60);
 
-  /* Centre du document */
+  /* Centre du document - format compact */
   doc.text('Veuillez libeller tous les cheques a l\'ordre de : '+ci.cheque_a_lordre_de, pageW/2, y, {align:'center'});
-  y+=10;
-  doc.text('Pour les virements Interac :', pageW/2, y, {align:'center'});
-  y+=5;
-  doc.text('Email seulement : '+ci.interac_email, pageW/2, y, {align:'center'});
-  y+=5;
-  doc.setFontSize(9);
-  doc.text('Le virement sera depose automatiquement.', pageW/2, y, {align:'center'});
-  y+=10;
-  doc.setFontSize(10);
+  y+=7;
+  doc.text('Virements Interac : '+ci.interac_email+'  (depot automatique)', pageW/2, y, {align:'center'});
+  y+=7;
+  doc.setFont('helvetica','bold');
   doc.text('Pour un virement direct', pageW/2, y, {align:'center'});
+  doc.setFont('helvetica','normal');
   y+=5;
-  doc.text('Folio : '+ci.virement_folio, pageW/2, y, {align:'center'});
-  y+=5;
-  doc.text('Institution : '+ci.virement_institution, pageW/2, y, {align:'center'});
-  y+=5;
+  doc.text('Folio : '+ci.virement_folio+'   |   Institution : '+ci.virement_institution+'   |   Transit : '+ci.virement_transit, pageW/2, y, {align:'center'});
   doc.text('Transit : '+ci.virement_transit, pageW/2, y, {align:'center'});
 
   /* Retourne le PDF en base64 */
