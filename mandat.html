@@ -463,11 +463,11 @@ input[type=file]{display:none;}
       <div style="margin-top:16px">
         <label>Mode de paiement</label>
         <div class="mode-row">
-          <button class="btn-mode" onclick="setMode('comptant')">Comptant</button>
-          <button class="btn-mode" onclick="setMode('virement')">Virement Interac</button>
-          <button class="btn-mode" onclick="setMode('carte')">Carte</button>
-          <button class="btn-mode" onclick="setMode('debit')">Debit</button>
-          <button class="btn-mode" onclick="setMode('cheque')">Cheque</button>
+          <button class="btn-mode" data-mode="comptant" onclick="setMode('comptant')">&#128181; Comptant</button>
+          <button class="btn-mode" data-mode="virement" onclick="setMode('virement')">&#128231; Virement Interac</button>
+          <button class="btn-mode" data-mode="carte_square" onclick="setMode('carte_square')">&#128179; Carte (Square)</button>
+          <button class="btn-mode" data-mode="carte_credit" onclick="setMode('carte_credit')">&#128178; Carte de cr&eacute;dit</button>
+          <button class="btn-mode" data-mode="cheque" onclick="setMode('cheque')">&#129534; Ch&egrave;que</button>
         </div>
       </div>
     </div>
@@ -1113,14 +1113,13 @@ function fillForm(){
       }
     }
     if(m.mode_paiement){
-      currentMode=m.mode_paiement;
+      /* Migration: anciens modes 'carte' et 'debit' -> nouveaux */
+      let mode = m.mode_paiement;
+      if(mode==='carte') mode='carte_square'; /* l'ancienne "carte" generique = Square */
+      if(mode==='debit') mode='carte_square'; /* ancien debit = considere comme Square */
+      currentMode=mode;
       document.querySelectorAll('.btn-mode').forEach(b=>{
-        const t=b.textContent.toLowerCase();
-        if(t.includes(m.mode_paiement)||
-          (m.mode_paiement==='virement'&&t.includes('interac'))||
-          (m.mode_paiement==='debit'&&t.includes('debit'))){
-          b.classList.add('on');
-        }
+        b.classList.toggle('on', b.dataset.mode===mode);
       });
     }
     /* Charge l'etat du checkbox bonus */
@@ -1475,15 +1474,17 @@ function setParAutre(v){
 }
 
 function setMode(mode){
-  document.querySelectorAll('.btn-mode').forEach(b=>b.classList.remove('on'));
-  event.target.classList.add('on');
+  document.querySelectorAll('.btn-mode').forEach(b=>{
+    b.classList.toggle('on', b.dataset.mode===mode);
+  });
   currentMode=mode;
-  /* Auto-coche le bonus si paiement non-carte (mais l'utilisateur peut decocher manuellement apres) */
+  /* Bonus non-carte: tous les modes sauf cartes (Square ou credit) donnent le bonus */
+  const isNonCarte = (mode !== 'carte_square' && mode !== 'carte_credit' && mode !== 'carte');
   const chk=document.getElementById('bonus-check');
   if(chk){
-    chk.checked=(mode!=='carte');
+    chk.checked=isNonCarte;
   }
-  if(!isNew&&mandat) sb.from('mandats').update({mode_paiement:mode,bonus_non_carte:mode!=='carte'}).eq('id',mandat.id);
+  if(!isNew&&mandat) sb.from('mandats').update({mode_paiement:mode,bonus_non_carte:isNonCarte}).eq('id',mandat.id);
   recalcComm();
 }
 
@@ -1933,6 +1934,14 @@ async function saveMandat(){
       if(statutAssign==='assigne') assigneLe=mandat.assigne_le;
       if(statutAssign==='reclame') reclameLe=mandat.reclame_le;
     }
+  }
+
+  /* Si le statut de contact est 'confirme' ET qu'un tech est assigne -> pas de timer
+     (le mandat est confirme avec le client donc pas besoin de delai de reclamation) */
+  if(currentStatutContact==='confirme' && techId && statutAssign==='assigne'){
+    statutAssign='reclame';
+    reclameLe=nowIso;
+    assigneLe=null;
   }
 
   const payload={
@@ -2556,17 +2565,23 @@ async function changeStatutContact(newId){
   if(!isNew&&mandat){
     const {data:{session}}=await sb.auth.getSession();
 
-    /* Auto-reclamation si on passe a 'confirme' et que c'est un tech qui clique
-       sur un mandat 'assigne' ou 'pool' sans tech ou avec un autre tech.
-       Permet d'arreter le timer + officialiser la prise en charge. */
+    /* Auto-arret du timer quand on passe a 'confirme':
+       - Si le mandat est 'assigne' avec un tech (n'importe qui clique) -> passe en 'reclame' (stop timer)
+       - Si le mandat est 'pool' et que celui qui clique est un tech -> il se reclame */
     const updates={statut_contact:newId};
     let autoReclame=false;
-    if(newId==='confirme' && profile.role==='technicien'){
+    let techPourReclame=null;
+    if(newId==='confirme'){
       const statut=mandat.statut_assignation;
-      const sameTech=mandat.technicien_id===profile.id;
-      /* Cas 1: mandat dans le pool (pas de tech) -> reclame */
-      /* Cas 2: mandat assigne a ce tech avec timer -> passe en reclame (stop timer) */
-      if(statut==='pool' || (statut==='assigne' && sameTech)){
+      if(statut==='assigne' && mandat.technicien_id){
+        /* Mandat deja assigne a un tech: on stop juste le timer */
+        techPourReclame=mandat.technicien_id;
+        updates.statut_assignation='reclame';
+        updates.reclame_le=new Date().toISOString();
+        autoReclame=true;
+      } else if(statut==='pool' && profile.role==='technicien'){
+        /* Mandat dans le pool: le tech qui clique se reclame */
+        techPourReclame=profile.id;
         updates.technicien_id=profile.id;
         updates.statut_assignation='reclame';
         updates.reclame_le=new Date().toISOString();
@@ -2599,13 +2614,13 @@ async function changeStatutContact(newId){
       await sb.from('mandats_historique').insert({
         mandat_id:mandat.id,action:'reclamation',
         effectue_par:session.user.id,
-        technicien_concerne:profile.id,
+        technicien_concerne:techPourReclame,
         details:{via:'confirmation_client'}
       });
-      applyReclameUI(profile.id);
+      applyReclameUI(techPourReclame);
       updateReclamerBtn();
       loadHistorique();
-      toast('Mandat confirme et reclame');
+      toast('Mandat confirme - timer arrete');
     } else {
       toast('Statut mis a jour');
     }
