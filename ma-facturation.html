@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ma facturation - Portail GEQ</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f3f4f6;color:#1a1a2e;min-height:100vh;}
+.topbar{background:#1a1a2e;color:white;padding:12px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;text-decoration:none;display:inline-block;}
+.btn-back:hover{background:rgba(255,255,255,0.2);}
+.topbar h1{font-size:18px;font-weight:600;flex:1;}
+.btn-config{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:white;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-config:hover{background:rgba(255,255,255,0.25);}
+
+.main{max-width:1100px;margin:0 auto;padding:24px;}
+
+.alert-config{background:#fff3e0;border-left:4px solid #e65100;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:14px;color:#bf360c;}
+.alert-config a{color:#e65100;font-weight:600;text-decoration:none;}
+.alert-config a:hover{text-decoration:underline;}
+
+.summary-bar{background:white;border-radius:12px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.summary-stat{flex:1;min-width:140px;}
+.summary-stat-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;}
+.summary-stat-value{font-size:22px;font-weight:700;color:#1a1a2e;}
+.summary-stat-value.purple{color:#6a1b9a;}
+.summary-stat-value.green{color:#2e7d32;}
+.btn-generate{background:linear-gradient(135deg,#6a1b9a,#8e24aa);color:white;border:none;padding:14px 26px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(106,27,154,0.3);transition:all 0.2s;display:flex;align-items:center;gap:10px;}
+.btn-generate:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(106,27,154,0.4);}
+.btn-generate:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+
+.tabs{display:flex;gap:8px;margin-bottom:14px;background:white;padding:6px;border-radius:11px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.tab{flex:1;padding:11px 16px;border:none;background:transparent;color:#666;font-size:14px;font-weight:600;cursor:pointer;border-radius:8px;transition:all 0.15s;text-align:center;}
+.tab:hover{color:#1a1a2e;}
+.tab.on{background:#1a1a2e;color:white;}
+.tab .tab-count{display:inline-block;background:rgba(255,255,255,0.25);padding:1px 8px;border-radius:10px;margin-left:6px;font-size:12px;}
+.tab:not(.on) .tab-count{background:#f3f4f6;color:#666;}
+
+.section-title{font-size:13px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:24px 0 12px;}
+
+.mandat-card{background:white;border-radius:10px;padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:14px;border-left:4px solid #ce93d8;transition:all 0.15s;}
+.mandat-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+.mandat-info{flex:1;min-width:0;}
+.mandat-titre{font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:2px;}
+.mandat-meta{font-size:12px;color:#888;display:flex;flex-wrap:wrap;gap:10px;}
+.mandat-meta-item{display:inline-flex;align-items:center;gap:4px;}
+.mandat-mt{font-size:18px;font-weight:700;color:#6a1b9a;}
+.mandat-link{color:#1565c0;text-decoration:none;font-size:12px;font-weight:600;}
+.mandat-link:hover{text-decoration:underline;}
+
+.empty-state{background:white;border-radius:12px;padding:48px 24px;text-align:center;color:#bbb;}
+.empty-state-icon{font-size:48px;margin-bottom:12px;}
+.empty-state-text{font-size:15px;font-weight:500;margin-bottom:6px;color:#999;}
+.empty-state-sub{font-size:13px;color:#bbb;}
+
+/* Historique des factures */
+.facture-card{background:white;border-radius:10px;padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:14px;border-left:4px solid #2e7d32;transition:all 0.15s;}
+.facture-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+.facture-numero{font-size:15px;font-weight:700;color:#1a1a2e;}
+.facture-date{font-size:12px;color:#888;margin-top:2px;}
+.facture-mt{font-size:18px;font-weight:700;color:#2e7d32;}
+.btn-download{background:white;border:1.5px solid #1565c0;color:#1565c0;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.btn-download:hover{background:#e3f0ff;}
+
+/* Modal */
+.ov{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:white;border-radius:18px;padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:18px;color:#1a1a2e;margin-bottom:18px;font-weight:700;}
+.preview-info{background:#f3e5f5;border-left:4px solid #6a1b9a;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;}
+.preview-info .preview-row{display:flex;justify-content:space-between;margin-bottom:4px;}
+.preview-info .preview-row:last-child{margin-bottom:0;}
+.preview-info .preview-label{color:#666;}
+.preview-info .preview-value{font-weight:700;color:#4a148c;}
+.mfield{margin-bottom:14px;}
+.mfield label{display:block;font-size:11px;color:#666;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.3px;}
+.mfield input,.mfield textarea{width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit;}
+.mfield textarea{resize:vertical;min-height:80px;}
+.mfooter{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:18px;border-top:1px solid #f3f4f6;}
+.btn-cancel{padding:10px 16px;border:1.5px solid #e5e7eb;border-radius:9px;background:white;color:#666;font-size:14px;cursor:pointer;}
+.btn-cancel:hover{background:#f5f5f5;}
+.btn-send-fact{padding:10px 22px;background:#6a1b9a;color:white;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-send-fact:hover{background:#5a1083;}
+.btn-preview-pdf{background:white;border:1.5px solid #6a1b9a;color:#6a1b9a;padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-preview-pdf:hover{background:#f3e5f5;}
+
+@media (max-width:640px){
+  .main{padding:16px;}
+  .summary-bar{flex-direction:column;align-items:stretch;}
+  .mandat-card{flex-wrap:wrap;}
+}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;color:white;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,0.2);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="dashboard.html" class="btn-back">&#8592; Dashboard</a>
+  <h1>&#128184; Ma facturation</h1>
+  <a class="btn-config" href="mon-entreprise.html">&#9881;&#65039; Mon entreprise</a>
+</div>
+
+<div class="main">
+
+  <div class="alert-config" id="alert-config" style="display:none;">
+    &#9888;&#65039; Tu n'as pas encore configur&eacute; les coordonn&eacute;es de ton entreprise. 
+    <a href="mon-entreprise.html">Configure-les ici &rarr;</a>
+  </div>
+
+  <div class="summary-bar">
+    <div class="summary-stat">
+      <div class="summary-stat-label">Mandats &agrave; facturer</div>
+      <div class="summary-stat-value purple" id="stat-count">0</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-label">Total pr&eacute;visionnel</div>
+      <div class="summary-stat-value" id="stat-total">0,00 $</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-label">Total avec taxes</div>
+      <div class="summary-stat-value green" id="stat-total-taxes">0,00 $</div>
+    </div>
+    <button class="btn-generate" id="btn-generate" onclick="openSendModal()" disabled>
+      &#128190; G&eacute;n&eacute;rer et envoyer ma facture
+    </button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" id="tab-pending" onclick="setTab('pending')">
+      &#128203; &Agrave; facturer <span class="tab-count" id="cnt-pending">0</span>
+    </button>
+    <button class="tab" id="tab-history" onclick="setTab('history')">
+      &#128196; Historique de mes factures <span class="tab-count" id="cnt-history">0</span>
+    </button>
+  </div>
+
+  <div id="tab-content-pending">
+    <div id="pending-list">
+      <div class="empty-state">
+        <div class="empty-state-icon">&#9203;</div>
+        <div class="empty-state-text">Chargement...</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-content-history" style="display:none;">
+    <div id="history-list">
+      <div class="empty-state">
+        <div class="empty-state-icon">&#9203;</div>
+        <div class="empty-state-text">Chargement...</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal envoi -->
+<div class="ov" id="modal-send" style="display:none;">
+  <div class="modal">
+    <h2>&#128190; Envoyer ma facture</h2>
+
+    <div class="preview-info">
+      <div class="preview-row">
+        <span class="preview-label">No de facture</span>
+        <span class="preview-value" id="ms-numero">&mdash;</span>
+      </div>
+      <div class="preview-row">
+        <span class="preview-label">Nombre de mandats</span>
+        <span class="preview-value" id="ms-count">&mdash;</span>
+      </div>
+      <div class="preview-row">
+        <span class="preview-label">Total &agrave; facturer</span>
+        <span class="preview-value" id="ms-total">&mdash;</span>
+      </div>
+    </div>
+
+    <div class="mfield">
+      <label>Destinataire</label>
+      <input type="email" id="ms-to" value="loi16.expertquebec@gmail.com">
+    </div>
+    <div class="mfield">
+      <label>Sujet</label>
+      <input type="text" id="ms-subj">
+    </div>
+    <div class="mfield">
+      <label>Message</label>
+      <textarea id="ms-body" rows="5"></textarea>
+    </div>
+
+    <div class="mfooter">
+      <button class="btn-preview-pdf" onclick="previewPDF()">&#128065;&#65039; Apercu PDF</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-cancel" onclick="closeSendModal()">Annuler</button>
+        <button class="btn-send-fact" onclick="sendFacture()">&#128231; Envoyer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.7.0/jspdf.plugin.autotable.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let profile = null;
+let pendingMandats = []; /* mandats coches non factures */
+let historiqueFactures = [];
+let currentTab = 'pending';
+
+(async function init(){
+  const {data:{session}} = await sb.auth.getSession();
+  if(!session){window.location.href='index.html';return;}
+  const {data:p,error} = await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  if(error||!p){window.location.href='index.html';return;}
+  profile = p;
+
+  /* Verifie config entreprise */
+  if(!p.entreprise_nom||!p.entreprise_adresse_l1){
+    document.getElementById('alert-config').style.display='block';
+  }
+
+  await loadAll();
+})();
+
+async function loadAll(){
+  await Promise.all([loadPending(), loadHistorique()]);
+}
+
+async function loadPending(){
+  const {data,error}=await sb.from('mandats')
+    .select('id, client_nom, adresse, type_mandat, date_mandat, compagnie, commission_totale, bonus_non_carte')
+    .eq('technicien_id', profile.id)
+    .eq('commission_a_facturer', true)
+    .eq('commission_facturee', false)
+    .order('date_mandat', {ascending:true, nullsFirst:false});
+  if(error){console.error(error);toast('Erreur chargement: '+error.message,'err');return;}
+  pendingMandats = data || [];
+  renderPending();
+  updateSummary();
+}
+
+async function loadHistorique(){
+  const {data,error}=await sb.from('factures_commission')
+    .select('*')
+    .eq('technicien_id', profile.id)
+    .order('date_facture', {ascending:false});
+  if(error){console.error(error);return;}
+  historiqueFactures = data || [];
+  renderHistorique();
+}
+
+function getMandatTotal(m){
+  /* La commission_totale en base inclut deja base + extras + transport + echantillons + bonus */
+  return parseFloat(m.commission_totale||0);
+}
+
+function updateSummary(){
+  const total=pendingMandats.reduce((s,m)=>s+getMandatTotal(m),0);
+  document.getElementById('stat-count').textContent=pendingMandats.length;
+  document.getElementById('cnt-pending').textContent=pendingMandats.length;
+  document.getElementById('cnt-history').textContent=historiqueFactures.length;
+  document.getElementById('stat-total').textContent=money(total);
+
+  /* Total avec taxes si le tech a TPS+TVQ */
+  const hasTaxes = !!(profile.entreprise_tps || profile.entreprise_tvq);
+  if(hasTaxes){
+    const tps = profile.entreprise_tps ? total*0.05 : 0;
+    const tvq = profile.entreprise_tvq ? total*0.09975 : 0;
+    document.getElementById('stat-total-taxes').textContent=money(total+tps+tvq);
+  } else {
+    document.getElementById('stat-total-taxes').textContent=money(total);
+  }
+
+  const btn=document.getElementById('btn-generate');
+  btn.disabled = pendingMandats.length===0;
+}
+
+function renderPending(){
+  const list=document.getElementById('pending-list');
+  if(!pendingMandats.length){
+    list.innerHTML=`<div class="empty-state">
+      <div class="empty-state-icon">&#128181;</div>
+      <div class="empty-state-text">Aucun mandat &agrave; facturer</div>
+      <div class="empty-state-sub">Coche "Ajouter &agrave; ma facture" sur tes mandats compl&eacute;t&eacute;s pour les voir ici.</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML=pendingMandats.map(m=>{
+    const date=m.date_mandat?new Date(m.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{day:'numeric',month:'short',year:'numeric'}):'Pas de date';
+    return `<div class="mandat-card">
+      <div class="mandat-info">
+        <div class="mandat-titre">${escapeHtml(m.client_nom||'Sans nom')}</div>
+        <div class="mandat-meta">
+          <span class="mandat-meta-item">&#128197; ${escapeHtml(date)}</span>
+          ${m.type_mandat?`<span class="mandat-meta-item">&#128203; ${escapeHtml(m.type_mandat)}</span>`:''}
+          ${m.adresse?`<span class="mandat-meta-item">&#128205; ${escapeHtml(m.adresse)}</span>`:''}
+          <a href="mandat.html?id=${m.id}" class="mandat-link">Ouvrir &rarr;</a>
+        </div>
+      </div>
+      <div class="mandat-mt">${money(getMandatTotal(m))}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistorique(){
+  const list=document.getElementById('history-list');
+  if(!historiqueFactures.length){
+    list.innerHTML=`<div class="empty-state">
+      <div class="empty-state-icon">&#128196;</div>
+      <div class="empty-state-text">Aucune facture envoy&eacute;e</div>
+      <div class="empty-state-sub">Tes factures envoy&eacute;es appara&icirc;tront ici pour t&eacute;l&eacute;chargement.</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML=historiqueFactures.map(f=>{
+    const date=new Date(f.date_facture+'T12:00:00').toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
+    const sent = f.date_envoi ? `Envoy\u00e9e le ${new Date(f.date_envoi).toLocaleDateString('fr-CA')}` : '';
+    return `<div class="facture-card">
+      <div style="flex:1;min-width:0;">
+        <div class="facture-numero">No ${escapeHtml(f.numero_facture)}</div>
+        <div class="facture-date">${escapeHtml(date)} &middot; ${escapeHtml(sent)}</div>
+      </div>
+      <div class="facture-mt">${money(parseFloat(f.total))}</div>
+      <button class="btn-download" onclick="downloadFacture('${f.id}')">&#128229; T&eacute;l&eacute;charger ma copie</button>
+    </div>`;
+  }).join('');
+}
+
+function setTab(tab){
+  currentTab=tab;
+  document.getElementById('tab-pending').classList.toggle('on',tab==='pending');
+  document.getElementById('tab-history').classList.toggle('on',tab==='history');
+  document.getElementById('tab-content-pending').style.display = tab==='pending'?'':'none';
+  document.getElementById('tab-content-history').style.display = tab==='history'?'':'none';
+}
+
+/* ============================================================
+   GENERATION DU PDF FACTURE COMMISSION
+   ============================================================ */
+
+function buildSnapshot(numFact){
+  /* Cree un snapshot fige des donnees du moment - reutilisable pour re-generer le PDF */
+  const lines = pendingMandats.map(m=>({
+    mandat_id: m.id,
+    client_nom: m.client_nom||'Sans nom',
+    date_mandat: m.date_mandat,
+    type_mandat: m.type_mandat,
+    compagnie: m.compagnie,
+    adresse: m.adresse,
+    montant: getMandatTotal(m),
+  }));
+  const sousTotal = lines.reduce((s,l)=>s+l.montant,0);
+  const hasTps = !!profile.entreprise_tps;
+  const hasTvq = !!profile.entreprise_tvq;
+  const tps = hasTps ? sousTotal*0.05 : 0;
+  const tvq = hasTvq ? sousTotal*0.09975 : 0;
+  const total = sousTotal + tps + tvq;
+
+  return {
+    numero_facture: numFact,
+    date_facture: new Date().toISOString().slice(0,10),
+    entreprise: {
+      nom: profile.entreprise_nom,
+      neq: profile.entreprise_neq,
+      adresse_l1: profile.entreprise_adresse_l1,
+      adresse_l2: profile.entreprise_adresse_l2,
+      telephone: profile.entreprise_telephone,
+      email: profile.entreprise_email,
+      tps: profile.entreprise_tps,
+      tvq: profile.entreprise_tvq,
+      modalites: profile.entreprise_modalites,
+      cheque_ordre_de: profile.entreprise_cheque_ordre_de,
+      interac_email: profile.entreprise_interac_email,
+      folio: profile.entreprise_folio,
+      institution: profile.entreprise_institution,
+      transit: profile.entreprise_transit,
+    },
+    destinataire: {
+      nom: 'GEQ - B\u00e2timent Conseil / Logica',
+      adresse: '1025 Avenue du Bourg-Royal, Qu\u00e9bec QC G2L1X4',
+    },
+    lines,
+    sous_total: sousTotal,
+    tps,
+    tvq,
+    total,
+  };
+}
+
+function generatePDF(snapshot){
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'letter'});
+  const pageW = doc.internal.pageSize.getWidth();
+  const ent = snapshot.entreprise;
+
+  /* ===== HEADER ===== */
+  let y = 15;
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
+  doc.setTextColor(0,0,0);
+  doc.text(ent.nom||'',15,y);y+=5;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  if(ent.adresse_l1) {doc.text(ent.adresse_l1,15,y);y+=4;}
+  if(ent.adresse_l2) {doc.text(ent.adresse_l2,15,y);y+=4;}
+  if(ent.telephone) {doc.text(ent.telephone,15,y);y+=4;}
+  if(ent.email) {doc.text(ent.email,15,y);y+=4;}
+  if(ent.neq) {doc.text('NEQ : '+ent.neq,15,y);y+=4;}
+  if(ent.tps) {doc.text('No d\u0027inscription a la TPS : '+ent.tps,15,y);y+=4;}
+  if(ent.tvq) {doc.text('No d\u0027enregistrement de la TVQ : '+ent.tvq,15,y);y+=4;}
+
+  /* ===== TITRE FACTURE ===== */
+  y+=8;
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(28);
+  doc.setTextColor(106,27,154); /* violet */
+  doc.text('FACTURE',15,y);
+
+  /* ===== Bloc Facturé à + No + Date + Modalites ===== */
+  y+=10;
+  doc.setFontSize(9);
+  doc.setTextColor(150,150,150);
+  doc.setFont('helvetica','bold');
+  doc.text('FACTURE A',15,y);
+  doc.text('No DE FACTURE',pageW-65,y);
+  doc.text(snapshot.numero_facture,pageW-15,y,{align:'right'});
+
+  y+=5;
+  doc.setTextColor(0,0,0);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.text(snapshot.destinataire.nom,15,y);
+  doc.setFontSize(9);
+  doc.setTextColor(150,150,150);
+  doc.setFont('helvetica','bold');
+  doc.text('DATE',pageW-65,y);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(0,0,0);
+  doc.text(snapshot.date_facture,pageW-15,y,{align:'right'});
+
+  y+=5;
+  doc.setFontSize(9);
+  doc.setTextColor(0,0,0);
+  doc.text(snapshot.destinataire.adresse,15,y);
+  doc.setFontSize(9);
+  doc.setTextColor(150,150,150);
+  doc.setFont('helvetica','bold');
+  doc.text('MODALITES',pageW-65,y+3);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(0,0,0);
+  doc.text(ent.modalites||'Payable dans 15 jours',pageW-15,y+3,{align:'right'});
+
+  /* Ligne sep */
+  y+=11;
+  doc.setDrawColor(106,27,154);
+  doc.setLineWidth(0.3);
+  doc.line(15,y,pageW-15,y);
+
+  /* ===== TABLEAU ===== */
+  y+=8;
+  const tableBody = snapshot.lines.map(l=>{
+    const dateStr = l.date_mandat || '';
+    const compagnie = (l.compagnie||'').toUpperCase();
+    const desc = `${l.client_nom}${l.type_mandat?' - '+l.type_mandat:''}${l.adresse?'\n'+l.adresse:''}${compagnie?'\n('+compagnie+')':''}`;
+    return [dateStr, desc, l.montant.toFixed(2)];
+  });
+
+  doc.autoTable({
+    startY:y,
+    head:[['DATE','DESCRIPTION','MONTANT']],
+    body:tableBody,
+    theme:'plain',
+    headStyles:{
+      fillColor:[243,229,245],
+      textColor:[120,120,120],
+      fontSize:9,
+      fontStyle:'bold',
+      cellPadding:3,
+    },
+    bodyStyles:{
+      fontSize:9,
+      cellPadding:3,
+      textColor:[40,40,40],
+    },
+    columnStyles:{
+      0:{cellWidth:25},
+      1:{cellWidth:'auto'},
+      2:{cellWidth:30,halign:'right',fontStyle:'bold'},
+    },
+    margin:{left:15,right:15},
+  });
+
+  y = doc.lastAutoTable.finalY+4;
+
+  /* ===== TOTAUX ===== */
+  y+=8;
+  const totColX = pageW-65;
+  const totValX = pageW-15;
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(40,40,40);
+
+  doc.text('TOTAL PARTIEL',totColX,y);
+  doc.text(snapshot.sous_total.toFixed(2),totValX,y,{align:'right'});
+  if(ent.tps){
+    y+=6;
+    doc.text('TPS @ 5%',totColX,y);
+    doc.text(snapshot.tps.toFixed(2),totValX,y,{align:'right'});
+  }
+  if(ent.tvq){
+    y+=6;
+    doc.text('TVQ @ 9,975%',totColX,y);
+    doc.text(snapshot.tvq.toFixed(2),totValX,y,{align:'right'});
+  }
+  y+=6;
+  doc.text('TOTAL',totColX,y);
+  doc.text(snapshot.total.toFixed(2),totValX,y,{align:'right'});
+
+  y+=10;
+  doc.setFont('helvetica','bold');
+  doc.text('SOLDE A PAYER',totColX,y);
+  doc.setFontSize(18);
+  doc.text(snapshot.total.toFixed(2)+' $',totValX,y+2,{align:'right'});
+
+  /* ===== PIED MODALITES ===== */
+  y+=22;
+  const pageH=doc.internal.pageSize.getHeight();
+  if(y>pageH-60){
+    doc.addPage();
+    y=20;
+  }
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(60,60,60);
+
+  if(ent.cheque_ordre_de){
+    doc.text(`Veuillez libeller tous les cheques a l\u0027ordre de : ${ent.cheque_ordre_de}`, pageW/2, y, {align:'center'});
+    y+=10;
+  }
+  if(ent.interac_email){
+    doc.text('Pour les virements Interac :', pageW/2, y, {align:'center'});
+    y+=5;
+    doc.text('Email seulement : '+ent.interac_email, pageW/2, y, {align:'center'});
+    y+=10;
+  }
+  if(ent.folio||ent.institution||ent.transit){
+    doc.text('Pour un virement direct', pageW/2, y, {align:'center'});
+    y+=5;
+    if(ent.folio){doc.text('Folio : '+ent.folio, pageW/2, y, {align:'center'});y+=5;}
+    if(ent.institution){doc.text('Institution : '+ent.institution, pageW/2, y, {align:'center'});y+=5;}
+    if(ent.transit){doc.text('Transit : '+ent.transit, pageW/2, y, {align:'center'});y+=5;}
+  }
+
+  return doc;
+}
+
+/* ============================================================
+   MODAL ENVOI
+   ============================================================ */
+
+async function openSendModal(){
+  if(!pendingMandats.length){toast('Aucun mandat \u00e0 facturer','err');return;}
+  if(!profile.entreprise_nom||!profile.entreprise_adresse_l1){
+    toast('Configure d\u0027abord ton entreprise','err');
+    setTimeout(()=>window.location.href='mon-entreprise.html',1500);
+    return;
+  }
+
+  /* Genere un numero PREVIEW (utilise vraiment a l'envoi) */
+  let numFact;
+  try{
+    const {data,error}=await sb.rpc('get_next_commission_facture_numero',{p_tech_id:profile.id});
+    if(error) throw error;
+    numFact=data;
+  }catch(e){
+    numFact='PREVIEW';
+  }
+
+  const total = pendingMandats.reduce((s,m)=>s+getMandatTotal(m),0);
+  const hasTaxes = !!(profile.entreprise_tps || profile.entreprise_tvq);
+  const tps = profile.entreprise_tps ? total*0.05 : 0;
+  const tvq = profile.entreprise_tvq ? total*0.09975 : 0;
+  const totalTtc = total+tps+tvq;
+
+  document.getElementById('ms-numero').textContent=numFact;
+  document.getElementById('ms-count').textContent=pendingMandats.length;
+  document.getElementById('ms-total').textContent=money(totalTtc);
+  document.getElementById('ms-subj').value=`Facture ${numFact} - ${profile.entreprise_nom||'Mes commissions'}`;
+  document.getElementById('ms-body').value=
+    `Bonjour Bass,\n\n`+
+    `Voici ma facture no ${numFact} pour ${pendingMandats.length} mandat(s) compl\u00e9t\u00e9(s).\n`+
+    `Montant total : ${money(totalTtc)}\n\n`+
+    `Tu trouveras le d\u00e9tail en pi\u00e8ce jointe.\n\n`+
+    `Cordialement,\n${profile.prenom||''} ${profile.nom||''}`;
+
+  /* Stocke le numero attribue */
+  document.getElementById('modal-send').dataset.numFact=numFact;
+  document.getElementById('modal-send').style.display='flex';
+}
+
+function closeSendModal(){
+  document.getElementById('modal-send').style.display='none';
+}
+
+async function previewPDF(){
+  const numFact = document.getElementById('modal-send').dataset.numFact || 'PREVIEW';
+  const snapshot = buildSnapshot(numFact);
+  const doc = generatePDF(snapshot);
+  const pdfBase64 = doc.output('datauristring').split(',')[1];
+  const win = window.open('','_blank');
+  win.document.write('<html><head><title>Apercu '+numFact+'</title></head><body style="margin:0">'+
+    '<iframe src="data:application/pdf;base64,'+pdfBase64+'" style="width:100vw;height:100vh;border:none"></iframe>'+
+    '</body></html>');
+}
+
+async function sendFacture(){
+  const numFact = document.getElementById('modal-send').dataset.numFact;
+  if(!numFact || numFact==='PREVIEW'){toast('Erreur de num\u00e9rotation','err');return;}
+  const to = document.getElementById('ms-to').value.trim();
+  if(!to){toast('Destinataire requis','err');return;}
+
+  if(!confirm(`Confirmer l\u0027envoi de la facture ${numFact} a ${to} ?\n\n${pendingMandats.length} mandat(s) seront marqu\u00e9s comme factur\u00e9s.`)) return;
+
+  toast('Generation de la facture...');
+
+  /* 1. Genere PDF + snapshot */
+  const snapshot = buildSnapshot(numFact);
+  const doc = generatePDF(snapshot);
+  const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+  /* 2. Token Gmail */
+  let token;
+  try{token = await getGoogleToken();}
+  catch(e){toast('Connexion Gmail requise','err');return;}
+
+  /* 3. Construire MIME avec PDF en attachement */
+  const subj = document.getElementById('ms-subj').value.trim();
+  const body = document.getElementById('ms-body').value.trim();
+  const boundary = '----=_FactCommBoundary_'+Date.now();
+  const subjectEncoded = '=?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=';
+  const filename = 'Facture_'+numFact+'.pdf';
+
+  const mimeParts=[
+    'To: '+to,
+    'Subject: '+subjectEncoded,
+    'MIME-Version: 1.0',
+    'Content-Type: multipart/mixed; boundary="'+boundary+'"',
+    '',
+    '--'+boundary,
+    'Content-Type: text/plain; charset="UTF-8"',
+    '',
+    body,
+    '',
+    '--'+boundary,
+    'Content-Type: application/pdf; name="'+filename+'"',
+    'Content-Disposition: attachment; filename="'+filename+'"',
+    'Content-Transfer-Encoding: base64',
+    '',
+    pdfBase64,
+    '',
+    '--'+boundary+'--',
+  ];
+  const mime = mimeParts.join('\r\n');
+  const bytes = new TextEncoder().encode(mime);
+  let bin=''; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]);
+  const encoded = btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+  toast('Envoi en cours...');
+  const resp = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify({raw:encoded})
+  });
+  if(!resp.ok){
+    const err = await resp.json();
+    toast('Erreur envoi: '+(err.error?.message||'inconnue'),'err');
+    return;
+  }
+
+  /* 4. Enregistre la facture en DB */
+  const {data:facture, error:errFact} = await sb.from('factures_commission').insert({
+    technicien_id: profile.id,
+    numero_facture: numFact,
+    date_facture: snapshot.date_facture,
+    date_envoi: new Date().toISOString(),
+    destinataire_email: to,
+    sous_total: snapshot.sous_total,
+    tps: snapshot.tps,
+    tvq: snapshot.tvq,
+    total: snapshot.total,
+    snapshot: snapshot,
+  }).select().single();
+
+  if(errFact){
+    toast('Facture envoy\u00e9e mais erreur DB: '+errFact.message,'err');
+    return;
+  }
+
+  /* 5. Marque les mandats comme factures */
+  const mandatIds = pendingMandats.map(m=>m.id);
+  await sb.from('mandats').update({
+    commission_facturee: true,
+    commission_facture_id: facture.id,
+  }).in('id', mandatIds);
+
+  closeSendModal();
+  toast(`\u2705 Facture ${numFact} envoyee !`);
+  await loadAll();
+  setTab('history');
+}
+
+/* Telecharger une facture envoyee - regenere PDF depuis snapshot */
+function downloadFacture(factureId){
+  const f = historiqueFactures.find(x=>x.id===factureId);
+  if(!f){toast('Facture introuvable','err');return;}
+  const doc = generatePDF(f.snapshot);
+  doc.save('Facture_'+f.numero_facture+'.pdf');
+  toast('T\u00e9l\u00e9chargement lanc\u00e9');
+}
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+
+function money(n){
+  return Number(n).toLocaleString('fr-CA',{minimumFractionDigits:2,maximumFractionDigits:2})+' $';
+}
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(msg, type){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type==='err'?'#c62828':'#1a1a2e';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 3500);
+}
+
+/* ============================================================
+   GMAIL OAUTH (reutilise pattern de l'app)
+   ============================================================ */
+async function getGoogleToken(){
+  let token = localStorage.getItem('portail_gmail_token');
+  let expiry = parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
+  if(token && Date.now() < expiry) return token;
+
+  return new Promise((resolve, reject)=>{
+    if(!window.google?.accounts?.oauth2){
+      reject(new Error('Google Identity Services non charg\u00e9'));return;
+    }
+    const tc = window.google.accounts.oauth2.initTokenClient({
+      client_id: '706969065285-u6arf7jjof2t2sso4am0i8uaj6t167bk.apps.googleusercontent.com',
+      scope: 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events',
+      callback: (resp)=>{
+        if(resp.error){reject(new Error(resp.error));return;}
+        localStorage.setItem('portail_gmail_token', resp.access_token);
+        localStorage.setItem('portail_gmail_expiry', String(Date.now() + (resp.expires_in-300)*1000));
+        resolve(resp.access_token);
+      },
+    });
+    tc.requestAccessToken();
+  });
+}
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</body>
+</html>
