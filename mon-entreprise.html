@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mon entreprise - Portail GEQ</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f3f4f6;color:#1a1a2e;min-height:100vh;}
+.topbar{background:#1a1a2e;color:white;padding:12px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;text-decoration:none;display:inline-block;}
+.btn-back:hover{background:rgba(255,255,255,0.2);}
+.topbar h1{font-size:18px;font-weight:600;flex:1;}
+.btn-save{background:#4caf50;border:none;color:white;padding:10px 22px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600;}
+.btn-save:hover{background:#43a047;}
+
+.main{max-width:760px;margin:0 auto;padding:24px;}
+
+.intro{background:#f0f7ff;border-left:4px solid #1565c0;border-radius:10px;padding:16px 18px;margin-bottom:24px;font-size:14px;color:#1a1a2e;line-height:1.5;}
+.intro b{color:#0d47a1;}
+
+.sec{background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.sec-title{font-size:16px;font-weight:700;color:#1a1a2e;margin-bottom:18px;display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid #f3f4f6;}
+.sec-title .ic{font-size:20px;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg{display:flex;flex-direction:column;}
+label{font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;}
+input[type=text],input[type=tel],input[type=email],textarea,select{width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit;outline:none;transition:border 0.15s;background:white;}
+input:focus,textarea:focus,select:focus{border-color:#1a1a2e;}
+.hint{font-size:11px;color:#999;margin-top:4px;font-style:italic;}
+
+.required-badge{background:#fee2e2;color:#c62828;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;text-transform:uppercase;letter-spacing:0.3px;}
+
+@media (max-width:640px){
+  .main{padding:16px;}
+  .grid2{grid-template-columns:1fr;}
+}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;color:white;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,0.2);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="dashboard.html" class="btn-back">&#8592; Dashboard</a>
+  <h1>&#127970; Mon entreprise</h1>
+  <button class="btn-save" onclick="saveEntreprise()">&#128190; Enregistrer</button>
+</div>
+
+<div class="main">
+
+  <div class="intro">
+    Ces informations apparaitront sur les factures de commission que tu envoies a Bass.
+    <b>Configure-les une fois</b>, elles seront r&eacute;utilis&eacute;es a chaque facture.<br>
+    Les champs marqu&eacute;s <span class="required-badge">requis</span> doivent etre remplis pour pouvoir g&eacute;n&eacute;rer une facture.
+  </div>
+
+  <div class="sec">
+    <div class="sec-title"><span class="ic">&#127970;</span> Mon entreprise</div>
+    <div class="grid2">
+      <div class="fg">
+        <label>Nom de l'entreprise <span class="required-badge">requis</span></label>
+        <input type="text" id="f-nom" placeholder="Ex: 1234-5678 Quebec Inc. ou Pierre Tremblay enr.">
+      </div>
+      <div class="fg">
+        <label>NEQ (No d'entreprise du Quebec)</label>
+        <input type="text" id="f-neq" placeholder="1234567890">
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:14px;">
+      <div class="fg">
+        <label>Adresse - ligne 1 <span class="required-badge">requis</span></label>
+        <input type="text" id="f-adresse-l1" placeholder="123 rue Principale">
+      </div>
+      <div class="fg">
+        <label>Adresse - ligne 2 (ville, code postal)</label>
+        <input type="text" id="f-adresse-l2" placeholder="Quebec QC G1X 2Y3">
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:14px;">
+      <div class="fg">
+        <label>T&eacute;l&eacute;phone</label>
+        <input type="tel" id="f-telephone" placeholder="418 555-1234">
+      </div>
+      <div class="fg">
+        <label>Courriel d'entreprise</label>
+        <input type="email" id="f-email" placeholder="entreprise@email.com">
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title"><span class="ic">&#128202;</span> Num&eacute;ros de taxes</div>
+    <div class="grid2">
+      <div class="fg">
+        <label>No de TPS</label>
+        <input type="text" id="f-tps" placeholder="123456789RT0001">
+        <span class="hint">Si tu factures plus de 30 000$/an, tu dois t'inscrire</span>
+      </div>
+      <div class="fg">
+        <label>No de TVQ</label>
+        <input type="text" id="f-tvq" placeholder="1234567890TQ0001">
+        <span class="hint">Laisse vide si tu n'es pas inscrit aux taxes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title"><span class="ic">&#128181;</span> Modalit&eacute;s de paiement</div>
+    <div class="fg">
+      <label>Modalit&eacute;s</label>
+      <input type="text" id="f-modalites" placeholder="Payable dans 15 jours">
+    </div>
+    <div class="fg" style="margin-top:14px;">
+      <label>Cheque a l'ordre de</label>
+      <input type="text" id="f-cheque-ordre-de" placeholder="Mon Entreprise Inc.">
+    </div>
+    <div class="fg" style="margin-top:14px;">
+      <label>Email pour virement Interac</label>
+      <input type="email" id="f-interac-email" placeholder="virement@email.com">
+    </div>
+    <div class="grid2" style="margin-top:14px;">
+      <div class="fg">
+        <label>Folio</label>
+        <input type="text" id="f-folio" placeholder="1234567">
+      </div>
+      <div class="fg">
+        <label>Institution</label>
+        <input type="text" id="f-institution" placeholder="815">
+      </div>
+      <div class="fg">
+        <label>Transit</label>
+        <input type="text" id="f-transit" placeholder="20030">
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let profile = null;
+
+(async function init(){
+  const {data:{session}} = await sb.auth.getSession();
+  if(!session){window.location.href='index.html';return;}
+  const {data:p} = await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  if(!p){window.location.href='index.html';return;}
+  profile = p;
+  fillForm(p);
+})();
+
+function fillForm(p){
+  document.getElementById('f-nom').value=p.entreprise_nom||'';
+  document.getElementById('f-neq').value=p.entreprise_neq||'';
+  document.getElementById('f-adresse-l1').value=p.entreprise_adresse_l1||'';
+  document.getElementById('f-adresse-l2').value=p.entreprise_adresse_l2||'';
+  document.getElementById('f-telephone').value=p.entreprise_telephone||'';
+  document.getElementById('f-email').value=p.entreprise_email||'';
+  document.getElementById('f-tps').value=p.entreprise_tps||'';
+  document.getElementById('f-tvq').value=p.entreprise_tvq||'';
+  document.getElementById('f-modalites').value=p.entreprise_modalites||'Payable dans 15 jours';
+  document.getElementById('f-cheque-ordre-de').value=p.entreprise_cheque_ordre_de||'';
+  document.getElementById('f-interac-email').value=p.entreprise_interac_email||'';
+  document.getElementById('f-folio').value=p.entreprise_folio||'';
+  document.getElementById('f-institution').value=p.entreprise_institution||'';
+  document.getElementById('f-transit').value=p.entreprise_transit||'';
+}
+
+async function saveEntreprise(){
+  const nom=document.getElementById('f-nom').value.trim();
+  const adresseL1=document.getElementById('f-adresse-l1').value.trim();
+  if(!nom){toast('Le nom de l\u0027entreprise est requis','err');return;}
+  if(!adresseL1){toast('L\u0027adresse est requise','err');return;}
+
+  const updates={
+    entreprise_nom:nom,
+    entreprise_neq:document.getElementById('f-neq').value.trim()||null,
+    entreprise_adresse_l1:adresseL1,
+    entreprise_adresse_l2:document.getElementById('f-adresse-l2').value.trim()||null,
+    entreprise_telephone:document.getElementById('f-telephone').value.trim()||null,
+    entreprise_email:document.getElementById('f-email').value.trim()||null,
+    entreprise_tps:document.getElementById('f-tps').value.trim()||null,
+    entreprise_tvq:document.getElementById('f-tvq').value.trim()||null,
+    entreprise_modalites:document.getElementById('f-modalites').value.trim()||'Payable dans 15 jours',
+    entreprise_cheque_ordre_de:document.getElementById('f-cheque-ordre-de').value.trim()||null,
+    entreprise_interac_email:document.getElementById('f-interac-email').value.trim()||null,
+    entreprise_folio:document.getElementById('f-folio').value.trim()||null,
+    entreprise_institution:document.getElementById('f-institution').value.trim()||null,
+    entreprise_transit:document.getElementById('f-transit').value.trim()||null,
+  };
+
+  const {error}=await sb.from('profiles').update(updates).eq('id',profile.id);
+  if(error){toast('Erreur: '+error.message,'err');return;}
+  toast('\u2705 Coordonnees sauvegardees');
+}
+
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.background=type==='err'?'#c62828':'#1a1a2e';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
