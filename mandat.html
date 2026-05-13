@@ -1301,10 +1301,10 @@ function onTypeMandatChange(){
   if(PRIX_AUTO[type]&&parseFloat(document.getElementById('prix-base').value)===0){
     document.getElementById('prix-base').value=PRIX_AUTO[type];
   }
-  if(COMM_AUTO[type]&&isGest){
+  if(COMM_AUTO[type]&&isGest&&parseFloat(document.getElementById('comm-base').value)===0){
     document.getElementById('comm-base').value=COMM_AUTO[type];
   }
-  if(FRAIS_LAB[type]&&isGest){
+  if(FRAIS_LAB[type]&&isGest&&parseFloat(document.getElementById('frais-lab').value)===0){
     document.getElementById('frais-lab').value=FRAIS_LAB[type];
   }
 
@@ -1349,7 +1349,7 @@ function renderExtras(){
   }
   const hdr=document.createElement('div');
   hdr.style.cssText='display:grid;grid-template-columns:26px 1fr 72px 72px 30px;gap:6px;padding:4px;margin-bottom:4px;';
-  hdr.innerHTML='<div></div><div style="font-size:11px;color:#999;font-weight:700;text-transform:uppercase;">Service</div><div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Prix client</div>'+(isGest?'<div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Commission</div>':'<div></div>')+'<div></div>';
+  hdr.innerHTML='<div></div><div style="font-size:11px;color:#999;font-weight:700;text-transform:uppercase;">Service</div><div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Prix client</div>'+((isGest||profile.role==='technicien')?'<div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Commission</div>':'<div></div>')+'<div></div>';
   list.appendChild(hdr);
 
   extras.forEach((ex,i)=>{
@@ -1363,7 +1363,7 @@ function renderExtras(){
       '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)">'+
       nameHtml+
       '<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value)">'+
-      (isGest?'<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)">':'<span></span>')+
+      (isGest?'<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)">':(profile.role==='technicien'?'<input class="fin-input small" type="number" value="'+(ex.commission||0)+'" readonly style="background:#f5f5f5;cursor:not-allowed;color:#666;">':'<span></span>'))+
       ((profile.role==='gestionnaire'||profile.role==='secretaire')?'<button class="btn-rm" onclick="removeExtra('+i+')">&#10005;</button>':'<span></span>');
     list.appendChild(row);
   });
