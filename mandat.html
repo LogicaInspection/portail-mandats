@@ -3329,12 +3329,11 @@ async function generateFacturePDF(numeroFacture){
   y+=7;
   doc.setFont('helvetica','bold');
   doc.text('Pour un virement direct', pageW/2, y, {align:'center'});
-  doc.setFont('helvetica','normal');
+doc.setFont('helvetica','normal');
   y+=5;
   doc.text('Folio : '+ci.virement_folio+'   |   Institution : '+ci.virement_institution+'   |   Transit : '+ci.virement_transit, pageW/2, y, {align:'center'});
-  doc.text('Transit : '+ci.virement_transit, pageW/2, y, {align:'center'});
-
   /* Retourne le PDF en base64 */
+  
   const pdfBase64=doc.output('datauristring').split(',')[1];
   return {base64:pdfBase64, total:total, sousTotal:sousTotal, tps:tps, tvq:tvq};
 }
