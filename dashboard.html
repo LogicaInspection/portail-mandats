@@ -785,7 +785,7 @@ async function loadTechs() {
   const { data } = await sb
     .from('profiles')
     .select('id, nom, prenom')
-    .eq('role', 'technicien')
+    .in('role', ['technicien', 'gestionnaire'])
     .eq('dashboard_access', true)
     .order('nom');
   const sel = document.getElementById('f-tech');
