@@ -1067,7 +1067,9 @@ async function confirmTestAction(actionLabel){
     .eq('dashboard_access',true)
     .order('nom');
   const tsel=document.getElementById('f-tech');
-  (techs||[]).forEach(t=>{
+  /* Exclure Michael Gauthier: gestionnaire avec acces GEQ Suivi mais pas Portail Mandats */
+  const techsFiltered=(techs||[]).filter(t=>!(t.prenom==='Michael'&&t.nom==='Gauthier'));
+  techsFiltered.forEach(t=>{
     const o=document.createElement('option');
     o.value=t.id;
     o.textContent=t.prenom+' '+t.nom;
