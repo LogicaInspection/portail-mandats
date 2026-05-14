@@ -170,6 +170,48 @@ select.filter {
   font-size: 14px; background: white; outline: none; color: #444; cursor: pointer;
 }
 select.filter:focus { border-color: #1a1a2e; }
+
+/* ===== Barre de chips Techniciens (remplace le select f-tech) ===== */
+.tech-chips-bar {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: -4px 0 16px 0;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+.tech-chips-bar.show { display: flex; }
+.tech-chips-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+.tech-chip {
+  padding: 8px 16px;
+  background: white;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.tech-chip:hover { border-color: #94a3b8; background: #f1f5f9; }
+.tech-chip.active {
+  background: #1a1a2e;
+  color: white;
+  border-color: #1a1a2e;
+  font-weight: 600;
+}
+.tech-chip.active:hover { background: #0f0f1e; }
 .btn-fdp {
   margin-left: auto; padding: 10px 18px;
   background: white; color: #1a1a2e; border: 1.5px solid #e5e7eb;
@@ -551,6 +593,12 @@ body.archives-mode { background: #faf5ed; }
     </button>
   </div>
 
+  <!-- Barre de chips Techniciens (gestionnaire uniquement) -->
+  <div class="tech-chips-bar" id="tech-chips-bar">
+    <span class="tech-chips-label">&#128104;&#8205;&#128187; Filtrer par technicien</span>
+    <div class="tech-chip active" data-tech-id="" onclick="selectTechChip(this)">Tous</div>
+  </div>
+
   <div class="archive-banner" id="archive-banner" style="display:none">
     <span>&#128193; <strong>Mode Archives</strong> &mdash; Affichage des dossiers finalis&eacute;s seulement.</span>
     <button onclick="toggleArchives()" style="margin-left:auto;background:transparent;border:1px solid #f57c00;color:#e65100;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;">Revenir aux dossiers actifs</button>
@@ -647,7 +695,7 @@ let timerInterval = null;
 
   if (profile.role === 'gestionnaire') {
     document.getElementById('ministats-gest').style.display = 'flex';
-    document.getElementById('f-tech').style.display = 'block';
+    document.getElementById('tech-chips-bar').classList.add('show');
     await loadTechs();
   } else if (profile.role === 'technicien') {
     document.getElementById('ministats-tech').style.display = 'flex';
@@ -741,12 +789,29 @@ async function loadTechs() {
     .eq('dashboard_access', true)
     .order('nom');
   const sel = document.getElementById('f-tech');
+  const chipsBar = document.getElementById('tech-chips-bar');
   (data || []).forEach(t => {
+    /* 1. Remplir le select cache (utilise par getFilteredMandats) */
     const o = document.createElement('option');
     o.value = t.id;
     o.textContent = `${t.prenom} ${t.nom}`;
     sel.appendChild(o);
+    /* 2. Generer une chip cliquable */
+    const chip = document.createElement('div');
+    chip.className = 'tech-chip';
+    chip.dataset.techId = t.id;
+    chip.textContent = `${t.prenom} ${t.nom}`;
+    chip.onclick = function() { selectTechChip(this); };
+    chipsBar.appendChild(chip);
   });
+}
+
+/* Selection d'une chip technicien -> met a jour le select cache + filtre */
+function selectTechChip(el) {
+  document.querySelectorAll('.tech-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('f-tech').value = el.dataset.techId || '';
+  filterMandats();
 }
 
 async function loadMandats() {
