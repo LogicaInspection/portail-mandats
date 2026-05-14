@@ -790,7 +790,9 @@ async function loadTechs() {
     .order('nom');
   const sel = document.getElementById('f-tech');
   const chipsBar = document.getElementById('tech-chips-bar');
-  (data || []).forEach(t => {
+  /* Exclure Michael Gauthier: gestionnaire avec acces GEQ Suivi mais pas Portail Mandats */
+  const filtered = (data || []).filter(t => !(t.prenom === 'Michael' && t.nom === 'Gauthier'));
+  filtered.forEach(t => {
     /* 1. Remplir le select cache (utilise par getFilteredMandats) */
     const o = document.createElement('option');
     o.value = t.id;
