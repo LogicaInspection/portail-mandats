@@ -1338,6 +1338,7 @@ function updateBadge(){
   b.style.display='inline-block';
   b.textContent=comp==='logica'?'Logica':'GEQ';
   b.className='badge '+(comp==='logica'?'badge-logica':'badge-geq');
+  updateHeaderTypePill();
 }
 
 function changeEchan(delta){
