@@ -702,11 +702,12 @@ let timerInterval = null;
     document.getElementById('ministats-tech').style.display = 'flex';
   }
 
-  /* Show export button only for Bass (real gestionnaire, not impersonated) */
+ /* Show export button only for Bass (real gestionnaire, not impersonated) */
   if (realProfile.role === 'gestionnaire' && session.user.id === BASS_UID) {
     document.getElementById('btn-export-excel').style.display = 'inline-block';
   }
 
+  await loadMandatTypes();
   await loadMandats();
 
   if (timerInterval) clearInterval(timerInterval);
