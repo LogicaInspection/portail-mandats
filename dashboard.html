@@ -641,6 +641,7 @@ const VIEW_AS_KEY = 'view_as_user_id';
 let realProfile = null;
 let profile = null;
 let allMandats = [];
+let mandatTypesMap = {};  // cache { slug: {label, couleur} } chargé une fois au démarrage
 let currentTab = 'tous';
 let timerInterval = null;
 
