@@ -1125,7 +1125,14 @@ techsFiltered.forEach(t=>{
   /* Charger les types de mandat depuis Supabase et peupler le select */
   await loadMandatTypes();
   populateTypeMandatSelect();
-
+/* Initialiser l'editeur riche des Notes */
+  notesEditor=initRichEditor('f-notes-editor','Notes visibles seulement par l\'equipe...');
+  /* Detecter les changements pour le tracking dirty */
+  if(notesEditor){
+    notesEditor.on('text-change',()=>{
+      if(formInitialized) markDirty();
+    });
+  }
   if(id){
     isNew=false;
     const {data:m}=await sb.from('mandats').select('*').eq('id',id).single();
@@ -1233,7 +1240,7 @@ function fillForm(){
   document.getElementById('f-date').value=m.date_mandat||'';
   document.getElementById('f-heure').value=m.heure_mandat?m.heure_mandat.substring(0,5):'';
   document.getElementById('f-tech').value=m.technicien_id||'';
-  document.getElementById('f-notes').value=m.notes||'';
+  setEditorHTML(notesEditor,m.notes||'');
   /* Suivi client: statut + prochain rappel */
   currentStatutContact=m.statut_contact||null;
   renderStatutContactPills();
@@ -1453,7 +1460,50 @@ function addExtra(){
 }
 /* ===== TYPES DE MANDAT (charges depuis Supabase) ===== */
 let mandatTypesMap = {};  /* cache : { slug: {label, couleur, actif} } */
+  let notesEditor = null;  /* Instance Quill pour Notes du mandat */
+/* Toolbar de l'editeur riche - set complet */
+const QUILL_TOOLBAR=[
+  [{'header':[2,3,false]}],
+  ['bold','italic','underline','strike'],
+  [{'color':['#000000','#1a1a2e','#666666','#1565c0','#2e7d32','#c62828','#ef6c00','#6a1b9a']},
+   {'background':['#ffffff','#fff9c4','#c8e6c9','#bbdefb','#f8bbd0','#ffe0b2']}],
+  [{'list':'ordered'},{'list':'bullet'}],
+  ['blockquote',{'align':[]}],
+  ['link','table'],
+  ['clean'],
+];
 
+/* Initialise un editeur Quill sur un element + retourne l'instance */
+function initRichEditor(elementId,placeholder){
+  const el=document.getElementById(elementId);
+  if(!el) return null;
+  const quill=new Quill('#'+elementId,{
+    theme:'snow',
+    placeholder:placeholder||'',
+    modules:{toolbar:QUILL_TOOLBAR},
+  });
+  return quill;
+}
+
+/* Recupere le HTML sanitize d'un editeur (vide si rien ou juste <p><br></p>) */
+function getEditorHTML(quill){
+  if(!quill) return '';
+  const html=quill.root.innerHTML;
+  /* Quill insere <p><br></p> meme quand l'editeur est vide */
+  if(html==='<p><br></p>'||html.trim()==='') return '';
+  return DOMPurify.sanitize(html,{
+    ALLOWED_TAGS:['p','br','strong','em','u','s','h2','h3','ul','ol','li','blockquote','a','table','tbody','tr','td','th','span','hr'],
+    ALLOWED_ATTR:['href','target','rel','style','class','colspan','rowspan'],
+    ALLOWED_URI_REGEXP:/^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+  });
+}
+
+/* Charge du HTML dans un editeur (sanitize en entree aussi pour secu) */
+function setEditorHTML(quill,html){
+  if(!quill) return;
+  const safe=html?DOMPurify.sanitize(html):'';
+  quill.root.innerHTML=safe||'';
+}
 async function loadMandatTypes(){
   const { data, error } = await sb
     .from('mandat_types')
@@ -2234,7 +2284,11 @@ async function saveMandat(){
     bonus_non_carte:bonus>0,
     sous_total:st,tps:tps,tvq:tvq,total_ttc:ttc,
     commission_totale:commTot,profit:profit,
-    notes:document.getElementById('f-notes').value||null,
+    /* Notes au format HTML - converties en texte brut pour Google Calendar */
+  const notesHtml=getEditorHTML(notesEditor)||'';
+  const tmpDiv=document.createElement('div');
+  tmpDiv.innerHTML=notesHtml;
+  const notes=tmpDiv.textContent||'';
     statut_assignation:statutAssign,
     assigne_le:assigneLe,
     reclame_le:reclameLe,
