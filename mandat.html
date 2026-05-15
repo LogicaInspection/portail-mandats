@@ -1078,12 +1078,18 @@ async function confirmTestAction(actionLabel){
   const tsel=document.getElementById('f-tech');
   /* Exclure Michael Gauthier: gestionnaire avec acces GEQ Suivi mais pas Portail Mandats */
   const techsFiltered=(techs||[]).filter(t=>!(t.prenom==='Michael'&&t.nom==='Gauthier'));
-  techsFiltered.forEach(t=>{
+techsFiltered.forEach(t=>{
     const o=document.createElement('option');
     o.value=t.id;
     o.textContent=t.prenom+' '+t.nom;
     tsel.appendChild(o);
   });
+
+  /* Charger les types de mandat depuis Supabase et peupler le select */
+  await loadMandatTypes();
+  populateTypeMandatSelect();
+
+  if(id){
 
   if(id){
     isNew=false;
