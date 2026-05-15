@@ -1403,7 +1403,89 @@ function addExtra(){
     if(inputs.length) inputs[inputs.length-1].focus();
   },50);
 }
+/* ===== TYPES DE MANDAT (charges depuis Supabase) ===== */
+let mandatTypesMap = {};  /* cache : { slug: {label, couleur, actif} } */
 
+async function loadMandatTypes(){
+  const { data, error } = await sb
+    .from('mandat_types')
+    .select('slug, label, couleur_hex, actif, ordre')
+    .order('ordre');
+  if(error){ console.error('Erreur chargement mandat_types:', error); return; }
+  mandatTypesMap = {};
+  (data || []).forEach(t => {
+    mandatTypesMap[t.slug] = { label: t.label, couleur: t.couleur_hex, actif: t.actif };
+  });
+}
+
+/* Peuple le select Type de mandat avec les types ACTIFS uniquement */
+function populateTypeMandatSelect(){
+  const sel = document.getElementById('f-type-mandat');
+  if(!sel) return;
+  /* On garde la valeur deja selectionnee si elle existe */
+  const currentVal = sel.value;
+  sel.innerHTML = '';
+  /* Liste les types actifs tries par ordre */
+  const actifs = Object.entries(mandatTypesMap)
+    .filter(([slug, t]) => t.actif)
+    .sort((a, b) => {
+      /* On utilise l'ordre original via la map */
+      return 0; /* deja trie par la requete SQL */
+    });
+  /* En realite, on doit garder l'ordre de chargement. Reconstruisons depuis un array */
+  const ordered = Object.keys(mandatTypesMap)
+    .filter(slug => mandatTypesMap[slug].actif);
+  ordered.forEach(slug => {
+    const opt = document.createElement('option');
+    opt.value = slug;
+    opt.textContent = mandatTypesMap[slug].label;
+    sel.appendChild(opt);
+  });
+  if(currentVal) sel.value = currentVal;
+}
+
+/* Ajoute dynamiquement une option pour un slug inactif (anciens mandats) */
+function ensureTypeOptionExists(slug){
+  if(!slug) return;
+  const sel = document.getElementById('f-type-mandat');
+  if(!sel) return;
+  /* Verifie si l'option existe deja */
+  if(Array.from(sel.options).some(o => o.value === slug)) return;
+  /* Sinon, on l'ajoute avec le label de la map (ou le slug brut si inconnu) */
+  const t = mandatTypesMap[slug];
+  const opt = document.createElement('option');
+  opt.value = slug;
+  opt.textContent = (t ? t.label : slug) + ' (ancien)';
+  opt.style.color = '#888';
+  sel.appendChild(opt);
+}
+
+/* Met a jour la pastille colore dans le header */
+function updateHeaderTypePill(){
+  const pill = document.getElementById('htype-pill');
+  if(!pill) return;
+  const comp = document.getElementById('f-compagnie').value;
+  /* Cache pour Logica (pas de type variable) */
+  if(comp !== 'geq'){
+    pill.style.display = 'none';
+    return;
+  }
+  const slug = document.getElementById('f-type-mandat').value;
+  if(!slug){
+    pill.style.display = 'none';
+    return;
+  }
+  const t = mandatTypesMap[slug];
+  if(!t){
+    pill.style.display = 'inline-block';
+    pill.style.background = '#f3f4f6';
+    pill.textContent = slug;
+    return;
+  }
+  pill.style.display = 'inline-block';
+  pill.style.background = t.couleur;
+  pill.textContent = t.label;
+}
 function recalc(){
   const base=parseFloat(document.getElementById('prix-base').value)||0;
   const trans=parseFloat(document.getElementById('transport').value)||0;
