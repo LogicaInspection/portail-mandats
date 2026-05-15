@@ -2284,11 +2284,6 @@ async function saveMandat(){
     bonus_non_carte:bonus>0,
     sous_total:st,tps:tps,tvq:tvq,total_ttc:ttc,
     commission_totale:commTot,profit:profit,
-    /* Notes au format HTML - converties en texte brut pour Google Calendar */
-  const notesHtml=getEditorHTML(notesEditor)||'';
-  const tmpDiv=document.createElement('div');
-  tmpDiv.innerHTML=notesHtml;
-  const notes=tmpDiv.textContent||'';
     statut_assignation:statutAssign,
     assigne_le:assigneLe,
     reclame_le:reclameLe,
@@ -2663,7 +2658,11 @@ function buildGcalEventBody(){
   const reference=document.getElementById('f-reference').value||'';
   const listing=document.getElementById('f-listing').value||'';
   const typeBat=document.getElementById('f-type-batiment').value||'';
-  const notes=document.getElementById('f-notes').value||'';
+  /* Notes au format HTML - converties en texte brut pour Google Calendar */
+  const notesHtml=getEditorHTML(notesEditor)||'';
+  const tmpDiv=document.createElement('div');
+  tmpDiv.innerHTML=notesHtml;
+  const notes=tmpDiv.textContent||'';
   const date=document.getElementById('f-date').value;
   const heure=document.getElementById('f-heure').value;
   const comp=document.getElementById('f-compagnie').value;
