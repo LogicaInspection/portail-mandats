@@ -2110,14 +2110,17 @@ async function saveMandat(){
   const trans=parseFloat(document.getElementById('transport').value)||0;
   const commBase=parseFloat(document.getElementById('comm-base').value)||0;
   const fraisLab=parseFloat(document.getElementById('frais-lab').value)||0;
+  const heuresRed=parseFloat(document.getElementById('heures-redaction')?.value||0)||0;
+  const redactionMontant=heuresRed*150;
   const sansLettre=document.getElementById('sans-lettre').checked;
   const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
   const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
   const echanPrix=echantillonsSupp*125;
   const echanComm=echantillonsSupp*25;
   const bonus=getBonusNonCarte();
-  /* Frais de labo deja inclus dans le prix de base (donc PAS ajoutes au sous-total) */
-  const st=base+extrasSum+trans+echanPrix;
+  /* Frais de labo deja inclus dans le prix de base (donc PAS ajoutes au sous-total)
+     Heures de redaction (150$/h) ajoutees au sous-total comme revenu pur */
+  const st=base+redactionMontant+extrasSum+trans+echanPrix;
   const tps=st*0.05;
   const tvq=st*0.09975;
   const ttc=st+tps+tvq;
@@ -2125,11 +2128,12 @@ async function saveMandat(){
 
   let profit=0;
   if(comp==='geq'){
-    /* Frais de labo soustraits avant redevance (pass-through au labo) */
-    const avantR=base+extrasSum+echanPrix-fraisLab;
+    /* Frais de labo soustraits avant redevance (pass-through au labo)
+       Heures de redaction incluses dans le revenu sujet a redevance */
+    const avantR=base+redactionMontant+extrasSum+echanPrix-fraisLab;
     profit=avantR-(avantR*0.10)-commTot;
   } else {
-    profit=(base+extrasSum+echanPrix)-commTot-trans;
+    profit=(base+redactionMontant+extrasSum+echanPrix)-commTot-trans;
   }
 
   const {data:{session}}=await sb.auth.getSession();
