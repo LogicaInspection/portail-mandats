@@ -1090,8 +1090,6 @@ techsFiltered.forEach(t=>{
   populateTypeMandatSelect();
 
   if(id){
-
-  if(id){
     isNew=false;
     const {data:m}=await sb.from('mandats').select('*').eq('id',id).single();
     if(!m){toast('Mandat introuvable','err');return;}
