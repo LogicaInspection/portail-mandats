@@ -1573,11 +1573,13 @@ function recalcProfit(){
   if(profile.role!=='gestionnaire') return;
   const base=parseFloat(document.getElementById('prix-base').value)||0;
   const trans=parseFloat(document.getElementById('transport').value)||0;
+  const heuresRed=parseFloat(document.getElementById('heures-redaction')?.value||0)||0;
+  const redactionMontant=heuresRed*150;
   const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
   const echanPrix=echantillonsSupp*125;
   const fraisLab=parseFloat(document.getElementById('frais-lab').value)||0;
   /* Sous-total facture au client (frais de labo deja inclus dans le prix de base) */
-  const totalFacture=base+extrasSum+echanPrix;
+  const totalFacture=base+redactionMontant+extrasSum+echanPrix;
   const baseComm=parseFloat(document.getElementById('comm-base').value)||0;
   const extComm=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.commission)||0),0);
   const echanComm=echantillonsSupp*25;
