@@ -726,10 +726,14 @@ input[type=file]{display:none;}
     <div class="sec-title"><span class="ic">&#128176;</span> Finances</div>
     <div id="fin-type-display" class="fin-type-display"></div>
 
-    <div class="fin-card">
+<div class="fin-card">
       <div class="fin-row">
         <span class="fin-label">Prix de base</span>
         <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()">
+      </div>
+      <div class="fin-row geq-only" id="redaction-row">
+        <span class="fin-label">&#128221; Heures de r&eacute;daction <small style="color:#999;font-weight:400">(150$/h)</small></span>
+        <input class="fin-input" id="heures-redaction" type="number" min="0" max="20" step="0.5" value="0" oninput="recalc()">
       </div>
       <div class="fin-row" id="comm-base-row">
         <span class="fin-label">Commission tech (base)</span>
