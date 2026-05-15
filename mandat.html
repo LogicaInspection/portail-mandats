@@ -1503,10 +1503,12 @@ function updateHeaderTypePill(){
 function recalc(){
   const base=parseFloat(document.getElementById('prix-base').value)||0;
   const trans=parseFloat(document.getElementById('transport').value)||0;
+  const heuresRed=parseFloat(document.getElementById('heures-redaction')?.value||0)||0;
+  const redactionMontant=heuresRed*150;
   const extrasSum=extras.filter(e=>e.actif).reduce((s,e)=>s+(parseFloat(e.prix)||0),0);
   const echanPrix=echantillonsSupp*125;
   /* Frais de labo INCLUS dans le prix de base, donc PAS ajoutes au sous-total */
-  const st=base+extrasSum+trans+echanPrix;
+  const st=base+redactionMontant+extrasSum+trans+echanPrix;
   const tps=st*0.05;
   const tvq=st*0.09975;
   const ttc=st+tps+tvq;
