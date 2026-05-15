@@ -817,7 +817,27 @@ function selectTechChip(el) {
   document.getElementById('f-tech').value = el.dataset.techId || '';
   filterMandats();
 }
+async function loadMandatTypes() {
+  const { data, error } = await sb
+    .from('mandat_types')
+    .select('slug, label, couleur_hex')
+    .order('ordre');
+  if (error) { console.error('Erreur chargement mandat_types:', error); return; }
+  mandatTypesMap = {};
+  (data || []).forEach(t => {
+    mandatTypesMap[t.slug] = { label: t.label, couleur: t.couleur_hex };
+  });
+}
 
+function renderTypePill(slug) {
+  if (!slug) return '<span style="color:#bbb">&mdash;</span>';
+  const t = mandatTypesMap[slug];
+  if (!t) {
+    /* Slug inconnu : on affiche en gris avec le slug brut */
+    return `<span class="type-pill" title="Type non configure dans mandat_types">${slug}</span>`;
+  }
+  return `<span class="type-pill" style="background:${t.couleur};color:#1f2937" title="${t.label}">${t.label}</span>`;
+}
 async function loadMandats() {
   document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9203;</div><p>Chargement...</p></div>';
   const { data, error } = await sb
