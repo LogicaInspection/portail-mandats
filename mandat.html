@@ -94,7 +94,36 @@ body.test-mode .content { padding-top: 18px; }
 }
 
 /* Textarea Notes plus grande et redimensionnable */
-#f-notes{min-height:240px;resize:vertical;font-family:inherit;line-height:1.5;}
+/* Editeur riche Quill - integration dans le design */
+#f-notes-editor{
+  background:white;
+  border-radius:0 0 10px 10px;
+  font-family:inherit;
+  min-height:240px;
+  font-size:14px;
+  line-height:1.6;
+}
+#f-notes-editor .ql-editor{
+  min-height:200px;
+  padding:14px 16px;
+  font-size:14px;
+  line-height:1.6;
+}
+.ql-toolbar.ql-snow{
+  border:1.5px solid #e8eaed;
+  border-bottom:none;
+  border-radius:10px 10px 0 0;
+  background:#fafbfc;
+}
+.ql-container.ql-snow{
+  border:1.5px solid #e8eaed;
+  border-radius:0 0 10px 10px;
+}
+.ql-editor.ql-blank::before{
+  font-style:normal;
+  color:#aaa;
+  font-size:14px;
+}
 
 .sec{background:white;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid #f0f0f0;}
 .sec.logica-sec{border-left:4px solid #1565c0;}
