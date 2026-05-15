@@ -935,7 +935,7 @@ function updateStats() {
     document.getElementById('s-total').textContent = `${allMandats.length} au total`;
     document.getElementById('s-rapports').textContent = allMandats.filter(m => !m.statut_rapport_envoye).length;
     document.getElementById('s-nonpaye').textContent = allMandats.filter(m => !m.statut_paye).length;
-    const rev = mois.reduce((s, m) => s + (parseFloat(m.total_ttc) || 0), 0);
+    const rev = mois.reduce((s, m) => s + (parseFloat(m.sous_total) || 0), 0);
     document.getElementById('s-revenus').textContent = money(rev);
   } else if (profile.role === 'technicien') {
     const ann = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getFullYear() === annee);
