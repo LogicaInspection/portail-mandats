@@ -1204,7 +1204,11 @@ function fillForm(){
   document.getElementById('frais-lab').value=m.frais_lab||0;
   if(m.sans_lettre) document.getElementById('sans-lettre').checked=true;
   if(m.type_batiment) document.getElementById('f-type-batiment').value=m.type_batiment;
-  if(m.type_mandat) document.getElementById('f-type-mandat').value=m.type_mandat;
+if(m.type_mandat){
+    /* Si le slug n'est pas dans le select (type inactif/ancien), on l'ajoute */
+    ensureTypeOptionExists(m.type_mandat);
+    document.getElementById('f-type-mandat').value=m.type_mandat;
+  }
   if(m.courtier_nom) document.getElementById('f-courtier').value=m.courtier_nom;
   if(m.reference_client) document.getElementById('f-reference').value=m.reference_client;
   if(m.listing_url) document.getElementById('f-listing').value=m.listing_url;
