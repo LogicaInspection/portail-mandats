@@ -1410,6 +1410,13 @@ function onTypeMandatChange(){
   const avecEchan=TYPE_AVEC_ECHAN.includes(type);
   const avecLettre=TYPE_AVEC_LETTRE.includes(type);
 
+  /* Reset echantillons si le nouveau type ne supporte pas les echantillons.
+     Sinon on garderait des residus invisibles qui faussent les calculs. */
+  if(!avecEchan && echantillonsSupp !== 0){
+    echantillonsSupp = 0;
+    document.getElementById('echan-count').textContent = '0';
+  }
+
   document.getElementById('special-btns').style.display=avecEchan?'flex':'none';
   document.getElementById('echan-wrap').style.display=avecEchan?'flex':'none';
   /* Bonus visible pour tous les mandats GEQ (pas seulement certains types) */
