@@ -95,20 +95,30 @@ body.test-mode .content { padding-top: 18px; }
 
 /* Textarea Notes plus grande et redimensionnable */
 /* Editeur riche Quill - integration dans le design */
-#f-notes-editor{
+#f-notes-editor,
+#m-body-editor,
+#mf-body-editor{
   background:white;
   border-radius:0 0 10px 10px;
   font-family:inherit;
-  min-height:240px;
   font-size:14px;
   line-height:1.6;
 }
-#f-notes-editor .ql-editor{
-  min-height:200px;
+#f-notes-editor{min-height:240px;}
+#m-body-editor{min-height:300px;}
+#mf-body-editor{min-height:200px;}
+
+#f-notes-editor .ql-editor,
+#m-body-editor .ql-editor,
+#mf-body-editor .ql-editor{
   padding:14px 16px;
   font-size:14px;
   line-height:1.6;
 }
+#f-notes-editor .ql-editor{min-height:200px;}
+#m-body-editor .ql-editor{min-height:260px;}
+#mf-body-editor .ql-editor{min-height:160px;}
+
 .ql-toolbar.ql-snow{
   border:1.5px solid #e8eaed;
   border-bottom:none;
@@ -870,7 +880,7 @@ input[type=file]{display:none;}
     </div>
     <div class="mfield"><label>Destinataire</label><input id="m-to" type="email"></div>
     <div class="mfield"><label>Sujet</label><input id="m-subj" type="text"></div>
-    <div class="mfield"><label>Message</label><textarea id="m-body"></textarea></div>
+    <div class="mfield"><label>Message</label><div id="m-body-editor"></div></div>
     <div id="m-attach-info" style="font-size:12px;color:#888;margin-bottom:10px;padding:10px;background:#f8f9fa;border-radius:8px;display:none;"></div>
     <div class="mfooter">
       <button class="btn-cancel" onclick="closeEmailModal()">Annuler</button>
@@ -943,7 +953,7 @@ input[type=file]{display:none;}
 
     <div class="mfield">
       <label>Message</label>
-      <textarea id="mf-body" rows="6" style="width:100%;padding:10px;border:1.5px solid #e8eaed;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+      <div id="mf-body-editor"></div>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:20px;border-top:1px solid #f3f4f6;">
@@ -1461,6 +1471,8 @@ function addExtra(){
 /* ===== TYPES DE MANDAT (charges depuis Supabase) ===== */
 let mandatTypesMap = {};  /* cache : { slug: {label, couleur, actif} } */
   let notesEditor = null;  /* Instance Quill pour Notes du mandat */
+let emailBodyEditor = null;  /* Instance Quill pour modal "Envoyer un courriel" */
+let factureBodyEditor = null;  /* Instance Quill pour modal "Envoyer la facture" */
 /* Toolbar de l'editeur riche - set complet */
 const QUILL_TOOLBAR=[
   [{'header':[2,3,false]}],
@@ -1504,6 +1516,34 @@ function setEditorHTML(quill,html){
   const safe=html?DOMPurify.sanitize(html):'';
   quill.root.innerHTML=safe||'';
 }
+
+/* Convertit du texte brut (avec \n) en HTML propre pour pre-remplir les templates email.
+   Double saut de ligne = nouveau paragraphe. Simple = saut de ligne dans le paragraphe.
+   Detecte aussi les URLs et les rend cliquables. */
+function plainToHtml(text){
+  if(!text) return '';
+  const urlRegex=/(https?:\/\/[^\s<>"']+)/g;
+  return text
+    .split(/\n\n+/)
+    .map(p=>{
+      const escaped=p
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;');
+      const linked=escaped.replace(urlRegex,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+      return '<p>'+linked.replace(/\n/g,'<br>')+'</p>';
+    })
+    .join('');
+}
+
+/* Convertit du HTML en texte brut (pour les emails Calendar ou autres usages plain text) */
+function htmlToPlain(html){
+  if(!html) return '';
+  const tmp=document.createElement('div');
+  tmp.innerHTML=html;
+  return (tmp.textContent||'').trim();
+}
+
 async function loadMandatTypes(){
   const { data, error } = await sb
     .from('mandat_types')
@@ -2284,6 +2324,7 @@ async function saveMandat(){
     bonus_non_carte:bonus>0,
     sous_total:st,tps:tps,tvq:tvq,total_ttc:ttc,
     commission_totale:commTot,profit:profit,
+    notes:getEditorHTML(notesEditor)||null,
     statut_assignation:statutAssign,
     assigne_le:assigneLe,
     reclame_le:reclameLe,
@@ -2533,10 +2574,15 @@ function openEmailModal(type){
   currentEmailType=type;
   const content=getEmailContent(type);
   if(!content) return;
+  /* Lazy init de l'editeur Quill au premier ouverture du modal */
+  if(!emailBodyEditor){
+    emailBodyEditor=initRichEditor('m-body-editor','Message...');
+  }
   document.getElementById('modal-email-title').textContent=content.subj;
   document.getElementById('m-to').value=mandat.client_email||'';
   document.getElementById('m-subj').value=content.subj;
-  document.getElementById('m-body').value=content.body;
+  /* Pre-remplir l'editeur riche avec le template converti en HTML */
+  setEditorHTML(emailBodyEditor,plainToHtml(content.body));
   const ai=document.getElementById('m-attach-info');
   if(content.attachNote){ai.textContent=content.attachNote;ai.style.display='block';}
   else{ai.style.display='none';}
@@ -2604,11 +2650,14 @@ async function sendEmail(){
   if(!token||Date.now()>=expiry){toast('Veuillez connecter Gmail','err');return;}
   const to=document.getElementById('m-to').value.trim();
   const subj=document.getElementById('m-subj').value.trim();
-  const body=document.getElementById('m-body').value.trim();
+  /* Recupere le HTML de l'editeur Quill (sanitize via DOMPurify) */
+  const bodyHtml=getEditorHTML(emailBodyEditor);
   if(!to){toast('Adresse courriel requise','err');return;}
+  if(!bodyHtml.trim()){toast('Le message ne peut pas etre vide','err');return;}
   if(!await confirmTestAction('Envoyer un VRAI courriel a '+to)) return;
   toast('Envoi en cours...');
-  const mime=['Content-Type: text/plain; charset="UTF-8"','MIME-Version: 1.0','To: '+to,'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=','',body].join('\r\n');
+  /* Email envoye en text/html pour preserver la mise en page Quill */
+  const mime=['Content-Type: text/html; charset="UTF-8"','MIME-Version: 1.0','To: '+to,'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=','',bodyHtml].join('\r\n');
   const encoded=btoa(unescape(encodeURIComponent(mime))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   const resp=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{
     method:'POST',
@@ -3578,16 +3627,22 @@ async function openFactureModal(){
   }
   document.getElementById('mf-numero').textContent=numFact;
 
+  /* Lazy init de l'editeur Quill au premier ouverture du modal */
+  if(!factureBodyEditor){
+    factureBodyEditor=initRichEditor('mf-body-editor','Message accompagnant la facture...');
+  }
+
   /* Subject + body par defaut */
   const clientNom=document.getElementById('f-client-nom').value||'Client';
   const totalEst=lines.reduce((s,l)=>s+l.montant,0)*1.14975;
   document.getElementById('mf-subj').value='Facture '+numFact+' - '+ci.nom;
-  document.getElementById('mf-body').value=
+  const bodyText=
     'Bonjour '+clientNom+',\n\n'+
     'Vous trouverez ci-jointe votre facture no '+numFact+' au montant de '+formatMoneyFR(totalEst)+'.\n\n'+
     'Modalites de paiement: '+ci.modalites+'.\n\n'+
     'Pour toute question, n\'hesitez pas a me contacter.\n\n'+
     'Cordialement,';
+  setEditorHTML(factureBodyEditor,plainToHtml(bodyText));
 
   document.getElementById('modal-facture').style.display='flex';
 }
@@ -3653,7 +3708,8 @@ async function sendFacture(){
   const comp=document.getElementById('f-compagnie').value;
   const ci=getCompanyInfo(comp);
   const subj=document.getElementById('mf-subj').value.trim();
-  const body=document.getElementById('mf-body').value.trim();
+  /* Recupere le HTML de l'editeur Quill (sanitize via DOMPurify) */
+  const body=getEditorHTML(factureBodyEditor);
   const cci=ci.comptable_email;
 
   const boundary='----=_FactureBoundary_'+Date.now();
@@ -3668,7 +3724,7 @@ async function sendFacture(){
     'Content-Type: multipart/mixed; boundary="'+boundary+'"',
     '',
     '--'+boundary,
-    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Type: text/html; charset="UTF-8"',
     'Content-Transfer-Encoding: quoted-printable',
     '',
     body.replace(/=/g,'=3D'),
