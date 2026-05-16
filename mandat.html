@@ -1518,19 +1518,19 @@ function setEditorHTML(quill,html){
 }
 
 /* Convertit du texte brut (avec \n) en HTML propre pour pre-remplir les templates email.
-   Double saut de ligne = nouveau paragraphe. Simple = saut de ligne dans le paragraphe. */
+   Chaque ligne devient son propre paragraphe (compatible Quill qui normalise le HTML). */
 function plainToHtml(text){
   if(!text) return '';
   const urlRegex=/(https?:\/\/[^\s<>"']+)/g;
   return text
-    .split(/\n\n+/)
-    .map(p=>{
-      const escaped=p
+    .split('\n')
+    .map(line=>{
+      const escaped=line
         .replace(/&/g,'&amp;')
         .replace(/</g,'&lt;')
         .replace(/>/g,'&gt;');
       const linked=escaped.replace(urlRegex,'<a href="$1" target="_blank" rel="noopener">$1</a>');
-      return '<p>'+linked.replace(/\n/g,'<br>')+'</p>';
+      return linked.trim()===''?'<p><br></p>':'<p>'+linked+'</p>';
     })
     .join('');
 }
@@ -2594,10 +2594,9 @@ function openEmailModal(type){
   document.getElementById('modal-email-title').textContent=content.subj;
   document.getElementById('m-to').value=mandat.client_email||'';
   document.getElementById('m-subj').value=content.subj;
-  /* Pre-remplir avec template + signature auto selon la compagnie */
-  const compagnie = document.getElementById('f-compagnie').value;
-  const bodyHtml = plainToHtml(content.body) + buildSignatureHtml(compagnie);
-  setEditorHTML(emailBodyEditor, bodyHtml);
+  /* Pre-remplir avec le template (la signature sera ajoutee au moment de l'envoi
+     car Quill ne supporte pas les tags <div>, <table>, <img> qu'on a dans les signatures) */
+  setEditorHTML(emailBodyEditor, plainToHtml(content.body));
   const ai=document.getElementById('m-attach-info');
   if(content.attachNote){ai.textContent=content.attachNote;ai.style.display='block';}
   else{ai.style.display='none';}
@@ -2666,14 +2665,16 @@ async function sendEmail(){
   const to=document.getElementById('m-to').value.trim();
   const subj=document.getElementById('m-subj').value.trim();
   /* Recupere le HTML de l'editeur Quill (sanitize via DOMPurify) */
-  const bodyHtml=getEditorHTML(emailBodyEditor);
+  const bodyHtmlEdite=getEditorHTML(emailBodyEditor);
   if(!to){toast('Adresse courriel requise','err');return;}
-  if(!bodyHtml.trim()){toast('Le message ne peut pas etre vide','err');return;}
+  if(!bodyHtmlEdite.trim()){toast('Le message ne peut pas etre vide','err');return;}
   if(!await confirmTestAction('Envoyer un VRAI courriel a '+to)) return;
   toast('Envoi en cours...');
   /* From: header avec nom UTF-8 encode pour eviter les bugs d'encodage */
   const compagnie = document.getElementById('f-compagnie').value;
   const fromHeader = buildFromHeader(compagnie);
+  /* Ajout de la signature complete (avec logo + table + divs) au moment de l'envoi */
+  const bodyHtml = bodyHtmlEdite + buildSignatureHtml(compagnie);
   const headers = [
     'Content-Type: text/html; charset="UTF-8"',
     'MIME-Version: 1.0',
@@ -3667,9 +3668,8 @@ async function openFactureModal(){
     'Modalites de paiement: '+ci.modalites+'.\n\n'+
     'Pour toute question, n\'hesitez pas a me contacter.\n\n'+
     'Cordialement,';
-  /* Pre-remplir avec template + signature auto selon la compagnie */
-  const bodyHtml = plainToHtml(bodyText) + buildSignatureHtml(comp);
-  setEditorHTML(factureBodyEditor, bodyHtml);
+  /* Pre-remplir avec le template (la signature sera ajoutee au moment de l'envoi) */
+  setEditorHTML(factureBodyEditor, plainToHtml(bodyText));
 
   document.getElementById('modal-facture').style.display='flex';
 }
@@ -3736,7 +3736,9 @@ async function sendFacture(){
   const ci=getCompanyInfo(comp);
   const subj=document.getElementById('mf-subj').value.trim();
   /* Recupere le HTML de l'editeur Quill (sanitize via DOMPurify) */
-  const body=getEditorHTML(factureBodyEditor);
+  const bodyEdite=getEditorHTML(factureBodyEditor);
+  /* Ajout de la signature complete au moment de l'envoi */
+  const body=bodyEdite + buildSignatureHtml(comp);
   const cci=ci.comptable_email;
 
   const boundary='----=_FactureBoundary_'+Date.now();
