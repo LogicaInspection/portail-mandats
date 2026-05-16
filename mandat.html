@@ -1372,14 +1372,36 @@ function onTypeMandatChange(){
   const type=document.getElementById('f-type-mandat').value;
   const isGest=profile.role==='gestionnaire';
 
-  if(PRIX_AUTO[type]&&parseFloat(document.getElementById('prix-base').value)===0){
-    document.getElementById('prix-base').value=PRIX_AUTO[type];
+  /* Helper: detecte si la valeur actuelle vient d'un auto-fill precedent.
+     Si oui (ou 0), on peut l'ecraser avec le prix du nouveau type.
+     Sinon (valeur custom), on respecte la saisie manuelle. */
+  function isAutoFill(val, lookup){
+    const v = parseFloat(val) || 0;
+    if(v === 0) return true;
+    return Object.values(lookup).includes(v);
   }
-  if(COMM_AUTO[type]&&isGest&&parseFloat(document.getElementById('comm-base').value)===0){
-    document.getElementById('comm-base').value=COMM_AUTO[type];
+
+  /* Prix de base : applique le nouveau prix auto si l'ancienne valeur etait un auto-fill */
+  const prixInput = document.getElementById('prix-base');
+  if(isAutoFill(prixInput.value, PRIX_AUTO)){
+    prixInput.value = PRIX_AUTO[type] || 0;
   }
-  if(FRAIS_LAB[type]&&isGest&&parseFloat(document.getElementById('frais-lab').value)===0){
-    document.getElementById('frais-lab').value=FRAIS_LAB[type];
+
+  /* Commission tech : meme logique (gestionnaire seulement) */
+  if(isGest){
+    const commInput = document.getElementById('comm-base');
+    if(isAutoFill(commInput.value, COMM_AUTO)){
+      commInput.value = COMM_AUTO[type] || 0;
+    }
+  }
+
+  /* Frais de labo : meme logique (gestionnaire seulement).
+     Reset a 0 si le nouveau type n'a pas de frais labo. */
+  if(isGest){
+    const labInput = document.getElementById('frais-lab');
+    if(isAutoFill(labInput.value, FRAIS_LAB)){
+      labInput.value = FRAIS_LAB[type] || 0;
+    }
   }
 
   const avecEchan=TYPE_AVEC_ECHAN.includes(type);
