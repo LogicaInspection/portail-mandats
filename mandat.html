@@ -37,9 +37,9 @@ body.test-mode .content { padding-top: 18px; }
 .test-banner .btn-exit-test:hover { background: #f59e0b; color: white; }
 /* ===================================== */
 
-/* ===== HEADER - 2 LIGNES (Suivi client + Actions) ===== */
-.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:white;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:18px;row-gap:8px;padding:10px 28px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.15);align-items:center;}
-.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;grid-row:1/3;}
+/* ===== HEADER simple (1 ligne) ===== */
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.15);}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;}
 .btn-back:hover{background:rgba(255,255,255,0.2);}
 .hcenter{display:flex;align-items:center;gap:10px;}
 #htitle{font-size:16px;font-weight:600;}
@@ -51,41 +51,47 @@ body.test-mode .content { padding-top: 18px; }
   letter-spacing:0.3px;color:#1f2937;background:#f3f4f6;white-space:nowrap;
   max-width:280px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;
 }
-.hright{display:flex;gap:8px;align-items:center;grid-row:1/3;}
+.hright{display:flex;gap:8px;align-items:center;}
 
-/* ===== Ligne 2 du header : Suivi client + Actions ===== */
-.header-row2{grid-column:1/4;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);}
+/* ===== SECTION "Suivi du mandat" (sous le header, pleine largeur) ===== */
+.sec.suivi-mandat-sec{border-left:4px solid #4caf50;margin-bottom:18px;}
+.suivi-mandat-row{display:flex;align-items:center;gap:14px;padding:6px 0;flex-wrap:wrap;}
+.suivi-mandat-row + .suivi-mandat-row{border-top:1px solid #f0f1f3;padding-top:14px;margin-top:6px;}
+.suivi-mandat-label{font-size:11px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;min-width:115px;flex-shrink:0;}
+.suivi-mandat-pills{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1;}
 
-.header-statut-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.header-statut-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:0.7px;text-transform:uppercase;white-space:nowrap;}
-.header-statut-pills{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
-.header-statut-pill{
-  display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:14px;
-  font-size:11.5px;font-weight:600;cursor:pointer;
-  border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.55);
+/* ===== Pills "Suivi client" (cliquables) ===== */
+.statut-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:18px;
+  font-size:13px;font-weight:600;cursor:pointer;
+  border:1.5px solid #e8eaed;background:#fafbfc;color:#888;
   transition:all 0.18s;white-space:nowrap;
 }
-.header-statut-pill:hover{background:rgba(255,255,255,0.12);color:white;border-color:rgba(255,255,255,0.3);}
-.header-statut-pill.active{font-weight:700;border-width:1.5px;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
-.header-statut-required{color:#ffab40;font-size:11px;font-weight:600;animation:dirty-blink 1.6s ease-in-out infinite;}
+.statut-pill:hover{background:#f3f4f6;color:#444;border-color:#d0d4d9;transform:translateY(-1px);}
+.statut-pill.active{font-weight:700;border-width:2px;transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,0.08);}
 
-/* ===== Badges actions (Confirmation / Facture / Rapport) ===== */
-.header-actions-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto;}
-.header-actions-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:0.7px;text-transform:uppercase;white-space:nowrap;}
-.header-actions-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-.header-action-badge{
-  display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;
-  font-size:11px;font-weight:600;
-  border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);
-  transition:all 0.2s;white-space:nowrap;cursor:default;
+/* Avertissement orange si statut non choisi */
+.statut-required{color:#ff8f00;font-size:13px;font-weight:600;animation:dirty-blink 1.6s ease-in-out infinite;display:none;}
+.statut-required.show{display:inline;}
+
+/* ===== Badges "Actions" (read-only, s'allument auto) ===== */
+.action-badge{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:16px;
+  font-size:12.5px;font-weight:600;cursor:default;
+  border:1.5px solid #e8eaed;background:#fafbfc;color:#aaa;
+  transition:all 0.2s;white-space:nowrap;
 }
-.header-action-badge.on{
-  background:#1b5e20;border-color:#2e7d32;color:#a5d6a7;
-  box-shadow:0 2px 6px rgba(46,125,50,0.4);
+.action-badge.on{
+  background:#e8f5e9;border-color:#4caf50;color:#1b5e20;
+  box-shadow:0 2px 6px rgba(76,175,80,0.18);
 }
-.header-action-badge.on .ck-mini{color:#a5d6a7;font-weight:700;}
-.ck-mini{display:inline-block;width:13px;height:13px;border-radius:50%;border:1.5px solid currentColor;text-align:center;line-height:9px;font-size:9px;}
-.header-action-badge.on .ck-mini{background:rgba(255,255,255,0.15);border-color:#a5d6a7;}.btn-save{background:#4caf50;border:none;color:white;padding:10px 22px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 2px 8px rgba(76,175,80,0.3);}
+.action-badge .ck-mini{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;
+  border:1.5px solid currentColor;
+  font-size:10px;font-weight:700;line-height:1;
+}
+.action-badge.on .ck-mini{background:#4caf50;border-color:#4caf50;color:white;}.btn-save{background:#4caf50;border:none;color:white;padding:10px 22px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 2px 8px rgba(76,175,80,0.3);}
 .btn-save:hover{background:#43a047;}
 .btn-save.dirty{box-shadow:0 0 0 3px rgba(255,152,0,0.4),0 2px 8px rgba(76,175,80,0.3);animation:save-pulse 2s ease-in-out infinite;}
 @keyframes save-pulse{0%,100%{box-shadow:0 0 0 3px rgba(255,152,0,0.4),0 2px 8px rgba(76,175,80,0.3);}50%{box-shadow:0 0 0 6px rgba(255,152,0,0.2),0 2px 8px rgba(76,175,80,0.3);}}
@@ -554,32 +560,32 @@ input[type=file]{display:none;}
     <button id="btn-del" class="btn-del" style="display:none" onclick="deleteMandat()">&#128465;</button>
     <button class="btn-save" id="btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
   </div>
+</div>
 
-  <!-- Ligne 2 : Suivi client (a gauche) + Actions automatiques (a droite) -->
-  <div class="header-row2" id="header-row2" style="display:none">
-    <div class="header-statut-wrap">
-      <span class="header-statut-label">Suivi client</span>
-      <span class="header-statut-required" id="header-statut-required" style="display:none">&#9888;</span>
-      <div class="header-statut-pills" id="header-statut-pills"></div>
+<div class="content">
+
+  <!-- ===== Section "Suivi du mandat" - Suivi client + Actions ===== -->
+  <div class="sec suivi-mandat-sec" id="sec-suivi-mandat" style="display:none">
+    <div class="suivi-mandat-row">
+      <span class="suivi-mandat-label">Suivi client</span>
+      <span class="statut-required" id="statut-required">&#9888;&#65039; Choisir un statut</span>
+      <div class="suivi-mandat-pills" id="suivi-statut-pills"></div>
     </div>
-    <div class="header-actions-wrap">
-      <span class="header-actions-label">Actions</span>
-      <div class="header-actions-row">
-        <span class="header-action-badge" id="action-conf" title="Confirmation envoyee au client">
+    <div class="suivi-mandat-row">
+      <span class="suivi-mandat-label">Actions</span>
+      <div class="suivi-mandat-pills">
+        <span class="action-badge" id="action-conf" title="S'allume automatiquement lorsque la confirmation est envoyee au client">
           <span class="ck-mini" id="ck-conf"></span> Confirmation envoy&eacute;e
         </span>
-        <span class="header-action-badge" id="action-fact" title="Facture envoyee">
+        <span class="action-badge" id="action-fact" title="S'allume automatiquement lorsque la facture est envoyee">
           <span class="ck-mini" id="ck-fact"></span> Facture envoy&eacute;e
         </span>
-        <span class="header-action-badge" id="action-rapp" title="Rapport / Analyse envoye">
+        <span class="action-badge" id="action-rapp" title="S'allume automatiquement lorsque le rapport est envoye">
           <span class="ck-mini" id="ck-rapp"></span> Rapport envoy&eacute;
         </span>
       </div>
     </div>
   </div>
-</div>
-
-<div class="content">
 
   <div class="sec alert-sec" id="sec-alerte" style="display:none">
     <div class="sec-title"><span class="ic">&#128680;</span> Commission non inscrite</div>
@@ -2308,14 +2314,13 @@ async function saveMandat(){
   /* Validation: statut de contact OBLIGATOIRE */
   if(!currentStatutContact){
     toast('Veuillez selectionner un statut Suivi client dans le haut de la page','err');
-    /* Flash l'indicateur dans le header */
-    const reqIndicator=document.getElementById('header-statut-required');
-    if(reqIndicator){
-      reqIndicator.style.display='inline';
-      reqIndicator.style.fontSize='14px';
-      setTimeout(()=>{reqIndicator.style.fontSize='11px';},800);
+    /* Flash la section pour attirer l'attention */
+    const sec=document.getElementById('sec-suivi-mandat');
+    if(sec){
+      sec.style.transition='box-shadow 0.3s';
+      sec.style.boxShadow='0 0 0 3px rgba(255,143,0,0.5)';
+      setTimeout(()=>{sec.style.boxShadow='';},1200);
     }
-    /* Scroll vers le haut pour voir le picker */
     window.scrollTo({top:0,behavior:'smooth'});
     return;
   }
@@ -3019,31 +3024,31 @@ function updateGcalStatus(){
 let contactModalState={type:'appel',resultat:'pas_reponse'};
 
 function renderStatutContactPills(){
-  /* Pills affichees dans le header (visible uniquement quand un mandat est charge) */
-  const row2=document.getElementById('header-row2');
-  const pillsRow=document.getElementById('header-statut-pills');
+  /* Section "Suivi du mandat" (blanche, sous le header) */
+  const sec=document.getElementById('sec-suivi-mandat');
+  const pillsRow=document.getElementById('suivi-statut-pills');
   if(!pillsRow) return;
-  /* Cache la ligne 2 du header si pas de mandat */
+  /* Cache la section si pas de mandat (page d'accueil ou erreur) */
   if(!mandat && isNew===false){
-    if(row2) row2.style.display='none';
+    if(sec) sec.style.display='none';
     return;
   }
-  if(row2) row2.style.display='flex';
+  if(sec) sec.style.display='block';
   pillsRow.innerHTML=STATUTS_CONTACT.map(s=>{
     const isActive=s.id===currentStatutContact;
     const style=isActive
       ?`background:${s.bg};color:${s.color};border-color:${s.color};`
       :'';
-    return `<button class="header-statut-pill ${isActive?'active':''}"
+    return `<button class="statut-pill ${isActive?'active':''}"
                     style="${style}"
                     onclick="changeStatutContact('${s.id}')">
               ${s.icon} ${s.label}
             </button>`;
   }).join('');
-  /* Indicateur visuel si pas encore choisi */
-  const reqIndicator=document.getElementById('header-statut-required');
-  if(reqIndicator){
-    reqIndicator.style.display=currentStatutContact?'none':'inline';
+  /* Avertissement orange si statut non choisi */
+  const req=document.getElementById('statut-required');
+  if(req){
+    req.classList.toggle('show',!currentStatutContact);
   }
 }
 
