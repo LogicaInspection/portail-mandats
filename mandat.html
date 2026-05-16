@@ -233,66 +233,71 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 .btn-mode:hover{border-color:#bbb;}
 .btn-mode.on{border-color:#1565c0;background:#e3f0ff;color:#1565c0;font-weight:600;}
 
-.fin-card{background:#f8f9fa;border-radius:12px;padding:20px;margin-bottom:16px;}
+/* ===== FINANCES (Phase 3 - compacte et pro) ===== */
+.fin-card{background:#f8f9fa;border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.fin-card-titre{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #ecedef;}
 
-/* ===== Bloc PAIEMENT RECU ===== */
-.paiement-card{background:#fff;border:1.5px solid #e8eaed;border-radius:12px;padding:16px 18px;margin-top:14px;}
+/* ===== Bloc PAIEMENT RECU (compact Phase 3) ===== */
+.paiement-card{background:#fff;border:1.5px solid #e8eaed;border-radius:10px;padding:12px 14px;margin-top:10px;}
 .paiement-card.paid{border-color:#4caf50;background:#f1f8f4;box-shadow:0 2px 8px rgba(76,175,80,0.12);}
-.paiement-card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px;}
-.paiement-card-title .ic{font-size:16px;}
-.paiement-card-title .paid-badge{margin-left:auto;font-size:11px;font-weight:700;color:#1b5e20;background:#c8e6c9;padding:3px 10px;border-radius:12px;display:none;}
+.paiement-card-title{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #ecedef;}
+.paiement-card-title .ic{font-size:14px;}
+.paiement-card-title .paid-badge{margin-left:auto;font-size:10px;font-weight:700;color:#1b5e20;background:#c8e6c9;padding:2px 8px;border-radius:10px;display:none;}
 .paiement-card.paid .paiement-card-title .paid-badge{display:inline-block;}
 
-.paiement-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.paiement-modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+@media (max-width:1300px){.paiement-modes{grid-template-columns:1fr 1fr;}}
 .btn-paiement{
-  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  display:flex;align-items:center;gap:5px;padding:7px 8px;
   border:1.5px solid #e8eaed;background:white;color:#555;
-  border-radius:10px;cursor:pointer;font-size:12.5px;font-weight:600;
+  border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:600;
   transition:all 0.18s;text-align:left;
 }
 .btn-paiement:hover{border-color:#4caf50;background:#f1f8f4;}
-.btn-paiement.on{background:#4caf50;color:white;border-color:#4caf50;box-shadow:0 2px 8px rgba(76,175,80,0.3);}
-.btn-paiement .pic{font-size:16px;}
+.btn-paiement.on{background:#4caf50;color:white;border-color:#4caf50;box-shadow:0 2px 6px rgba(76,175,80,0.3);}
+.btn-paiement .pic{font-size:13px;}
 
-.paiement-notes{margin-top:12px;}
-.paiement-notes label{display:block;font-size:11px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;}
+.paiement-notes{margin-top:10px;}
+.paiement-notes label{display:block;font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;}
 .paiement-notes input{
-  width:100%;padding:9px 12px;font-size:13px;
-  border:1.5px solid #e8eaed;border-radius:8px;font-family:inherit;
+  width:100%;padding:7px 10px;font-size:12.5px;
+  border:1.5px solid #e8eaed;border-radius:6px;font-family:inherit;
 }
 .paiement-notes input:focus{border-color:#4caf50;outline:none;box-shadow:0 0 0 3px rgba(76,175,80,0.1);}
 
 .btn-clear-paiement{
-  background:transparent;border:none;color:#999;font-size:12px;
-  cursor:pointer;padding:6px 0;margin-top:6px;text-decoration:underline;
+  background:transparent;border:none;color:#999;font-size:11px;
+  cursor:pointer;padding:5px 0;margin-top:4px;text-decoration:underline;
   display:none;
 }
 .btn-clear-paiement:hover{color:#c62828;}
 .paiement-card.paid .btn-clear-paiement{display:inline-block;}
-.fin-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;}
+.fin-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #ecedef;}
 .fin-row:last-child{border:none;}
-.fin-row.total{background:#e8f5e9;border-radius:10px;padding:14px 16px;margin-top:8px;border:none;}
-.fin-row.comm{background:#e3f0ff;border-radius:10px;padding:14px 16px;border:none;}
-.fin-row.profit{background:#fff3e0;border-radius:10px;padding:14px 16px;border:none;margin-top:4px;}
-.fin-row.tax{color:#999;font-size:13px;}
+.fin-row.total{background:#e8f5e9;border-radius:8px;padding:10px 14px;margin-top:6px;border:none;}
+.fin-row.comm{background:#e3f0ff;border-radius:8px;padding:10px 14px;border:none;}
+.fin-row.profit{background:#fff3e0;border-radius:8px;padding:10px 14px;border:none;margin-top:3px;}
+.fin-row.tax{color:#777;font-size:12px;padding:5px 0;}
+.fin-row.tax-grouped{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:5px 0;border-bottom:1px solid #ecedef;}
+.fin-row.tax-grouped > div{display:flex;justify-content:space-between;color:#777;font-size:12px;}
 
 .bonus-label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;}
 .bonus-label input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:#4caf50;flex-shrink:0;}
-.fin-label{font-size:14px;color:#444;display:flex;align-items:center;gap:8px;}
-.fin-label.bold{font-weight:700;color:#1a1a2e;font-size:15px;}
+.fin-label{font-size:13px;color:#444;display:flex;align-items:center;gap:6px;}
+.fin-label.bold{font-weight:700;color:#1a1a2e;font-size:14px;}
 .fin-label.comm-color{color:#1565c0;font-weight:700;}
 .fin-label.profit-color{color:#e65100;font-weight:700;}
-.fin-value{font-weight:600;font-size:14px;color:#222;}
-.fin-value.big{font-size:18px;font-weight:800;}
-.fin-value.comm-val{color:#1565c0;font-size:18px;font-weight:800;}
-.fin-value.profit-val{color:#e65100;font-size:18px;font-weight:800;}
+.fin-value{font-weight:600;font-size:13px;color:#222;}
+.fin-value.big{font-size:17px;font-weight:800;}
+.fin-value.comm-val{color:#1565c0;font-size:17px;font-weight:800;}
+.fin-value.profit-val{color:#e65100;font-size:17px;font-weight:800;}
 
 /* Bouton Envoyer la facture */
 .btn-facture{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;margin-top:14px;padding:14px;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;margin-top:10px;padding:11px;
   background:linear-gradient(135deg,#1565c0,#1976d2);color:white;
-  border:none;border-radius:10px;font-size:14px;font-weight:600;
+  border:none;border-radius:8px;font-size:13px;font-weight:600;
   cursor:pointer;transition:all 0.2s;
   box-shadow:0 2px 8px rgba(21,101,192,0.3);
 }
@@ -352,24 +357,24 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 }
 .btn-preview-pdf:hover{background:#e3f0ff;}
 
-.fin-input{width:110px;padding:8px 12px;border:1.5px solid #e8eaed;border-radius:8px;font-size:14px;text-align:right;background:white;outline:none;transition:border 0.2s;}
+.fin-input{width:100px;padding:6px 10px;border:1.5px solid #e8eaed;border-radius:7px;font-size:13px;text-align:right;background:white;outline:none;transition:border 0.2s;}
 .fin-input:focus{border-color:#1a1a2e;}
 .fin-input.small{width:100%;font-size:13px;padding:6px 8px;}
 
 .fin-type-display{
   background:linear-gradient(to right,#fff3e0,#fff8f0);
-  border-left:4px solid #ff9800;
-  border-radius:8px;
-  padding:10px 14px;
-  margin-bottom:14px;
-  font-size:13px;
+  border-left:3px solid #ff9800;
+  border-radius:6px;
+  padding:7px 12px;
+  margin-bottom:10px;
+  font-size:12px;
   font-weight:600;
   color:#bf360c;
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:6px;
 }
-.fin-type-display:before{content:"\1F4CB";font-size:14px;}
+.fin-type-display:before{content:"\1F4CB";font-size:13px;}
 .fin-type-display.empty{display:none;}
 
 .extra-name-input{
@@ -442,14 +447,14 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 .contact-opt-btn:hover{border-color:#6a1b9a;color:#6a1b9a;}
 .contact-opt-btn.on{border-color:#6a1b9a;background:#f3e5f5;color:#6a1b9a;}
 
-.extras-wrap{background:#f8f9fa;border-radius:12px;padding:14px 12px;margin:12px 0;}
+.extras-wrap{background:#f8f9fa;border-radius:10px;padding:10px 12px;margin:8px 0;}
 .extra-row{display:grid;grid-template-columns:26px 1fr 72px 72px 30px;gap:6px;align-items:center;padding:9px 4px;border-bottom:1px solid #eee;}
 .extra-row:last-child{border:none;}
 .extra-check{width:18px;height:18px;cursor:pointer;accent-color:#1a1a2e;}
 .extra-name{font-size:13px;color:#333;font-weight:500;}
 .extra-label{font-size:11px;color:#999;text-align:right;margin-bottom:2px;}
 .btn-rm{padding:4px 8px;border:none;border-radius:6px;background:#ffebee;color:#e53935;cursor:pointer;font-size:14px;}
-.btn-add-extra{margin-top:10px;padding:8px 16px;border:2px dashed #ccc;border-radius:9px;background:none;color:#999;font-size:13px;cursor:pointer;width:100%;transition:all 0.2s;}
+.btn-add-extra{margin-top:8px;padding:6px 14px;border:1.5px dashed #ccc;border-radius:7px;background:none;color:#999;font-size:12px;cursor:pointer;width:100%;transition:all 0.2s;}
 .btn-add-extra:hover{border-color:#1a1a2e;color:#1a1a2e;}
 
 .special-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
@@ -464,7 +469,7 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 .btn-echan-pm.minus:hover{background:#e53935;color:white;}
 .echan-count{font-size:18px;font-weight:800;color:#1a1a2e;min-width:24px;text-align:center;}
 
-.frais-lab-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff3e0;border-radius:10px;margin-top:8px;border:1px solid #ffe0b2;}
+.frais-lab-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff3e0;border-radius:8px;margin-top:6px;border:1px solid #ffe0b2;}
 .frais-lab-label{font-size:13px;color:#e65100;font-weight:600;display:flex;align-items:center;gap:8px;}
 .sans-lettre-row{display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f8f9fa;border-radius:8px;margin-top:6px;font-size:13px;color:#666;}
 .sans-lettre-row input{width:auto;}
@@ -912,13 +917,9 @@ input[type=file]{display:none;}
         <span id="bonus-status" style="font-size:12px;color:#999">&mdash;</span>
       </div>
 
-      <div class="fin-row tax">
-        <span class="fin-label">Sous-total</span>
-        <span class="fin-value" id="sous-total">0,00 $</span>
-      </div>
-      <div class="fin-row tax">
-        <span class="fin-label">TPS (5%)</span>
-        <span class="fin-value" id="tps-val">0,00 $</span>
+      <div class="fin-row tax-grouped">
+        <div><span>Sous-total</span><span class="fin-value" id="sous-total">0,00 $</span></div>
+        <div><span>TPS (5%)</span><span class="fin-value" id="tps-val">0,00 $</span></div>
       </div>
       <div class="fin-row tax">
         <span class="fin-label">TVQ (9,975%)</span>
