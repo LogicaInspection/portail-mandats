@@ -357,7 +357,38 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 }
 .btn-preview-pdf:hover{background:#e3f0ff;}
 
-.fin-input{width:100px;padding:6px 10px;border:1.5px solid #e8eaed;border-radius:7px;font-size:13px;text-align:right;background:white;outline:none;transition:border 0.2s;}
+/* ===== PHASE 4 - Validation commission (gestionnaire) ===== */
+.commission-validation{
+  margin-top:8px;padding:9px 12px;
+  background:#fffde7;border:1.5px solid #ffd54f;border-radius:8px;
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;
+  transition:all 0.25s;
+}
+.commission-validation.validated{background:#e8f5e9;border-color:#4caf50;}
+.commission-validation .ck-valid{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border:2px solid #ffc107;border-radius:4px;
+  cursor:pointer;color:transparent;font-weight:700;font-size:12px;
+  transition:all 0.2s;flex-shrink:0;
+}
+.commission-validation.validated .ck-valid{background:#4caf50;border-color:#4caf50;color:white;}
+.commission-validation .ck-valid:hover{transform:scale(1.05);}
+.commission-validation-text{flex:1;color:#5d4037;font-weight:600;}
+.commission-validation.validated .commission-validation-text{color:#1b5e20;}
+.commission-validation-meta{font-size:10.5px;color:#888;font-weight:500;}
+.commission-validation.validated .commission-validation-meta{color:#388e3c;}
+
+/* Quand commission validee : champ commission verrouille visuellement */
+.fin-input.locked{background:#f1f8f4;border-color:#a5d6a7;color:#1b5e20;font-weight:700;cursor:not-allowed;}
+
+/* Badge pour le tech (read-only) */
+.commission-status-tech{
+  margin-top:10px;padding:8px 12px;border-radius:8px;
+  display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
+}
+.commission-status-tech.pending{background:#fff3e0;border:1.5px solid #ffb74d;color:#bf6a00;}
+.commission-status-tech.validated{background:#e8f5e9;border:1.5px solid #4caf50;color:#1b5e20;}
 .fin-input:focus{border-color:#1a1a2e;}
 .fin-input.small{width:100%;font-size:13px;padding:6px 8px;}
 
@@ -847,6 +878,11 @@ input[type=file]{display:none;}
       <div class="comm-tech-val" id="tech-comm-val">&#8212;</div>
       <div class="comm-tech-sub">Commission pour ce mandat</div>
     </div>
+    <!-- Phase 4 - Statut validation pour le tech (read-only) -->
+    <div class="commission-status-tech pending" id="comm-status-tech" style="display:none">
+      <span id="comm-status-tech-icon">&#9203;</span>
+      <span id="comm-status-tech-text">En attente de validation par le gestionnaire</span>
+    </div>
     <!-- Case a cocher: Ajouter ce mandat a ma facture de commission -->
     <div class="add-facture-wrap" id="add-facture-wrap" style="display:none;">
       <label class="add-facture-label" for="cf-check" id="cf-label">
@@ -873,6 +909,14 @@ input[type=file]{display:none;}
       <div class="fin-row" id="comm-base-row">
         <span class="fin-label">Commission tech (base)</span>
         <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()">
+      </div>
+      <!-- Phase 4 - Validation commission (gestionnaire seulement) -->
+      <div class="commission-validation" id="commission-validation" style="display:none">
+        <span class="ck-valid" id="ck-valid-comm" onclick="toggleCommissionValidation()">&#10003;</span>
+        <div style="flex:1">
+          <div class="commission-validation-text" id="commission-validation-text">Commission &agrave; valider</div>
+          <div class="commission-validation-meta" id="commission-validation-meta"></div>
+        </div>
       </div>
     </div>
 
@@ -1391,6 +1435,9 @@ function fillForm(){
   currentModePaiement=m.mode_paiement||null;
   document.getElementById('notes-paiement').value=m.notes_paiement||'';
   renderModePaiement();
+
+  /* Phase 4 - Validation commission (affiche le widget + verrouille si validee) */
+  renderCommissionValidation();
   if(m.sans_lettre) document.getElementById('sans-lettre').checked=true;
   if(m.type_batiment) document.getElementById('f-type-batiment').value=m.type_batiment;
 if(m.type_mandat){
@@ -3301,6 +3348,115 @@ function renderModePaiement(){
   card.querySelectorAll('.btn-paiement').forEach(btn=>{
     btn.classList.toggle('on',btn.dataset.mode===currentModePaiement);
   });
+}
+
+/* ===== PHASE 4 - VALIDATION COMMISSION (gestionnaire) =====
+   Affiche un widget cochable pour que le gestionnaire valide la commission.
+   Une fois validee, le champ commission est verrouille visuellement.
+   Le tech voit un badge "Valide" ou "En attente". */
+async function renderCommissionValidation(){
+  if(!mandat) return;
+  const isGest = profile.role==='gestionnaire';
+  const valide = !!mandat.commission_validee;
+
+  /* Widget gestionnaire (cochable) */
+  const widget=document.getElementById('commission-validation');
+  if(widget){
+    widget.style.display = isGest ? 'flex' : 'none';
+    widget.classList.toggle('validated', valide);
+    const text=document.getElementById('commission-validation-text');
+    const meta=document.getElementById('commission-validation-meta');
+    if(text) text.textContent = valide ? 'Commission valid\u00e9e' : 'Valider la commission';
+    if(meta && valide && mandat.commission_validee_at){
+      const d=new Date(mandat.commission_validee_at);
+      const dStr=d.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
+      /* Recuperer le nom de la personne qui a valide */
+      let validePar='gestionnaire';
+      if(mandat.commission_validee_par && window.profilesCache){
+        const p=window.profilesCache[mandat.commission_validee_par];
+        if(p) validePar=`${p.prenom} ${p.nom}`;
+      }
+      meta.textContent=`Valid\u00e9e par ${validePar} le ${dStr}`;
+    } else if(meta){
+      meta.textContent = isGest ? 'Coche cette case quand la commission est correcte' : '';
+    }
+  }
+
+  /* Verrouille les champs si valide (gestionnaire seulement, le tech a deja read-only) */
+  const commInput=document.getElementById('comm-base');
+  const prixInput=document.getElementById('prix-base');
+  if(commInput){
+    if(valide && isGest){
+      commInput.classList.add('locked');
+      commInput.readOnly=true;
+    } else {
+      commInput.classList.remove('locked');
+      commInput.readOnly=false;
+    }
+  }
+
+  /* Badge cote tech (read-only) */
+  const techBadge=document.getElementById('comm-status-tech');
+  if(techBadge){
+    if(profile.role==='technicien'){
+      techBadge.style.display='flex';
+      if(valide){
+        techBadge.classList.remove('pending');
+        techBadge.classList.add('validated');
+        document.getElementById('comm-status-tech-icon').innerHTML='&#10004;';
+        document.getElementById('comm-status-tech-text').textContent='Commission valid\u00e9e par le gestionnaire';
+      } else {
+        techBadge.classList.remove('validated');
+        techBadge.classList.add('pending');
+        document.getElementById('comm-status-tech-icon').innerHTML='&#9203;';
+        document.getElementById('comm-status-tech-text').textContent='En attente de validation par le gestionnaire';
+      }
+    } else {
+      techBadge.style.display='none';
+    }
+  }
+}
+
+/* Toggle la validation de la commission par le gestionnaire */
+async function toggleCommissionValidation(){
+  if(profile.role !== 'gestionnaire'){
+    toast('Seul un gestionnaire peut valider la commission','err');
+    return;
+  }
+  if(!mandat || isNew){
+    toast('Sauvegarde le mandat d\'abord','err');
+    return;
+  }
+  const valide = !!mandat.commission_validee;
+  if(valide){
+    /* Devalider */
+    if(!await confirmTestAction('D\u00e9valider la commission (la commission redeviendra modifiable)')) return;
+    const {error}=await sb.from('mandats').update({
+      commission_validee:false,
+      commission_validee_at:null,
+      commission_validee_par:null,
+    }).eq('id',mandat.id);
+    if(error){toast('Erreur: '+error.message,'err');return;}
+    mandat.commission_validee=false;
+    mandat.commission_validee_at=null;
+    mandat.commission_validee_par=null;
+    toast('Commission d\u00e9valid\u00e9e');
+  } else {
+    /* Valider */
+    if(!await confirmTestAction('Valider la commission pour ce mandat')) return;
+    const now=new Date().toISOString();
+    const {error}=await sb.from('mandats').update({
+      commission_validee:true,
+      commission_validee_at:now,
+      commission_validee_par:profile.id,
+    }).eq('id',mandat.id);
+    if(error){toast('Erreur: '+error.message,'err');return;}
+    mandat.commission_validee=true;
+    mandat.commission_validee_at=now;
+    mandat.commission_validee_par=profile.id;
+    toast('Commission valid\u00e9e');
+  }
+  renderCommissionValidation();
 }
 
 function showRappelRow(iso){
