@@ -1518,8 +1518,7 @@ function setEditorHTML(quill,html){
 }
 
 /* Convertit du texte brut (avec \n) en HTML propre pour pre-remplir les templates email.
-   Double saut de ligne = nouveau paragraphe. Simple = saut de ligne dans le paragraphe.
-   Detecte aussi les URLs et les rend cliquables. */
+   Double saut de ligne = nouveau paragraphe. Simple = saut de ligne dans le paragraphe. */
 function plainToHtml(text){
   if(!text) return '';
   const urlRegex=/(https?:\/\/[^\s<>"']+)/g;
@@ -1536,12 +1535,26 @@ function plainToHtml(text){
     .join('');
 }
 
-/* Convertit du HTML en texte brut (pour les emails Calendar ou autres usages plain text) */
-function htmlToPlain(html){
-  if(!html) return '';
-  const tmp=document.createElement('div');
-  tmp.innerHTML=html;
-  return (tmp.textContent||'').trim();
+/* ===== ENCODAGE FROM: HEADER (fix bug "BÃ¢timent") =====
+   Force le From: avec nom encode UTF-8 base64 pour eviter les problemes
+   d'encodage du nom d'expediteur configure dans Gmail. */
+function buildFromHeader(compagnie){
+  const nomAffichage = compagnie==='geq'
+    ? 'GEQ - B\u00e2timent Conseil'
+    : 'Groupe Logica - Inspection en b\u00e2timent';
+  const emailExpediteur = localStorage.getItem('portail_gmail_email') || '';
+  if(!emailExpediteur) return null;
+  const nomEncode = '=?UTF-8?B?'+btoa(unescape(encodeURIComponent(nomAffichage)))+'?=';
+  return nomEncode+' <'+emailExpediteur+'>';
+}
+
+/* ===== SIGNATURES EMAIL =====
+   Recupere la signature HTML pour la compagnie donnee depuis le profil utilisateur. */
+function buildSignatureHtml(compagnie){
+  if(!profile) return '';
+  const sig = compagnie==='geq' ? profile.signature_geq : profile.signature_logica;
+  if(!sig) return '';
+  return '<br><br>'+sig;
 }
 
 async function loadMandatTypes(){
@@ -2581,8 +2594,10 @@ function openEmailModal(type){
   document.getElementById('modal-email-title').textContent=content.subj;
   document.getElementById('m-to').value=mandat.client_email||'';
   document.getElementById('m-subj').value=content.subj;
-  /* Pre-remplir l'editeur riche avec le template converti en HTML */
-  setEditorHTML(emailBodyEditor,plainToHtml(content.body));
+  /* Pre-remplir avec template + signature auto selon la compagnie */
+  const compagnie = document.getElementById('f-compagnie').value;
+  const bodyHtml = plainToHtml(content.body) + buildSignatureHtml(compagnie);
+  setEditorHTML(emailBodyEditor, bodyHtml);
   const ai=document.getElementById('m-attach-info');
   if(content.attachNote){ai.textContent=content.attachNote;ai.style.display='block';}
   else{ai.style.display='none';}
@@ -2656,8 +2671,18 @@ async function sendEmail(){
   if(!bodyHtml.trim()){toast('Le message ne peut pas etre vide','err');return;}
   if(!await confirmTestAction('Envoyer un VRAI courriel a '+to)) return;
   toast('Envoi en cours...');
+  /* From: header avec nom UTF-8 encode pour eviter les bugs d'encodage */
+  const compagnie = document.getElementById('f-compagnie').value;
+  const fromHeader = buildFromHeader(compagnie);
+  const headers = [
+    'Content-Type: text/html; charset="UTF-8"',
+    'MIME-Version: 1.0',
+    'To: '+to,
+    'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?='
+  ];
+  if(fromHeader) headers.push('From: '+fromHeader);
   /* Email envoye en text/html pour preserver la mise en page Quill */
-  const mime=['Content-Type: text/html; charset="UTF-8"','MIME-Version: 1.0','To: '+to,'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=','',bodyHtml].join('\r\n');
+  const mime=headers.concat(['',bodyHtml]).join('\r\n');
   const encoded=btoa(unescape(encodeURIComponent(mime))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   const resp=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{
     method:'POST',
@@ -3642,7 +3667,9 @@ async function openFactureModal(){
     'Modalites de paiement: '+ci.modalites+'.\n\n'+
     'Pour toute question, n\'hesitez pas a me contacter.\n\n'+
     'Cordialement,';
-  setEditorHTML(factureBodyEditor,plainToHtml(bodyText));
+  /* Pre-remplir avec template + signature auto selon la compagnie */
+  const bodyHtml = plainToHtml(bodyText) + buildSignatureHtml(comp);
+  setEditorHTML(factureBodyEditor, bodyHtml);
 
   document.getElementById('modal-facture').style.display='flex';
 }
@@ -3716,6 +3743,9 @@ async function sendFacture(){
   const subjectEncoded='=?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=';
   const filename='Facture_'+numFact+'.pdf';
 
+  /* From: header avec nom UTF-8 encode pour eviter les bugs d'encodage */
+  const fromHeader = buildFromHeader(comp);
+
   const mimeParts=[
     'To: '+to,
     'Bcc: '+cci,
@@ -3738,6 +3768,7 @@ async function sendFacture(){
     '',
     '--'+boundary+'--',
   ];
+  if(fromHeader) mimeParts.splice(1, 0, 'From: '+fromHeader);
   const mime=mimeParts.join('\r\n');
 
   /* Encode le MIME en base64 URL-safe pour l'API Gmail */
