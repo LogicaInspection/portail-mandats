@@ -317,12 +317,12 @@ body.archives-mode { background: #faf5ed; }
 .badge-geq    { background: #fdecea; color: #b71c1c; }
 .badge-soumission { display:inline-block; background:#fff3e0; color:#e65100; font-size:10px; font-weight:600; padding:2px 8px; border-radius:6px; margin-left:6px; vertical-align:middle; letter-spacing:0.3px; }
 
-/* Type de mandat - pilule colorée selon mandat_types */
+/* Type de mandat - pilule */
 .type-pill {
   display: inline-block;
   padding: 3px 9px;
-  background: #f3f4f6;   /* gris fallback si slug inconnu */
-  color: #1f2937;        /* texte foncé, lisible sur tous les pastels */
+  background: #f3e9ff;
+  color: #6a1b9a;
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
@@ -641,7 +641,6 @@ const VIEW_AS_KEY = 'view_as_user_id';
 let realProfile = null;
 let profile = null;
 let allMandats = [];
-let mandatTypesMap = {};  // cache { slug: {label, couleur} } chargé une fois au démarrage
 let currentTab = 'tous';
 let timerInterval = null;
 
@@ -702,12 +701,11 @@ let timerInterval = null;
     document.getElementById('ministats-tech').style.display = 'flex';
   }
 
- /* Show export button only for Bass (real gestionnaire, not impersonated) */
+  /* Show export button only for Bass (real gestionnaire, not impersonated) */
   if (realProfile.role === 'gestionnaire' && session.user.id === BASS_UID) {
     document.getElementById('btn-export-excel').style.display = 'inline-block';
   }
 
-  await loadMandatTypes();
   await loadMandats();
 
   if (timerInterval) clearInterval(timerInterval);
@@ -817,27 +815,7 @@ function selectTechChip(el) {
   document.getElementById('f-tech').value = el.dataset.techId || '';
   filterMandats();
 }
-async function loadMandatTypes() {
-  const { data, error } = await sb
-    .from('mandat_types')
-    .select('slug, label, couleur_hex')
-    .order('ordre');
-  if (error) { console.error('Erreur chargement mandat_types:', error); return; }
-  mandatTypesMap = {};
-  (data || []).forEach(t => {
-    mandatTypesMap[t.slug] = { label: t.label, couleur: t.couleur_hex };
-  });
-}
 
-function renderTypePill(slug) {
-  if (!slug) return '<span style="color:#bbb">&mdash;</span>';
-  const t = mandatTypesMap[slug];
-  if (!t) {
-    /* Slug inconnu : on affiche en gris avec le slug brut */
-    return `<span class="type-pill" title="Type non configure dans mandat_types">${slug}</span>`;
-  }
-  return `<span class="type-pill" style="background:${t.couleur};color:#1f2937" title="${t.label}">${t.label}</span>`;
-}
 async function loadMandats() {
   document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9203;</div><p>Chargement...</p></div>';
   const { data, error } = await sb
@@ -908,10 +886,10 @@ async function updateFactBadge(){
 }
 
 function updateTabCounters() {
-  /* Filtre de base selon mode (actifs vs archives) */
-  const baseFilter = viewArchives
-    ? (m => m.statut_final === true)
-    : (m => m.statut_final !== true);
+  /* Filtre de base selon mode (actifs vs archives)
+     Phase 5 - utilise est_complete (nouveau), avec fallback statut_final (legacy) */
+  const isComplete = (m) => m.est_complete === true || m.statut_final === true;
+  const baseFilter = viewArchives ? isComplete : (m => !isComplete(m));
   /* Met a jour les compteurs des 4 grosses tuiles */
   const c = (filterFn) => allMandats.filter(m => baseFilter(m) && filterFn(m)).length;
   const set = (id, val) => {
@@ -935,7 +913,7 @@ function updateStats() {
     document.getElementById('s-total').textContent = `${allMandats.length} au total`;
     document.getElementById('s-rapports').textContent = allMandats.filter(m => !m.statut_rapport_envoye).length;
     document.getElementById('s-nonpaye').textContent = allMandats.filter(m => !m.statut_paye).length;
-    const rev = mois.reduce((s, m) => s + (parseFloat(m.sous_total) || 0), 0);
+    const rev = mois.reduce((s, m) => s + (parseFloat(m.total_ttc) || 0), 0);
     document.getElementById('s-revenus').textContent = money(rev);
   } else if (profile.role === 'technicien') {
     const ann = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getFullYear() === annee);
@@ -981,10 +959,12 @@ function getFilteredMandats() {
   const compagnie = document.getElementById('f-compagnie').value;
 
   let list = allMandats;
-  /* Filtre archives en premier (actifs vs finalises) */
+  /* Filtre archives en premier (actifs vs completes)
+     Phase 5 - utilise est_complete (nouveau), avec fallback statut_final (legacy) */
+  const isComplete = (m) => m.est_complete === true || m.statut_final === true;
   list = viewArchives
-    ? list.filter(m => m.statut_final === true)
-    : list.filter(m => m.statut_final !== true);
+    ? list.filter(isComplete)
+    : list.filter(m => !isComplete(m));
 
   /* Onglet pipeline (tuile cliquee) */
   if (currentTab === 'soumissions') {
@@ -1255,7 +1235,7 @@ function renderTable(list) {
     <div>Date</div><div>Client</div><div>Adresse</div>
     <div>Compagnie</div><div>Type</div><div>Technicien</div><div>Assignation</div>
     <div>Suivi</div>
-${isGest ? '<div>Total</div>' : ''}
+    ${isGest ? '<div>Total TTC</div>' : ''}
   </div>`;
 
   list.forEach(m => {
@@ -1284,14 +1264,14 @@ ${isGest ? '<div>Total</div>' : ''}
       </div>
       <div style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.adresse||'&mdash;'}</div>
       <div>${badge}</div>
-     <div>${renderTypePill(m.type_mandat)}</div>
+      <div>${m.type_mandat ? `<span class="type-pill">${m.type_mandat}</span>` : '<span style="color:#bbb">&mdash;</span>'}</div>
       <div style="font-size:13px;color:#555">${tech}</div>
       <div>
         ${getAssignBadge(m)}
         ${getTimerHtml(m)}
       </div>
       <div>${getSuiviBadge(m)}</div>
-      ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.sous_total ? money(m.sous_total) : '&mdash;'}</div>` : ''}
+      ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</div>` : ''}
     </div>`;
   });
 
