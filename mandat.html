@@ -2841,8 +2841,8 @@ function renderEmails(){
 
 function getEmailContent(type){
   if(!mandat) return null;
-  const dateStr=mandat.date_mandat?new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'[DATE a confirmer]';
-  const heureStr=mandat.heure_mandat?mandat.heure_mandat.substring(0,5):'[HEURE a confirmer]';
+  const dateStr=mandat.date_mandat?new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'[DATE \u00e0 confirmer]';
+  const heureStr=mandat.heure_mandat?mandat.heure_mandat.substring(0,5):'[HEURE \u00e0 confirmer]';
   const adresse=mandat.adresse||'[ADRESSE]';
   const googleGeq=profile.google_review_url_geq||'https://g.page/r/CcwF17qG5ZPEEBM/review';
   const googleLogica=profile.google_review_url_logica||'https://g.page/r/Cc71RgXYNZtdEBM/review';
@@ -2850,34 +2850,34 @@ function getEmailContent(type){
   const techNom=techSelect.selectedIndex>0?techSelect.options[techSelect.selectedIndex].text:profile.prenom+' '+profile.nom;
 
   if(type==='conf_logica') return {
-    subj:'Confirmation d inspection',
-    body:'Bonjour,\n\nFelicitation et merci de confier a Logica Inspection en batiment la delicate tache d inspecter votre nouvelle propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs a l inspection qui seront remplis lors de l inspection. Nous vous invitons a en prendre connaissance.\n6. De votre cote, nous vous demandons de nous faire parvenir par courriel une copie de la Declaration des Vendeurs (DV), la fiche de vente et des rapports d inspection anterieurs (si disponibles et moins de 5 ans) des que possible.\n7. La facture sera envoyee dans un Email distinct et les informations pour virement bancaire sont ecrites au bas de cette derniere.\n8. Les frais de l inspection sont payables le jour meme de l inspection.\n9. Frais pour services supplementaires ;\n- Inspection de drain de fondation par camera : 225 $ + taxes\n- Test de potabilite de l eau (Microbiologique) : 200 $ + taxes\n- Test d eau (metaux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la presence d amiante : 350 $ + taxes\n- Garage detache : (Varie entre 125$ et 250$)\n\nS il vous plait n hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
-    attachNote:'Pieces jointes : Convention de service + Norme de pratique'
+    subj:'Confirmation d\u2019inspection',
+    body:'Bonjour,\n\nF\u00e9licitations et merci de confier \u00e0 Logica Inspection en b\u00e2timent la d\u00e9licate t\u00e2che d\u2019inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l\u2019inspection qui seront remplis lors de l\u2019inspection. Nous vous invitons \u00e0 en prendre connaissance.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir par courriel une copie de la D\u00e9claration des Vendeurs (DV), la fiche de vente et des rapports d\u2019inspection ant\u00e9rieurs (si disponibles et moins de 5 ans) d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un courriel distinct et les informations pour virement bancaire sont \u00e9crites au bas de cette derni\u00e8re.\n8. Les frais de l\u2019inspection sont payables le jour m\u00eame de l\u2019inspection.\n9. Frais pour services suppl\u00e9mentaires :\n- Inspection de drain de fondation par cam\u00e9ra : 225 $ + taxes\n- Test de potabilit\u00e9 de l\u2019eau (microbiologique) : 200 $ + taxes\n- Test d\u2019eau (m\u00e9taux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la pr\u00e9sence d\u2019amiante : 350 $ + taxes\n- Garage d\u00e9tach\u00e9 : (varie entre 125 $ et 250 $)\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
+    attachNote:'Pi\u00e8ces jointes : Convention de service + Norme de pratique'
   };
   if(type==='rapp_logica') return {
-    subj:'Voici votre rapport d inspection',
-    body:'Bonjour,\n\nMerci d avoir choisi Logica Inspection en batiment. Il nous fait plaisir de vous faire parvenir votre rapport d inspection.\n\nDe plus, si vous avez ete satisfait par notre service, n hesitez pas a nous laisser un commentaire sur notre page en cliquant ici : '+googleLogica+'\n\nSi vous avez des questions concernant votre rapport d inspection, n hesitez pas a communiquer avec votre inspecteur et il se fera un plaisir de repondre a vos questions.\n\nBien a vous,',
-    attachNote:'Piece jointe : Rapport d inspection'
+    subj:'Voici votre rapport d\u2019inspection',
+    body:'Bonjour,\n\nMerci d\u2019avoir choisi Logica Inspection en b\u00e2timent. Il nous fait plaisir de vous faire parvenir votre rapport d\u2019inspection.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : '+googleLogica+'\n\nSi vous avez des questions concernant votre rapport d\u2019inspection, n\u2019h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur et il se fera un plaisir de r\u00e9pondre \u00e0 vos questions.\n\nBien \u00e0 vous,',
+    attachNote:'Pi\u00e8ce jointe : Rapport d\u2019inspection'
   };
   if(type==='conf_geq_inspection') return {
-    subj:'Confirmation d inspection',
-    body:'Bonjour,\n\nFelicitation et merci de confier a GEQ - Batiment Conseil la delicate tache d inspecter votre nouvelle propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs a l inspection.\n6. De votre cote, nous vous demandons de nous faire parvenir une copie de la Declaration des Vendeurs (DV) et des rapports d inspection anterieurs des que possible.\n7. La facture sera envoyee dans un Email distinct.\n8. Les frais de l inspection sont payables le jour meme.\n\nS il vous plait n hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
-    attachNote:'Pieces jointes : Convention de service + Norme de pratique'
+    subj:'Confirmation d\u2019inspection',
+    body:'Bonjour,\n\nF\u00e9licitations et merci de confier \u00e0 GEQ \u2013 B\u00e2timent Conseil la d\u00e9licate t\u00e2che d\u2019inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l\u2019inspection.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir une copie de la D\u00e9claration des Vendeurs (DV) et des rapports d\u2019inspection ant\u00e9rieurs d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un courriel distinct.\n8. Les frais de l\u2019inspection sont payables le jour m\u00eame.\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
+    attachNote:'Pi\u00e8ces jointes : Convention de service + Norme de pratique'
   };
   if(type==='conf_geq_expertise') return {
-    subj:'Confirmation d expertise technique',
-    body:'Bonjour,\n\nMerci de confier a GEQ - Batiment Conseil l investigation de la problematique qui affecte votre propriete.\n\nVoici quelques informations importantes pour le rendez-vous ;\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre technicien : '+techNom+'\n5. Mandat : '+(mandat.type_mandat||'')+'\n6. Tarifs : 575 + txs (Sans rapport) ou 825 + txs (Avec rapport)\n7. Les frais sont payables le jour meme. (Par virement Interac, Debit ou cheque)\n\nS il vous plait n hesitez pas a nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distinguees!',
+    subj:'Confirmation d\u2019expertise technique',
+    body:'Bonjour,\n\nMerci de confier \u00e0 GEQ \u2013 B\u00e2timent Conseil l\u2019investigation de la probl\u00e9matique qui affecte votre propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre technicien : '+techNom+'\n5. Mandat : '+(mandat.type_mandat||'')+'\n6. Tarifs : 580 $ + taxes (sans rapport) ou 830 $ + taxes (avec rapport)\n7. Les frais sont payables le jour m\u00eame (par virement Interac, d\u00e9bit ou ch\u00e8que).\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
     attachNote:''
   };
   if(type==='rapp_geq_expertise') return {
-    subj:'Rapport d expertise technique',
-    body:'Bonjour, tel que convenu vous trouverez en piece jointe votre rapport d investigation.\n\nDe plus, si vous avez ete satisfait par notre service, n hesitez pas a nous laisser un commentaire sur notre page en cliquant ici : '+googleGeq+'\n\nNous vous remercions de votre confiance et reiterons notre engagement a vous satisfaire.\n\nMerci !',
-    attachNote:'Piece jointe : Rapport d expertise'
+    subj:'Rapport d\u2019expertise technique',
+    body:'Bonjour,\n\nTel que convenu, vous trouverez en pi\u00e8ce jointe votre rapport d\u2019investigation.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : '+googleGeq+'\n\nNous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire.\n\nMerci !',
+    attachNote:'Pi\u00e8ce jointe : Rapport d\u2019expertise'
   };
   if(type==='rapp_geq_analyse') return {
-    subj:'Resultat d analyse de qualite de l air fongique',
-    body:'Bonjour,\nvous trouverez ci-joint les certificats d analyse des tests de qualite de l air fongique. N hesitez pas a communiquer avec nous pour toute question. De plus, si vous avez ete satisfait par notre service, n hesitez pas a nous laisser un commentaire : '+googleGeq+'\n\nMerci !',
-    attachNote:'Piece jointe : Resultats d analyse'
+    subj:'R\u00e9sultats d\u2019analyse de qualit\u00e9 de l\u2019air fongique',
+    body:'Bonjour,\n\nVous trouverez ci-joint les certificats d\u2019analyse des tests de qualit\u00e9 de l\u2019air fongique. N\u2019h\u00e9sitez pas \u00e0 communiquer avec nous pour toute question.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : '+googleGeq+'\n\nMerci !',
+    attachNote:'Pi\u00e8ce jointe : R\u00e9sultats d\u2019analyse'
   };
   return null;
 }
