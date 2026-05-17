@@ -389,6 +389,20 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 }
 .commission-status-tech.pending{background:#fff3e0;border:1.5px solid #ffb74d;color:#bf6a00;}
 .commission-status-tech.validated{background:#e8f5e9;border:1.5px solid #4caf50;color:#1b5e20;}
+
+/* Bouton discret "Signaler commission manquante" - dans la section Ma commission */
+.btn-signaler-comm{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;margin-top:8px;padding:8px 12px;
+  background:transparent;border:1.5px dashed #ef9a9a;color:#c62828;
+  border-radius:8px;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-signaler-comm:hover{background:#fee2e2;border-style:solid;}
+.btn-signaler-comm.sent{
+  background:#e8f5e9;border:1.5px solid #4caf50;color:#1b5e20;cursor:default;
+}
+.btn-signaler-comm.sent:hover{background:#e8f5e9;}
 .fin-input:focus{border-color:#1a1a2e;}
 .fin-input.small{width:100%;font-size:13px;padding:6px 8px;}
 
@@ -679,14 +693,6 @@ input[type=file]{display:none;}
     </div>
   </div>
 
-  <div class="sec alert-sec" id="sec-alerte" style="display:none">
-    <div class="sec-title"><span class="ic">&#128680;</span> Commission non inscrite</div>
-    <div class="alerte-commission">
-      <span class="alerte-msg" id="alerte-msg">Si ta commission n'a pas encore ete inscrite par le gestionnaire, tu peux envoyer une alerte.</span>
-      <button class="btn-alerte" id="btn-alerte-send" onclick="envoyerAlerte()">&#128680; Signaler commission manquante</button>
-    </div>
-  </div>
-
   <div class="sec reclamer-sec" id="sec-reclamer" style="display:none">
     <div class="reclamer-content">
       <div class="reclamer-info">
@@ -883,6 +889,10 @@ input[type=file]{display:none;}
       <span id="comm-status-tech-icon">&#9203;</span>
       <span id="comm-status-tech-text">En attente de validation par le gestionnaire</span>
     </div>
+    <!-- Bouton discret "Signaler commission manquante" (tech seulement) -->
+    <button class="btn-signaler-comm" id="btn-alerte-send" onclick="envoyerAlerte()" style="display:none">
+      <span>&#128680;</span> Signaler commission manquante au gestionnaire
+    </button>
     <!-- Case a cocher: Ajouter ce mandat a ma facture de commission -->
     <div class="add-facture-wrap" id="add-facture-wrap" style="display:none;">
       <label class="add-facture-label" for="cf-check" id="cf-label">
@@ -1367,12 +1377,21 @@ techsFiltered.forEach(t=>{
   }
   if(isTech){
     document.getElementById('sec-comm-tech').style.display='block';
-    if(!mandat||!mandat.commission_totale||mandat.commission_totale===0){
-      document.getElementById('sec-alerte').style.display='block';
+    /* Phase 4 - Bouton "Signaler commission manquante" visible si commission = 0 ou non validee */
+    const btnSignal=document.getElementById('btn-alerte-send');
+    if(btnSignal){
+      const commTot = mandat ? (parseFloat(mandat.commission_totale)||0) : 0;
+      const validee = mandat ? !!mandat.commission_validee : false;
+      /* Affiche le bouton si commission absente (=0) ou non validee */
+      btnSignal.style.display = (!validee || commTot===0) ? 'flex' : 'none';
     }
     if(mandat&&mandat.alerte_commission){
-      document.getElementById('btn-alerte-send').textContent='Alerte envoyee';
-      document.getElementById('btn-alerte-send').className='btn-alerte sent';
+      const btn=document.getElementById('btn-alerte-send');
+      if(btn){
+        btn.innerHTML='&#10003; Alerte envoy&eacute;e au gestionnaire';
+        btn.className='btn-signaler-comm sent';
+        btn.disabled=true;
+      }
     }
   }
   if(isGest){
@@ -2186,8 +2205,10 @@ async function envoyerAlerte(){
   if(!mandat){toast('Sauvegardez le mandat avant','err');return;}
   if(!await confirmTestAction('Envoyer une alerte au gestionnaire')) return;
   await sb.from('mandats').update({alerte_commission:true}).eq('id',mandat.id);
-  document.getElementById('btn-alerte-send').textContent='Alerte envoyee';
-  document.getElementById('btn-alerte-send').className='btn-alerte sent';
+  const btn=document.getElementById('btn-alerte-send');
+  btn.innerHTML='&#10003; Alerte envoy&eacute;e au gestionnaire';
+  btn.className='btn-signaler-comm sent';
+  btn.disabled=true;
   toast('Alerte envoyee au gestionnaire !');
 }
 
