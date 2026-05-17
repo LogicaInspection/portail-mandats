@@ -2082,14 +2082,18 @@ function setMode(mode){
 
 function getFinalConditions(){
   const m=mandat;
-  const commOk=(parseFloat(document.getElementById('comm-base').value)||0)>0;
-  const totalOk=(parseFloat(document.getElementById('total-ttc').textContent.replace(/[^0-9.]/g,''))||0)>0;
+  /* Phase 5 - Conditions revisees pour marquer un mandat complete :
+     - Statut Suivi client = Confirme (le client a accepte le mandat)
+     - Rapport / Analyse envoye
+     - Mode de paiement renseigne (peu importe lequel)
+     - Commission validee par gestionnaire */
+  const modePaie = m?m.mode_paiement:currentModePaiement;
   return [
-    {label:'Rapport / Analyse envoye',ok:m?m.statut_rapport_envoye:document.getElementById('st-rapp').classList.contains('on')},
-    {label:'Client paye',ok:m?m.statut_paye:document.getElementById('st-paye').classList.contains('on')},
-    {label:'Facture envoyee',ok:m?m.statut_facture_envoyee:document.getElementById('st-fact').classList.contains('on')},
-    {label:'Total entre',ok:totalOk},
-    {label:'Commission entree',ok:commOk},
+    {label:'Statut Suivi client = Confirm\u00e9',ok:currentStatutContact==='confirme'},
+    {label:'Rapport / Analyse envoy\u00e9',ok:m?m.statut_rapport_envoye:false},
+    {label:'Mode de paiement renseign\u00e9',ok:!!modePaie},
+    {label:'Facture envoy\u00e9e',ok:m?m.statut_facture_envoyee:false},
+    {label:'Commission valid\u00e9e par gestionnaire',ok:m?!!m.commission_validee:false},
   ];
 }
 
@@ -2097,50 +2101,85 @@ function updateFinalBtn(){
   const conds=getFinalConditions();
   const allOk=conds.every(c=>c.ok);
   const btn=document.getElementById('btn-final');
-  const isFinal=mandat&&mandat.statut_final;
-  /* Vocabulaire different si Suivi de chantier (multi-visites) */
-  const typeM=document.getElementById('f-type-mandat')?.value||'';
-  const isSuivi=typeM==='Suivi de chantier';
-  const labelFinal=isSuivi?'COMPLETE':'FINAL';
-  const labelAction=isSuivi?'Marquer mandat complete':'Marquer FINAL';
+  const isComplete=mandat&&mandat.est_complete;
 
-  if(isFinal){
-    btn.textContent=labelFinal;
+  if(isComplete){
+    btn.innerHTML='&#10003; Complete';
     btn.className='btn-final-header btn-final-done';
+    btn.title='Mandat complete (clique pour reactiver)';
   } else if(allOk){
-    btn.textContent=labelAction;
+    btn.innerHTML='&#10003; Marquer comme complete';
     btn.className='btn-final-header btn-final-ready';
+    btn.title='Toutes les conditions sont remplies, clique pour completer le mandat';
   } else {
     const done=conds.filter(c=>c.ok).length;
-    btn.textContent=done+'/'+conds.length+' '+labelFinal;
+    btn.innerHTML=done+'/'+conds.length+' &#10003;';
     btn.className='btn-final-header btn-final-pending';
+    /* Tooltip avec les conditions manquantes */
+    const missing=conds.filter(c=>!c.ok).map(c=>'\u2022 '+c.label).join('\n');
+    btn.title='Conditions manquantes:\n'+missing;
   }
 
+  /* Met a jour le panneau de progression cache (legacy compat) */
   const container=document.getElementById('final-checks');
-  container.innerHTML='';
-  conds.forEach(c=>{
-    const div=document.createElement('div');
-    div.className='final-check-item'+(c.ok?' ok':'');
-    div.innerHTML='<div class="chk">'+(c.ok?'&#10003;':'')+'</div>'+c.label;
-    container.appendChild(div);
-  });
+  if(container){
+    container.innerHTML='';
+    conds.forEach(c=>{
+      const div=document.createElement('div');
+      div.className='final-check-item'+(c.ok?' ok':'');
+      div.innerHTML='<div class="chk">'+(c.ok?'&#10003;':'')+'</div>'+c.label;
+      container.appendChild(div);
+    });
+  }
 }
 
 async function toggleFinal(){
+  const isComplete=mandat&&mandat.est_complete;
+
+  /* Si deja complete : on propose de reactiver le mandat */
+  if(isComplete){
+    if(!await confirmTestAction('R\u00e9activer ce mandat (il ne sera plus archiv\u00e9)')) return;
+    const {error}=await sb.from('mandats').update({
+      est_complete:false,
+      complete_at:null,
+      complete_par:null,
+      statut_final:false /* legacy */
+    }).eq('id',mandat.id);
+    if(error){toast('Erreur: '+error.message,'err');return;}
+    mandat.est_complete=false;
+    mandat.complete_at=null;
+    mandat.complete_par=null;
+    mandat.statut_final=false;
+    toast('Mandat r\u00e9activ\u00e9');
+    updateFinalBtn();
+    return;
+  }
+
+  /* Sinon : on verifie les conditions et on complete */
   const conds=getFinalConditions();
   const allOk=conds.every(c=>c.ok);
   if(!allOk){
-    const missing=conds.filter(c=>!c.ok).map(c=>c.label).join(', ');
-    toast('Manque: '+missing,'err');
+    const missing=conds.filter(c=>!c.ok).map(c=>'\u2022 '+c.label).join('\n');
+    toast('Conditions manquantes:\n'+missing,'err');
     return;
   }
   if(!mandat){toast('Sauvegardez le mandat avant','err');return;}
-  if(!await confirmTestAction('Marquer le mandat comme FINAL')) return;
-  const newVal=!mandat.statut_final;
-  await sb.from('mandats').update({statut_final:newVal}).eq('id',mandat.id);
-  mandat.statut_final=newVal;
-  toast(newVal?'Mandat marque FINAL !':'Statut FINAL retire');
-  updateFinalBtn();
+  if(!await confirmTestAction('Marquer le mandat comme COMPLETE et l\'archiver')) return;
+  const now=new Date().toISOString();
+  const {error}=await sb.from('mandats').update({
+    est_complete:true,
+    complete_at:now,
+    complete_par:profile.id,
+    statut_final:true /* legacy compat */
+  }).eq('id',mandat.id);
+  if(error){toast('Erreur: '+error.message,'err');return;}
+  mandat.est_complete=true;
+  mandat.complete_at=now;
+  mandat.complete_par=profile.id;
+  mandat.statut_final=true;
+  toast('Mandat complete et archive !');
+  /* Retour au dashboard apres 1.2s */
+  setTimeout(()=>{window.location.href='dashboard.html';},1200);
 }
 
 async function envoyerAlerte(){
