@@ -2492,6 +2492,9 @@ function toggleHistorique(){
 async function saveMandat(){
   const nom=document.getElementById('f-client-nom').value.trim();
   if(!nom){toast('Le nom du client est requis','err');return;}
+  /* Livraison B - Capturer l'ancien technicien_id avant la sauvegarde
+     pour detecter si on assigne un NOUVEAU tech (declencher la notif) */
+  const oldTechId = mandat ? (mandat.technicien_id||null) : null;
   /* Validation: statut de contact OBLIGATOIRE */
   if(!currentStatutContact){
     toast('Veuillez selectionner un statut Suivi client dans le haut de la page','err');
@@ -2694,6 +2697,35 @@ async function saveMandat(){
     updateReclamerBtn();
     /* Rafraichir l'historique pour voir les nouveaux evenements */
     loadHistorique();
+
+    /* ===== LIVRAISON B - NOTIFICATION EMAIL AU TECH ASSIGNE =====
+       Declenche l'envoi d'un mail au tech si :
+       - Un tech est assigne (techId != null)
+       - Le tech assigne n'est pas la personne qui sauvegarde (pas un self-assign)
+       - Le tech a change OU c'est une nouvelle assignation
+       - Le mode d'assignation est 'assigne' (pas pool, pas reclame) */
+    const currentUserId = session.user.id;
+    const isNewAssignment = !!techId && techId !== oldTechId;
+    const isAssignedToOther = techId !== currentUserId;
+    const isAssigneMode = statutAssign === 'assigne';
+    if (isNewAssignment && isAssignedToOther && isAssigneMode) {
+      /* Appel asynchrone "fire and forget" - n'attend pas la reponse pour ne pas bloquer l'UI */
+      sb.functions.invoke('notify-tech-assignment', {
+        body: {
+          mandat_id: mandat.id,
+          tech_id: techId,
+          assigneur_id: currentUserId,
+        },
+      }).then(({data, error}) => {
+        if (error) {
+          console.error('Notif tech failed:', error);
+          /* Pas de toast d'erreur visible - la sauvegarde a reussi, c'est le principal */
+        } else {
+          console.log('Notif tech envoyee:', data);
+        }
+      });
+    }
+
     toast('Sauvegarde !');
     markClean();
     setTimeout(()=>window.location.href='dashboard.html',800);
