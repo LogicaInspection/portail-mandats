@@ -4295,11 +4295,31 @@ function updateFactureStatus(){
 }
 
 /* ============================================================
-   AJOUT A MA FACTURE DE COMMISSION (cote tech)
+   AJOUT A MA FACTURE DE COMMISSION (Phase 6)
    ============================================================ */
 
+/* Variable globale: indique si ce mandat est deja dans une facture_tech */
+let mandatInFacture=null; /* {ligne_id, facture_id, statut} ou null */
+
+/* Verifie dans la BD si ce mandat est dans une facture_tech existante */
+async function checkMandatInFacture(){
+  if(!mandat||isNew){mandatInFacture=null;return;}
+  const {data,error}=await sb.from('factures_tech_lignes')
+    .select('id, facture_id, factures_tech(statut, numero)')
+    .eq('mandat_id',mandat.id)
+    .limit(1);
+  if(error||!data||!data.length){mandatInFacture=null;return;}
+  const l=data[0];
+  mandatInFacture={
+    ligne_id:l.id,
+    facture_id:l.facture_id,
+    statut:l.factures_tech?.statut||'draft',
+    numero:l.factures_tech?.numero||'',
+  };
+}
+
 /* Met a jour l'UI de la case "Ajouter a ma facture" selon le contexte */
-function updateAddFactureUI(){
+async function updateAddFactureUI(){
   const wrap=document.getElementById('add-facture-wrap');
   const chk=document.getElementById('cf-check');
   const info=document.getElementById('cf-info');
@@ -4313,27 +4333,53 @@ function updateAddFactureUI(){
   }
   wrap.style.display='block';
 
-  /* Cas 1: deja facturee (verrouille) */
-  if(mandat.commission_facturee){
+  /* Recharger l'etat depuis la BD */
+  await checkMandatInFacture();
+
+  /* Cas 1: deja dans une facture envoyee (verrouille) */
+  if(mandatInFacture && mandatInFacture.statut!=='draft'){
     wrap.classList.add('locked');
     chk.checked=true;
     chk.disabled=true;
     info.className='add-facture-info facturee';
-    info.textContent='D\u00e9j\u00e0 inclus dans une de tes factures envoy\u00e9es';
+    info.innerHTML='&#10003; Inclus dans la facture <strong>'+mandatInFacture.numero+'</strong> (envoy\u00e9e)';
     return;
   }
 
-  /* Cas 2: marquee pour facturation (sera dans prochaine facture) */
-  wrap.classList.remove('locked');
-  chk.disabled=false;
-  chk.checked=!!mandat.commission_a_facturer;
-  if(mandat.commission_a_facturer){
+  /* Cas 2: dans une facture draft */
+  if(mandatInFacture && mandatInFacture.statut==='draft'){
+    wrap.classList.remove('locked');
+    chk.disabled=false;
+    chk.checked=true;
     info.className='add-facture-info pending';
-    info.innerHTML='Sera inclus dans ta prochaine facture. <a href="ma-facturation.html" style="color:#6a1b9a;font-weight:600">Voir ma facturation &rarr;</a>';
-  } else {
-    info.className='add-facture-info';
-    info.textContent='Coche pour inclure ce mandat dans ta prochaine facture de commission a Bass.';
+    info.innerHTML='Ajout\u00e9 \u00e0 la facture <strong>'+mandatInFacture.numero+'</strong> (brouillon). <a href="ma-facturation.html" style="color:#6a1b9a;font-weight:600">Voir ma facturation &rarr;</a>';
+    return;
   }
+
+  /* Cas 3: pas encore facture - verifier conditions pour pouvoir l'ajouter */
+  const commissionValidee=!!mandat.commission_validee;
+  const modePaiement=!!mandat.mode_paiement;
+  const commTotale=parseFloat(mandat.commission_totale)||0;
+
+  if(!commissionValidee || !modePaiement || commTotale<=0){
+    wrap.classList.add('locked');
+    chk.checked=false;
+    chk.disabled=true;
+    const missing=[];
+    if(!modePaiement) missing.push('mode de paiement renseign\u00e9');
+    if(!commissionValidee) missing.push('commission valid\u00e9e par le gestionnaire');
+    if(commTotale<=0) missing.push('commission > 0');
+    info.className='add-facture-info';
+    info.innerHTML='&#9888;&#65039; <em>Conditions manquantes : '+missing.join(', ')+'</em>';
+    return;
+  }
+
+  /* Cas 4: ok pour ajouter */
+  wrap.classList.remove('locked');
+  chk.checked=false;
+  chk.disabled=false;
+  info.className='add-facture-info';
+  info.textContent='Coche pour ajouter ce mandat \u00e0 ta facture de commission.';
 }
 
 /* Quand le tech change l'etat de la case */
@@ -4342,39 +4388,50 @@ async function onAddFactureChange(){
   const chk=document.getElementById('cf-check');
   const newVal=chk.checked;
 
-  /* Securite supplementaire: empeche de changer si deja facturee */
-  if(mandat.commission_facturee){
-    toast('Ce mandat est deja facture','err');
-    chk.checked=true;
-    return;
-  }
-
-  /* Verifie que le tech a configure son entreprise */
   if(newVal){
-    const {data:p}=await sb.from('profiles')
-      .select('entreprise_nom, entreprise_adresse_l1')
-      .eq('id',profile.id).single();
-    if(!p||!p.entreprise_nom||!p.entreprise_adresse_l1){
-      toast('Configure d\u0027abord les coordonnees de ton entreprise','err');
+    /* AJOUTER : utiliser la fonction RPC pour creer/recuperer la facture draft */
+    const compagnie=document.getElementById('f-compagnie').value;
+    if(!compagnie){toast('Choisis une compagnie d\'abord','err');chk.checked=false;return;}
+
+    /* Recuperer (ou creer) la facture draft pour ce tech + cette compagnie */
+    const {data:factureId,error:rpcErr}=await sb.rpc('get_or_create_active_facture_tech',{
+      p_tech_id:profile.id,
+      p_compagnie:compagnie,
+    });
+    if(rpcErr){toast('Erreur: '+rpcErr.message,'err');chk.checked=false;return;}
+
+    /* Inserer une ligne avec snapshot des donnees */
+    const snapshotAdresse=document.getElementById('f-adresse').value||'';
+    const numFact=document.getElementById('f-num-facture')?.value||null;
+    const {error:insErr}=await sb.from('factures_tech_lignes').insert({
+      facture_id:factureId,
+      mandat_id:mandat.id,
+      montant_commission:parseFloat(mandat.commission_totale)||0,
+      snapshot_date_mandat:mandat.date_mandat||mandat.created_at?.split('T')[0]||null,
+      snapshot_client_nom:document.getElementById('f-client-nom').value||'-',
+      snapshot_adresse:snapshotAdresse,
+      snapshot_type_mandat:document.getElementById('f-type-mandat').value||'-',
+      snapshot_numero_facture_client:numFact,
+    });
+    if(insErr){
+      toast('Erreur: '+insErr.message,'err');
       chk.checked=false;
-      setTimeout(()=>{
-        if(confirm('Tu n\u0027as pas configure les coordonnees de ton entreprise.\n\nAller a la page de configuration maintenant ?')){
-          window.location.href='mon-entreprise.html';
-        }
-      },300);
       return;
     }
+    toast('Ajout\u00e9 \u00e0 ta facture');
+  } else {
+    /* RETIRER : delete la ligne */
+    if(!mandatInFacture){return;}
+    if(mandatInFacture.statut!=='draft'){
+      toast('Cette facture est d\u00e9j\u00e0 envoy\u00e9e, on ne peut plus retirer','err');
+      chk.checked=true;
+      return;
+    }
+    const {error}=await sb.from('factures_tech_lignes').delete().eq('id',mandatInFacture.ligne_id);
+    if(error){toast('Erreur: '+error.message,'err');chk.checked=true;return;}
+    toast('Retir\u00e9 de ta facture');
   }
-
-  const {error}=await sb.from('mandats').update({commission_a_facturer:newVal}).eq('id',mandat.id);
-  if(error){
-    toast('Erreur: '+error.message,'err');
-    chk.checked=!newVal;
-    return;
-  }
-  mandat.commission_a_facturer=newVal;
-  updateAddFactureUI();
-  toast(newVal?'Ajout\u00e9 \u00e0 ta prochaine facture':'Retir\u00e9 de ta facture');
+  await updateAddFactureUI();
 }
 
 
