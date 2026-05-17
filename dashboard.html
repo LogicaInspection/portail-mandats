@@ -865,7 +865,7 @@ async function updateTaskBadge(){
   updateFactBadge();
 }
 
-/* Compteur de mandats coches "Ajouter a ma facture" non encore factures */
+/* Compteur de mandats dans la facture draft active (Phase 6) */
 async function updateFactBadge(){
   const badge = document.getElementById('fact-badge');
   if(!badge) return;
@@ -874,13 +874,22 @@ async function updateFactBadge(){
     badge.className = 'fact-badge zero';
     return;
   }
-  const {data, error} = await sb.from('mandats')
+  /* Compter les lignes dans les factures draft du tech */
+  const {data:drafts, error} = await sb.from('factures_tech')
     .select('id')
     .eq('technicien_id', profile.id)
-    .eq('commission_a_facturer', true)
-    .eq('commission_facturee', false);
+    .eq('statut', 'draft');
   if(error){console.error(error);return;}
-  const total = (data||[]).length;
+  const draftIds = (drafts||[]).map(d=>d.id);
+  if(!draftIds.length){
+    badge.textContent='0';
+    badge.className='fact-badge zero';
+    return;
+  }
+  const {data:lignes} = await sb.from('factures_tech_lignes')
+    .select('id')
+    .in('facture_id', draftIds);
+  const total = (lignes||[]).length;
   badge.textContent = total;
   badge.className = 'fact-badge' + (total===0?' zero':'');
 }
