@@ -3405,24 +3405,100 @@ function getEmailContent(type){
   /* === CONFIRMATION D'INSPECTION FR === */
   if(type === 'conf_inspection_fr') return {
     subj:'Confirmation d\u2019inspection',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>F\u00e9licitations et merci de confier \u00e0 <strong>'+compNom+'</strong> la d\u00e9licate t\u00e2che d\u2019inspecter votre nouvelle propri\u00e9t\u00e9.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#f0f7ff;border-left:4px solid #1976d2;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 10px 0;font-weight:700;color:#1565c0;font-size:14px;letter-spacing:0.4px;">\uD83D\uDCC5 INFORMATIONS DE VOTRE RENDEZ-VOUS</p>'+
+        '<p style="margin:5px 0;"><strong>Date :</strong> '+dateStr+'</p>'+
+        '<p style="margin:5px 0;"><strong>Heure :</strong> '+heureStr+'</p>'+
+        '<p style="margin:5px 0;"><strong>Adresse :</strong> '+adresse+'</p>'+
+        '<p style="margin:5px 0;"><strong>Inspecteur :</strong> '+techNom+'</p>'+
+      '</td></tr></table>'+
+      '<p>Vous trouverez <strong>ci-joint les documents</strong> relatifs \u00e0 l\u2019inspection qui seront remplis lors de l\u2019intervention. Nous vous invitons \u00e0 en prendre connaissance.</p>'+
+      '<h3 style="color:#2e7d32;margin-top:22px;margin-bottom:10px;font-size:16px;">\u2705 \u00c0 nous transmettre avant l\u2019inspection</h3>'+
+      '<p>Merci de nous faire parvenir par courriel d\u00e8s que possible :</p>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#1976d2;">\u2022</strong> Une copie de la <strong>D\u00e9claration des Vendeurs (DV)</strong></p>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#1976d2;">\u2022</strong> La <strong>fiche de vente</strong></p>'+
+      '<p style="margin:7px 0 14px 14px;"><strong style="color:#1976d2;">\u2022</strong> Les <strong>rapports d\u2019inspection ant\u00e9rieurs</strong> (si disponibles et de moins de 5 ans)</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fff8e1;border-left:4px solid #f57c00;margin:18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:0;"><strong style="color:#e65100;">\u26A0\uFE0F Modalit\u00e9s de paiement :</strong> les frais d\u2019inspection sont <strong>payables le jour m\u00eame</strong>. La facture sera envoy\u00e9e dans un courriel distinct, avec les informations pour virement bancaire au bas.</p>'+
+      '</td></tr></table>'+
+      '<h3 style="color:#424242;margin-top:22px;margin-bottom:10px;font-size:16px;">\uD83D\uDCB0 Frais pour services suppl\u00e9mentaires</h3>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fafafa;border-left:4px solid #9e9e9e;margin:8px 0 18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:4px 0;">\u2022 <strong>Inspection de drain de fondation par cam\u00e9ra :</strong> 225 $ + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>Test de potabilit\u00e9 de l\u2019eau (microbiologique) :</strong> 200 $ + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>Test d\u2019eau (m\u00e9taux lourds) :</strong> 225 $ + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>Analyse de vermiculite pour la pr\u00e9sence d\u2019amiante :</strong> 350 $ + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>Garage d\u00e9tach\u00e9 :</strong> entre 125 $ et 250 $</p>'+
+      '</td></tr></table>'+
+      '<p>S\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.</p>'+
+      '<p>Veuillez accepter nos salutations les plus distingu\u00e9es !</p>',
     body:'Bonjour,\n\nF\u00e9licitations et merci de confier \u00e0 '+compNom+' la d\u00e9licate t\u00e2che d\u2019inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l\u2019inspection qui seront remplis lors de l\u2019inspection. Nous vous invitons \u00e0 en prendre connaissance.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir par courriel une copie de la D\u00e9claration des Vendeurs (DV), la fiche de vente et des rapports d\u2019inspection ant\u00e9rieurs (si disponibles et moins de 5 ans) d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un courriel distinct et les informations pour virement bancaire sont \u00e9crites au bas de cette derni\u00e8re.\n8. Les frais de l\u2019inspection sont payables le jour m\u00eame de l\u2019inspection.\n9. Frais pour services suppl\u00e9mentaires :\n- Inspection de drain de fondation par cam\u00e9ra : 225 $ + taxes\n- Test de potabilit\u00e9 de l\u2019eau (microbiologique) : 200 $ + taxes\n- Test d\u2019eau (m\u00e9taux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la pr\u00e9sence d\u2019amiante : 350 $ + taxes\n- Garage d\u00e9tach\u00e9 : (varie entre 125 $ et 250 $)\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
   };
 
   /* === CONFIRMATION OF INSPECTION EN === */
   if(type === 'conf_inspection_en') return {
     subj:'Confirmation of inspection',
+    bodyHtml:
+      '<p>Hello,</p>'+
+      '<p>Congratulations and thank you for entrusting <strong>'+compNomEn+'</strong> with the delicate task of inspecting your new property.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#f0f7ff;border-left:4px solid #1976d2;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 10px 0;font-weight:700;color:#1565c0;font-size:14px;letter-spacing:0.4px;">\uD83D\uDCC5 YOUR APPOINTMENT DETAILS</p>'+
+        '<p style="margin:5px 0;"><strong>Date:</strong> '+dateStrEn+'</p>'+
+        '<p style="margin:5px 0;"><strong>Time:</strong> '+heureStrEn+'</p>'+
+        '<p style="margin:5px 0;"><strong>Address:</strong> '+adresse+'</p>'+
+        '<p style="margin:5px 0;"><strong>Inspector:</strong> '+techNom+'</p>'+
+      '</td></tr></table>'+
+      '<p>Attached you will find <strong>documents related to the inspection</strong> that will be completed during the visit. We invite you to review them beforehand.</p>'+
+      '<h3 style="color:#2e7d32;margin-top:22px;margin-bottom:10px;font-size:16px;">\u2705 Please send us prior to the inspection</h3>'+
+      '<p>As soon as possible, kindly email us:</p>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#1976d2;">\u2022</strong> A copy of the <strong>Seller\u2019s Declaration (SD)</strong></p>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#1976d2;">\u2022</strong> The <strong>listing sheet</strong></p>'+
+      '<p style="margin:7px 0 14px 14px;"><strong style="color:#1976d2;">\u2022</strong> Any <strong>previous inspection reports</strong> (if available and less than 5 years old)</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fff8e1;border-left:4px solid #f57c00;margin:18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:0;"><strong style="color:#e65100;">\u26A0\uFE0F Payment terms:</strong> the inspection fees are <strong>payable on the day of the inspection</strong>. The invoice will be sent in a separate email, with bank transfer information at the bottom.</p>'+
+      '</td></tr></table>'+
+      '<h3 style="color:#424242;margin-top:22px;margin-bottom:10px;font-size:16px;">\uD83D\uDCB0 Additional services fees</h3>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fafafa;border-left:4px solid #9e9e9e;margin:8px 0 18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:4px 0;">\u2022 <strong>Foundation drain inspection by camera:</strong> $225 + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>Water potability test (microbiological):</strong> $200 + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>Water test (heavy metals):</strong> $225 + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>Vermiculite analysis for asbestos presence:</strong> $350 + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>Detached garage:</strong> between $125 and $250</p>'+
+      '</td></tr></table>'+
+      '<p>Please feel free to contact us if you have any questions.</p>'+
+      '<p>Best regards!</p>',
     body:'Hello,\n\nCongratulations and thank you for entrusting '+compNomEn+' with the delicate task of inspecting your new property.\n\nHere are some important details for the appointment :\n\n1. Date : '+dateStrEn+'\n2. Time : '+heureStrEn+'\n3. Address : '+adresse+'\n4. Name of your inspector : '+techNom+'\n5. Attached you will find documents related to the inspection that will be completed during the inspection. We invite you to review them.\n6. On your end, we kindly ask you to send us by email a copy of the Seller\u2019s Declaration (SD), the listing sheet, and any previous inspection reports (if available and less than 5 years old) as soon as possible.\n7. The invoice will be sent in a separate email, and the bank transfer information is provided at the bottom of the invoice.\n8. The inspection fees are payable on the day of the inspection.\n9. Fees for additional services :\n- Foundation drain inspection by camera : $225 + taxes\n- Water potability test (microbiological) : $200 + taxes\n- Water test (heavy metals) : $225 + taxes\n- Vermiculite analysis for asbestos presence : $350 + taxes\n- Detached garage : (varies between $125 and $250)\n\nPlease feel free to contact us if you have any questions.\n\nBest regards !',
   };
 
   /* === RAPPORT D'INSPECTION FR === */
   if(type === 'rapp_inspection_fr') return {
     subj:'Voici votre rapport d\u2019inspection',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Merci d\u2019avoir choisi <strong>'+compNom+'</strong>. Il nous fait plaisir de vous faire parvenir <strong>votre rapport d\u2019inspection</strong> en pi\u00e8ce jointe.</p>'+
+      '<p>Si vous avez des questions concernant votre rapport, n\u2019h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur au <strong>'+techPhone+'</strong> et il se fera un plaisir d\u2019y r\u00e9pondre.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fffbe6;border-left:4px solid #fbc02d;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 8px 0;font-weight:700;color:#f57f17;font-size:14px;letter-spacing:0.3px;">\u2B50 Votre avis nous est pr\u00e9cieux</p>'+
+        '<p style="margin:0;">Si vous avez \u00e9t\u00e9 satisfait de notre service, prenez 30 secondes pour nous laisser un commentaire : [GOOGLE:'+googleLink+']</p>'+
+      '</td></tr></table>'+
+      '<p>Bien \u00e0 vous,</p>',
     body:'Bonjour,\n\nMerci d\u2019avoir choisi '+compNom+'. Il nous fait plaisir de vous faire parvenir votre rapport d\u2019inspection.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : [GOOGLE:'+googleLink+']\n\nSi vous avez des questions concernant votre rapport d\u2019inspection, n\u2019h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur au '+techPhone+' et il se fera un plaisir de r\u00e9pondre \u00e0 vos questions.\n\nBien \u00e0 vous,',
   };
 
   /* === INSPECTION REPORT EN === */
   if(type === 'rapp_inspection_en') return {
     subj:'Your inspection report',
+    bodyHtml:
+      '<p>Hello,</p>'+
+      '<p>Thank you for choosing <strong>'+compNomEn+'</strong>. We are pleased to send you <strong>your inspection report</strong> attached.</p>'+
+      '<p>If you have any questions about your report, please contact your inspector at <strong>'+techPhone+'</strong> and he will be happy to answer them.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fffbe6;border-left:4px solid #fbc02d;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 8px 0;font-weight:700;color:#f57f17;font-size:14px;letter-spacing:0.3px;">\u2B50 Your feedback matters to us</p>'+
+        '<p style="margin:0;">If you were satisfied with our service, please take 30 seconds to leave us a review: [GOOGLE:'+googleLink+']</p>'+
+      '</td></tr></table>'+
+      '<p>Best regards,</p>',
     body:'Hello,\n\nThank you for choosing '+compNomEn+'. We are pleased to send you your inspection report.\n\nIf you were satisfied with our service, please feel free to leave us a review on our page by clicking here : [GOOGLE:'+googleLink+']\n\nIf you have any questions about your inspection report, do not hesitate to contact your inspector at '+techPhone+' and he will be happy to answer them.\n\nBest regards,',
   };
 
@@ -3460,60 +3536,209 @@ function getEmailContent(type){
   /* === CONFIRMATION D'EXPERTISE TECHNIQUE === */
   if(type === 'conf_expertise') return {
     subj:'Confirmation d\u2019expertise technique',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Merci de confier \u00e0 <strong>'+compNom+'</strong> l\u2019investigation de la probl\u00e9matique qui affecte votre propri\u00e9t\u00e9.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#f0f7ff;border-left:4px solid #1976d2;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 10px 0;font-weight:700;color:#1565c0;font-size:14px;letter-spacing:0.4px;">\uD83D\uDCC5 INFORMATIONS DE VOTRE RENDEZ-VOUS</p>'+
+        '<p style="margin:5px 0;"><strong>Date :</strong> '+dateStr+'</p>'+
+        '<p style="margin:5px 0;"><strong>Heure :</strong> '+heureStr+'</p>'+
+        '<p style="margin:5px 0;"><strong>Adresse :</strong> '+adresse+'</p>'+
+        '<p style="margin:5px 0;"><strong>Technicien :</strong> '+techNom+'</p>'+
+        '<p style="margin:5px 0;"><strong>Mandat :</strong> '+(mandat.type_mandat||'')+'</p>'+
+      '</td></tr></table>'+
+      '<h3 style="color:#424242;margin-top:22px;margin-bottom:10px;font-size:16px;">\uD83D\uDCB0 Tarification</h3>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fafafa;border-left:4px solid #9e9e9e;margin:8px 0 18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:4px 0;">\u2022 <strong>Expertise sans rapport :</strong> 580 $ + taxes</p>'+
+        '<p style="margin:4px 0;">\u2022 <strong>R\u00e9daction de rapport (au besoin) :</strong> 150 $/heure + taxes</p>'+
+        '<p style="margin:8px 0 0 0;font-size:13px;color:#666;font-style:italic;">D\u00e9lai de r\u00e9daction : maximum 5 jours ouvrables apr\u00e8s l\u2019intervention.</p>'+
+      '</td></tr></table>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fff8e1;border-left:4px solid #f57c00;margin:18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:0;"><strong style="color:#e65100;">\u26A0\uFE0F Modalit\u00e9s de paiement :</strong> les frais sont <strong>payables le jour m\u00eame</strong> de notre intervention (virement Interac, d\u00e9bit, cr\u00e9dit ou ch\u00e8que).</p>'+
+      '</td></tr></table>'+
+      '<p style="font-size:13px;color:#555;font-style:italic;">Note : des frais suppl\u00e9mentaires peuvent s\u2019appliquer dans le cas d\u2019une investigation sur une autre cause ou probl\u00e9matique.</p>'+
+      '<p>N\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.</p>'+
+      '<p>Veuillez accepter nos salutations les plus distingu\u00e9es !</p>',
     body:'Bonjour,\n\nMerci de confier \u00e0 '+compNom+' l\u2019investigation de la probl\u00e9matique qui affecte votre propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre technicien : '+techNom+'\n5. Mandat : '+(mandat.type_mandat||'')+'\n6. Tarifs : 580 $ + taxes (sans rapport) + 150 $/h de r\u00e9daction (avec rapport)\n7. Les frais de l\u2019investigation sont payables le jour m\u00eame de notre intervention (par virement Interac, d\u00e9bit, cr\u00e9dit ou ch\u00e8que).\n8. Frais pour services suppl\u00e9mentaires : Veuillez noter que des frais suppl\u00e9mentaires peuvent s\u2019ajouter dans le cas d\u2019une investigation sur une autre cause ou une autre probl\u00e9matique.\n9. D\u00e9lais de r\u00e9daction de rapport : Un maximum de 5 jours ouvrables est allou\u00e9 pour la r\u00e9daction du rapport.\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
   };
 
   /* === SOUMISSION EXPERTISE TECHNIQUE === */
   if(type === 'soum_expertise') return {
     subj:'Soumission \u2013 Expertise technique',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Comme convenu, vous trouverez dans ce courriel notre soumission pour <strong>l\u2019expertise technique</strong> sur votre propri\u00e9t\u00e9.</p>'+
+      '<h3 style="color:#2e7d32;margin-top:22px;margin-bottom:10px;font-size:16px;">\uD83C\uDFAF Notre objectif</h3>'+
+      '<p>Identifier la <strong>cause principale</strong> de la probl\u00e9matique qui affecte votre b\u00e2timent, qu\u2019il s\u2019agisse d\u2019une infiltration d\u2019eau, de moisissure, d\u2019un probl\u00e8me d\u2019humidit\u00e9, d\u2019odeurs persistantes ou de toute autre anomalie li\u00e9e \u00e0 l\u2019enveloppe ou au comportement du b\u00e2timent.</p>'+
+      '<p>Nous ne faisons pas seulement constater les sympt\u00f4mes : <strong>nous cherchons la source r\u00e9elle du probl\u00e8me</strong> afin de vous orienter vers la bonne solution, d\u2019\u00e9viter les travaux inutiles et de vous permettre de prendre des d\u00e9cisions \u00e9clair\u00e9es.</p>'+
+      '<h3 style="color:#424242;margin-top:22px;margin-bottom:10px;font-size:16px;">\uD83D\uDCB0 Tarification</h3>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fafafa;border-left:4px solid #9e9e9e;margin:8px 0 18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:6px 0;"><strong>Expertise verbale sur place :</strong> 580 $ + taxes</p>'+
+        '<p style="margin:4px 0 12px 12px;font-size:13px;color:#666;font-style:italic;">Inclut la visite, l\u2019analyse de la situation et nos recommandations verbales.</p>'+
+        '<p style="margin:6px 0;"><strong>Rapport \u00e9crit (au besoin) :</strong> 150 $/heure + taxes</p>'+
+        '<p style="margin:4px 0 4px 12px;font-size:13px;color:#666;font-style:italic;">Document officiel d\u00e9taill\u00e9 avec constats, causes probables et recommandations.</p>'+
+      '</td></tr></table>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fff8e1;border-left:4px solid #f57c00;margin:18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:0;"><strong style="color:#e65100;">\u26A0\uFE0F Cas exceptionnel :</strong> si nous ne sommes pas en mesure d\u2019identifier la cause principale, seuls les <strong>frais de d\u00e9placement de 350 $ + taxes</strong> seront factur\u00e9s.</p>'+
+      '</td></tr></table>'+
+      '<p style="font-style:italic;color:#555;">Notre approche est bas\u00e9e sur <strong>l\u2019exp\u00e9rience terrain, l\u2019analyse technique et la transparence</strong> \u2014 pas de zone grise, seulement des r\u00e9ponses concr\u00e8tes.</p>'+
+      '<p>Si vous avez des questions ou souhaitez planifier le rendez-vous, n\u2019h\u00e9sitez pas \u00e0 nous contacter.</p>'+
+      '<p>Au plaisir de vous aider,</p>',
     body:'Bonjour,\n\nComme convenu, vous trouverez dans ce pr\u00e9sent courriel notre soumission pour l\u2019expertise technique sur votre propri\u00e9t\u00e9.\n\nNotre objectif est simple : identifier la cause principale de la probl\u00e9matique qui affecte votre b\u00e2timent, qu\u2019il s\u2019agisse d\u2019une infiltration d\u2019eau, de moisissure, d\u2019un probl\u00e8me d\u2019humidit\u00e9, d\u2019odeurs persistantes ou de toute autre anomalie li\u00e9e \u00e0 l\u2019enveloppe ou au comportement du b\u00e2timent.\n\nNous ne faisons pas seulement constater les sympt\u00f4mes : nous cherchons la source r\u00e9elle du probl\u00e8me afin de vous orienter vers la bonne solution, \u00e9viter les travaux inutiles et vous permettre de prendre des d\u00e9cisions \u00e9clair\u00e9es.\n\nTarification :\n\n- Expertise verbale sur place : 580 $ + taxes\n  (incluant la visite, l\u2019analyse de la situation et nos recommandations verbales)\n\n- Rapport \u00e9crit (au besoin) : 150 $/heure + taxes\n  (si vous souhaitez un document officiel d\u00e9taill\u00e9 avec constats, causes probables et recommandations)\n\nDe plus, dans le rare cas o\u00f9 nous ne sommes pas en mesure d\u2019identifier la cause principale de la probl\u00e9matique, seuls les frais de d\u00e9placement de 350 $ + taxes seront factur\u00e9s.\n\nNotre approche est bas\u00e9e sur l\u2019exp\u00e9rience terrain, l\u2019analyse technique et la transparence \u2013 pas de zone grise, seulement des r\u00e9ponses concr\u00e8tes.\n\nSi vous avez des questions ou souhaitez planifier le rendez-vous, n\u2019h\u00e9sitez pas \u00e0 nous contacter.\n\nAu plaisir de vous aider,',
   };
 
   /* === SOUMISSION TEST DE QUALITE DE L'AIR FONGIQUE === */
   if(type === 'soum_test_air') return {
     subj:'Soumission \u2013 Test de qualit\u00e9 de l\u2019air fongique',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Comme convenu, vous trouverez en pi\u00e8ce jointe notre <strong>document complet</strong> pr\u00e9sentant notre service de <strong>test de qualit\u00e9 de l\u2019air fongique</strong>.</p>'+
+      '<h3 style="color:#6a1b9a;margin-top:22px;margin-bottom:10px;font-size:16px;">\uD83D\uDCCB Ce document contient</h3>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#7b1fa2;">\u2022</strong> Le <strong>d\u00e9roulement complet</strong> de l\u2019intervention</p>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#7b1fa2;">\u2022</strong> Nos <strong>tarifs</strong> et services suppl\u00e9mentaires</p>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#7b1fa2;">\u2022</strong> Les <strong>modalit\u00e9s de paiement</strong></p>'+
+      '<p style="margin:7px 0 14px 14px;"><strong style="color:#7b1fa2;">\u2022</strong> L\u2019<strong>interpr\u00e9tation des r\u00e9sultats</strong> et les \u00e9tapes suivantes au besoin</p>'+
+      '<p>Nous vous invitons \u00e0 le lire <strong>attentivement avant de confirmer</strong>.</p>'+
+      '<p>Si vous souhaitez planifier un rendez-vous ou si vous avez des questions, n\u2019h\u00e9sitez pas \u00e0 nous contacter.</p>'+
+      '<p>Au plaisir de vous aider,</p>',
     body:'Bonjour,\n\nComme convenu, vous trouverez en pi\u00e8ce jointe notre document complet pr\u00e9sentant notre service de test de qualit\u00e9 de l\u2019air fongique.\n\nCe document contient :\n- Le d\u00e9roulement complet de l\u2019intervention\n- Nos tarifs et services suppl\u00e9mentaires\n- Les modalit\u00e9s de paiement\n- L\u2019interpr\u00e9tation des r\u00e9sultats et les \u00e9tapes suivantes au besoin\n\nNous vous invitons \u00e0 le lire attentivement avant de confirmer.\n\nSi vous souhaitez planifier un rendez-vous ou si vous avez des questions, n\u2019h\u00e9sitez pas \u00e0 nous contacter.\n\nAu plaisir de vous aider,',
   };
 
   /* === SOUMISSION AMIANTE DANS L'AIR === */
   if(type === 'soum_amiante_air') return {
     subj:'Soumission \u2013 Analyse de fibre d\u2019amiante dans l\u2019air',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>\u00c0 la suite de la <strong>d\u00e9contamination du grenier</strong> et du retrait de la vermiculite contamin\u00e9e \u00e0 l\u2019amiante, nous proc\u00e9derons \u00e0 un <strong>pr\u00e9l\u00e8vement d\u2019air</strong> visant \u00e0 d\u00e9tecter la pr\u00e9sence de fibres d\u2019amiante \u00e0 l\u2019\u00e9tage situ\u00e9 directement sous le grenier.</p>'+
+      '<h3 style="color:#6a1b9a;margin-top:22px;margin-bottom:10px;font-size:16px;">\uD83D\uDD2C M\u00e9thodologie</h3>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#7b1fa2;">\u2022</strong> Un <strong>pr\u00e9l\u00e8vement d\u2019air d\u2019une dur\u00e9e de 4 heures</strong> sera effectu\u00e9 sur place par notre technicien</p>'+
+      '<p style="margin:7px 0 7px 14px;"><strong style="color:#7b1fa2;">\u2022</strong> L\u2019analyse initiale sera effectu\u00e9e en laboratoire par <strong>microscopie \u00e0 contraste de phase (MCP)</strong>, une m\u00e9thode standard pour l\u2019\u00e9valuation de la concentration totale en fibres dans l\u2019air</p>'+
+      '<p style="margin:7px 0 14px 14px;"><strong style="color:#7b1fa2;">\u2022</strong> Si le filtre est surcharg\u00e9 (poussi\u00e8res de cellulose, fibres min\u00e9rales non amiant\u00e9es, etc.) et que la concentration totale d\u00e9passe les valeurs guides, une analyse plus pouss\u00e9e par <strong>microscopie \u00e9lectronique \u00e0 transmission (MET)</strong> pourra \u00eatre exig\u00e9e</p>'+
+      '<h3 style="color:#424242;margin-top:22px;margin-bottom:10px;font-size:16px;">\uD83D\uDCB0 Tarification</h3>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fafafa;border-left:4px solid #9e9e9e;margin:8px 0 18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:6px 0;">\u2022 <strong>D\u00e9placement du technicien</strong> (installation et r\u00e9cup\u00e9ration de l\u2019appareil) : <em>inclus</em></p>'+
+        '<p style="margin:6px 0;">\u2022 <strong>Pr\u00e9l\u00e8vement et analyse en laboratoire par MCP :</strong> 700 $ + taxes</p>'+
+        '<p style="margin:6px 0;">\u2022 <strong>Frais additionnels en cas d\u2019analyse MET :</strong> 550 $ + taxes <em>(rarement n\u00e9cessaire)</em></p>'+
+        '<p style="margin:10px 0 4px 0;font-weight:700;color:#1565c0;">Total estim\u00e9 (hors MET) : 700 $ + taxes</p>'+
+      '</td></tr></table>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fff8e1;border-left:4px solid #f57c00;margin:18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:0 0 6px 0;font-weight:700;color:#e65100;">\u26A0\uFE0F Notes importantes</p>'+
+        '<p style="margin:4px 0;">\u2022 Les r\u00e9sultats sont transmis d\u00e8s r\u00e9ception du rapport du laboratoire (<strong>d\u00e9lais habituels de 5 \u00e0 7 jours ouvrables</strong>)</p>'+
+        '<p style="margin:4px 0;">\u2022 L\u2019analyse par MET n\u2019est requise que si la surcharge emp\u00eache une lecture fiable des r\u00e9sultats par MCP</p>'+
+      '</td></tr></table>'+
+      '<p>Veuillez accepter nos salutations les plus distingu\u00e9es,</p>',
     body:'Bonjour,\n\n\u00c0 la suite de la d\u00e9contamination du grenier et du retrait de la vermiculite contamin\u00e9e \u00e0 l\u2019amiante, nous proc\u00e9derons \u00e0 un pr\u00e9l\u00e8vement d\u2019air visant \u00e0 d\u00e9tecter la pr\u00e9sence de fibres d\u2019amiante \u00e0 l\u2019\u00e9tage situ\u00e9 directement sous le grenier.\n\nM\u00e9thodologie :\n\n- Un pr\u00e9l\u00e8vement d\u2019air d\u2019une dur\u00e9e de 4 heures sera effectu\u00e9 sur place par notre technicien.\n- L\u2019analyse initiale sera effectu\u00e9e en laboratoire par microscopie \u00e0 contraste de phase (MCP), une m\u00e9thode standard pour l\u2019\u00e9valuation de la concentration totale en fibres dans l\u2019air.\n- Si le filtre est surcharg\u00e9 de fibres (ex. : poussi\u00e8res de cellulose, fibres min\u00e9rales non amiant\u00e9es ou poussi\u00e8res de construction) et que la concentration totale d\u00e9passe les valeurs guides, une analyse plus pouss\u00e9e par microscopie \u00e9lectronique \u00e0 transmission (MET) pourra \u00eatre exig\u00e9e pour quantifier sp\u00e9cifiquement les fibres d\u2019amiante.\n  Dans ce cas, des frais suppl\u00e9mentaires de 550 $ + taxes s\u2019appliqueront.\n\nTarification :\n\n- D\u00e9placement du technicien (installation et r\u00e9cup\u00e9ration de l\u2019appareil) : inclus\n- Pr\u00e9l\u00e8vement et analyse en laboratoire par MCP : 700 $ + taxes\n- Frais additionnels en cas d\u2019analyse MET requise : 550 $ + taxes (rarement n\u00e9cessaire)\n\nTotal estim\u00e9 (hors MET) : 700 $ + taxes\n\nNotes importantes :\n\n- Les r\u00e9sultats d\u2019analyse seront transmis d\u00e8s r\u00e9ception du rapport du laboratoire (d\u00e9lais habituels de 5 \u00e0 7 jours ouvrables).\n- L\u2019analyse par MET n\u2019est requise que si la surcharge emp\u00eache une lecture fiable des r\u00e9sultats par MCP.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es,',
   };
 
   /* === SOUMISSION MERULE === */
   if(type === 'soum_merule') return {
     subj:'Soumission \u2013 Analyse ADN/PCR pour la pr\u00e9sence de M\u00e9rule Pleureuse',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Suite \u00e0 votre demande, nous vous proposons l\u2019intervention d\u2019un <strong>expert en b\u00e2timent</strong> pour effectuer un <strong>pr\u00e9l\u00e8vement de l\u2019\u00e9chantillon suspect</strong> et proc\u00e9der \u00e0 une <strong>analyse ADN</strong> afin de d\u00e9terminer s\u2019il s\u2019agit bien de <em>Serpula lacrymans</em> (m\u00e9rule pleureuse).</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fafafa;border-left:4px solid #9e9e9e;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 6px 0;font-weight:700;color:#424242;font-size:14px;letter-spacing:0.3px;">\uD83D\uDCB0 TARIFICATION</p>'+
+        '<p style="margin:6px 0;font-size:16px;"><strong>800 $ + taxes</strong></p>'+
+        '<p style="margin:4px 0;font-size:13px;color:#666;font-style:italic;">Incluant le d\u00e9placement, le pr\u00e9l\u00e8vement et l\u2019analyse en laboratoire.</p>'+
+      '</td></tr></table>'+
+      '<p>Si vous souhaitez aller de l\u2019avant, merci de nous <strong>confirmer</strong> afin que nous puissions planifier l\u2019intervention.</p>'+
+      '<p>N\u2019h\u00e9sitez pas \u00e0 nous contacter pour toute question.</p>'+
+      '<p>Veuillez accepter nos salutations les plus distingu\u00e9es,</p>',
     body:'Bonjour,\n\nSuite \u00e0 votre demande, nous vous proposons l\u2019intervention d\u2019un expert en b\u00e2timent pour effectuer un pr\u00e9l\u00e8vement de l\u2019\u00e9chantillon suspect et proc\u00e9der \u00e0 une analyse ADN afin de d\u00e9terminer s\u2019il s\u2019agit bien de Serpula lacrymans (m\u00e9rule pleureuse).\n\nLe co\u00fbt de cette prestation est de 800 $ + taxes, incluant le d\u00e9placement, le pr\u00e9l\u00e8vement et l\u2019analyse en laboratoire.\n\nSi vous souhaitez aller de l\u2019avant, merci de nous confirmer afin que nous puissions planifier l\u2019intervention.\n\nN\u2019h\u00e9sitez pas \u00e0 nous contacter pour toute question.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es,',
   };
 
   /* === RAPPORT D'EXPERTISE TECHNIQUE === */
   if(type === 'rapp_expertise') return {
     subj:'Rapport d\u2019expertise technique',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Tel que convenu, vous trouverez en pi\u00e8ce jointe <strong>votre rapport d\u2019investigation</strong>.</p>'+
+      '<p>Nous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire en restant <strong>disponibles pour toute question</strong> ou \u00e9claircissement suppl\u00e9mentaire.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fffbe6;border-left:4px solid #fbc02d;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 8px 0;font-weight:700;color:#f57f17;font-size:14px;letter-spacing:0.3px;">\u2B50 Votre avis nous est pr\u00e9cieux</p>'+
+        '<p style="margin:0;">Si vous avez \u00e9t\u00e9 satisfait de notre service, prenez 30 secondes pour nous laisser un commentaire : [GOOGLE:'+googleLink+']</p>'+
+      '</td></tr></table>'+
+      '<p>Merci !</p>',
     body:'Bonjour,\n\nTel que convenu, vous trouverez en pi\u00e8ce jointe votre rapport d\u2019investigation.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : [GOOGLE:'+googleLink+']\n\nNous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire en restant disponibles pour toute question ou \u00e9claircissement suppl\u00e9mentaire.\n\nMerci !',
   };
 
   /* === RESULTAT BIOTAPE === */
   if(type === 'resultat_biotape') return {
     subj:'R\u00e9sultat du Biotape',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Veuillez trouver en pi\u00e8ce jointe le <strong>rapport d\u2019analyse</strong> relatif \u00e0 l\u2019\u00e9chantillonnage effectu\u00e9 par <strong>bio-tape</strong> pour v\u00e9rifier la pr\u00e9sence \u00e9ventuelle de moisissures.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#f3e5f5;border-left:4px solid #7b1fa2;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 6px 0;font-weight:700;color:#6a1b9a;font-size:14px;letter-spacing:0.3px;">\uD83D\uDD2C CE QUE CONTIENT LE RAPPORT</p>'+
+        '<p style="margin:5px 0;">\u2022 Les <strong>types de moisissures d\u00e9tect\u00e9s</strong>, s\u2019il y a lieu</p>'+
+        '<p style="margin:5px 0;">\u2022 La <strong>concentration estim\u00e9e</strong> de chaque type</p>'+
+        '<p style="margin:5px 0;">\u2022 Une \u00e9valuation permettant de d\u00e9terminer les <strong>actions correctives</strong> \u00e0 envisager</p>'+
+      '</td></tr></table>'+
+      '<p>N\u2019h\u00e9sitez pas \u00e0 me contacter si vous avez des questions ou si vous souhaitez obtenir des <strong>recommandations</strong> ou un accompagnement pour la suite.</p>'+
+      '<p>Cordialement,</p>',
     body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe le rapport d\u2019analyse relatif \u00e0 l\u2019\u00e9chantillonnage effectu\u00e9 par bio-tape pour v\u00e9rifier la pr\u00e9sence \u00e9ventuelle de moisissures.\n\nLe laboratoire y indique les types de moisissures d\u00e9tect\u00e9s, s\u2019il y a lieu, ainsi que leur concentration estim\u00e9e. Ce rapport vous permettra de mieux \u00e9valuer la situation et de d\u00e9terminer, au besoin, les actions correctives \u00e0 envisager.\n\nN\u2019h\u00e9sitez pas \u00e0 me contacter si vous avez des questions ou si vous souhaitez obtenir des recommandations ou un accompagnement pour la suite.\n\nCordialement,',
   };
 
   /* === RESULTATS AMIANTE MATERIAUX === */
   if(type === 'res_amiante_materiaux') return {
     subj:'R\u00e9sultats d\u2019analyse \u2013 Pr\u00e9sence d\u2019amiante dans les mat\u00e9riaux',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Veuillez trouver en pi\u00e8ce jointe les <strong>r\u00e9sultats d\u2019analyse</strong> pour la pr\u00e9sence d\u2019amiante dans les mat\u00e9riaux pr\u00e9lev\u00e9s.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#f3e5f5;border-left:4px solid #7b1fa2;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 6px 0;font-weight:700;color:#6a1b9a;font-size:14px;letter-spacing:0.3px;">\uD83D\uDD2C CE QUE CONTIENT LE RAPPORT</p>'+
+        '<p style="margin:5px 0;">\u2022 Les <strong>types de mat\u00e9riaux analys\u00e9s</strong></p>'+
+        '<p style="margin:5px 0;">\u2022 La <strong>pr\u00e9sence ou non d\u2019amiante</strong></p>'+
+        '<p style="margin:5px 0;">\u2022 Le cas \u00e9ch\u00e9ant, la <strong>concentration d\u00e9tect\u00e9e</strong></p>'+
+      '</td></tr></table>'+
+      '<p>Si des <strong>actions correctives</strong> sont recommand\u00e9es, n\u2019h\u00e9sitez pas \u00e0 nous contacter pour discuter des prochaines \u00e9tapes ou obtenir un accompagnement.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fffbe6;border-left:4px solid #fbc02d;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 8px 0;font-weight:700;color:#f57f17;font-size:14px;letter-spacing:0.3px;">\u2B50 Votre avis nous est pr\u00e9cieux</p>'+
+        '<p style="margin:0;">Si vous avez \u00e9t\u00e9 satisfait de notre service, prenez 30 secondes pour nous laisser un commentaire : [GOOGLE:'+googleLink+']</p>'+
+      '</td></tr></table>'+
+      '<p>Merci de votre confiance,</p>',
     body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour la pr\u00e9sence d\u2019amiante dans les mat\u00e9riaux pr\u00e9lev\u00e9s.\n\nLe rapport pr\u00e9sente les types de mat\u00e9riaux analys\u00e9s ainsi que la pr\u00e9sence ou non d\u2019amiante et, le cas \u00e9ch\u00e9ant, la concentration d\u00e9tect\u00e9e.\n\nSi des actions correctives sont recommand\u00e9es, n\u2019h\u00e9sitez pas \u00e0 nous contacter pour discuter des prochaines \u00e9tapes ou pour obtenir un accompagnement.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : [GOOGLE:'+googleLink+']\n\nMerci de votre confiance,',
   };
 
   /* === RESULTATS AMIANTE AIR === */
   if(type === 'res_amiante_air') return {
     subj:'R\u00e9sultats d\u2019analyse \u2013 Fibre d\u2019amiante dans l\u2019air',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Veuillez trouver en pi\u00e8ce jointe les <strong>r\u00e9sultats d\u2019analyse</strong> pour la pr\u00e9sence de fibres d\u2019amiante dans l\u2019air ambiant.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#f3e5f5;border-left:4px solid #7b1fa2;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 6px 0;font-weight:700;color:#6a1b9a;font-size:14px;letter-spacing:0.3px;">\uD83D\uDD2C CE QUE CONTIENT LE RAPPORT</p>'+
+        '<p style="margin:5px 0;">\u2022 La <strong>concentration totale en fibres</strong> d\u00e9tect\u00e9e</p>'+
+        '<p style="margin:5px 0;">\u2022 L\u2019\u00e9valuation par rapport aux <strong>valeurs guides applicables</strong></p>'+
+        '<p style="margin:5px 0;">\u2022 Si une analyse <strong>MET</strong> a \u00e9t\u00e9 effectu\u00e9e, les r\u00e9sultats sp\u00e9cifiques sont \u00e9galement inclus</p>'+
+      '</td></tr></table>'+
+      '<p>Si vous avez des questions ou souhaitez des <strong>recommandations</strong> pour la suite, n\u2019h\u00e9sitez pas \u00e0 nous contacter.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fffbe6;border-left:4px solid #fbc02d;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 8px 0;font-weight:700;color:#f57f17;font-size:14px;letter-spacing:0.3px;">\u2B50 Votre avis nous est pr\u00e9cieux</p>'+
+        '<p style="margin:0;">Si vous avez \u00e9t\u00e9 satisfait de notre service, prenez 30 secondes pour nous laisser un commentaire : [GOOGLE:'+googleLink+']</p>'+
+      '</td></tr></table>'+
+      '<p>Merci de votre confiance,</p>',
     body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour la pr\u00e9sence de fibres d\u2019amiante dans l\u2019air ambiant.\n\nLe rapport pr\u00e9sente la concentration totale en fibres d\u00e9tect\u00e9e ainsi que l\u2019\u00e9valuation par rapport aux valeurs guides applicables. Si une analyse plus pouss\u00e9e par microscopie \u00e9lectronique \u00e0 transmission (MET) a \u00e9t\u00e9 effectu\u00e9e, les r\u00e9sultats sp\u00e9cifiques sont \u00e9galement inclus.\n\nSi vous avez des questions ou si vous souhaitez des recommandations pour la suite, n\u2019h\u00e9sitez pas \u00e0 nous contacter.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : [GOOGLE:'+googleLink+']\n\nMerci de votre confiance,',
   };
 
   /* === RESULTATS TEST AIR FONGIQUE === */
   if(type === 'res_test_air') return {
     subj:'R\u00e9sultats d\u2019analyse \u2013 Test de qualit\u00e9 de l\u2019air fongique',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Veuillez trouver en pi\u00e8ce jointe les <strong>r\u00e9sultats d\u2019analyse</strong> pour le <strong>test de qualit\u00e9 de l\u2019air fongique</strong> r\u00e9alis\u00e9 dans votre propri\u00e9t\u00e9.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#f3e5f5;border-left:4px solid #7b1fa2;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 6px 0;font-weight:700;color:#6a1b9a;font-size:14px;letter-spacing:0.3px;">\uD83D\uDD2C CE QUE CONTIENT LE RAPPORT</p>'+
+        '<p style="margin:5px 0;">\u2022 Les <strong>types de moisissures d\u00e9tect\u00e9s</strong></p>'+
+        '<p style="margin:5px 0;">\u2022 Leur <strong>concentration</strong></p>'+
+        '<p style="margin:5px 0;">\u2022 Une <strong>\u00e9valuation comparative</strong> air int\u00e9rieur vs air ext\u00e9rieur</p>'+
+      '</td></tr></table>'+
+      '<p>N\u2019h\u00e9sitez pas \u00e0 me contacter si vous avez des questions sur l\u2019<strong>interpr\u00e9tation des r\u00e9sultats</strong> ou si vous souhaitez discuter des <strong>prochaines \u00e9tapes</strong> possibles.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fffbe6;border-left:4px solid #fbc02d;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 8px 0;font-weight:700;color:#f57f17;font-size:14px;letter-spacing:0.3px;">\u2B50 Votre avis nous est pr\u00e9cieux</p>'+
+        '<p style="margin:0;">Si vous avez \u00e9t\u00e9 satisfait de notre service, prenez 30 secondes pour nous laisser un commentaire : [GOOGLE:'+googleLink+']</p>'+
+      '</td></tr></table>'+
+      '<p>Merci de votre confiance,</p>',
     body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour le test de qualit\u00e9 de l\u2019air fongique r\u00e9alis\u00e9 dans votre propri\u00e9t\u00e9.\n\nLe rapport pr\u00e9sente les types de moisissures d\u00e9tect\u00e9s, leur concentration ainsi qu\u2019une \u00e9valuation de la qualit\u00e9 de l\u2019air int\u00e9rieur compar\u00e9e \u00e0 l\u2019air ext\u00e9rieur.\n\nN\u2019h\u00e9sitez pas \u00e0 me contacter si vous avez des questions sur l\u2019interpr\u00e9tation des r\u00e9sultats ou si vous souhaitez discuter des prochaines \u00e9tapes possibles.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : [GOOGLE:'+googleLink+']\n\nMerci de votre confiance,',
   };
 
