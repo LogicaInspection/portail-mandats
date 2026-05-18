@@ -456,70 +456,80 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 
 /* ===== Mini-calendrier Google ===== */
 .gcal-nav-btn{
-  width:36px;height:36px;background:white;border:1.5px solid #e0e0e0;
-  border-radius:8px;cursor:pointer;font-size:11px;color:#1a1a2e;
+  width:32px;height:32px;background:white;border:1.5px solid #e0e0e0;
+  border-radius:8px;cursor:pointer;font-size:10px;color:#1a1a2e;
   display:flex;align-items:center;justify-content:center;transition:all 0.15s;
 }
 .gcal-nav-btn:hover{background:#1a1a2e;color:white;border-color:#1a1a2e;}
 .gcal-today-btn{
-  padding:8px 16px;background:white;border:1.5px solid #e0e0e0;color:#1a1a2e;
+  padding:7px 14px;background:white;border:1.5px solid #e0e0e0;color:#1a1a2e;
   border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.15s;
 }
 .gcal-today-btn:hover{background:#1a1a2e;color:white;border-color:#1a1a2e;}
 .gcal-open-btn{
-  padding:8px 14px;background:#e3f0ff;border:1.5px solid #90caf9;color:#1565c0;
+  padding:7px 14px;background:#e3f0ff;border:1.5px solid #90caf9;color:#1565c0;
   border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all 0.15s;
 }
 .gcal-open-btn:hover{background:#1565c0;color:white;}
 
-/* Filter chips */
+/* Filter chips - plus compacts */
 .gcal-filter-chip{
   display:inline-flex;align-items:center;gap:6px;
-  padding:5px 10px;background:white;border:1.5px solid #e0e0e0;border-radius:14px;
-  font-size:12px;cursor:pointer;transition:all 0.15s;color:#666;
+  padding:4px 9px;background:white;border:1.5px solid #e0e0e0;border-radius:14px;
+  font-size:11.5px;cursor:pointer;transition:all 0.15s;color:#666;
+  white-space:nowrap;line-height:1.3;
 }
-.gcal-filter-chip input{margin:0;cursor:pointer;}
-.gcal-filter-chip.on{background:#e8f5e9;border-color:#4caf50;color:#1b5e20;font-weight:600;}
-.gcal-filter-chip .chip-color{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.gcal-filter-chip input{margin:0;cursor:pointer;width:13px;height:13px;}
+.gcal-filter-chip.on{background:#f4f8f5;border-color:#a5d6a7;color:#2e7d32;font-weight:600;}
+.gcal-filter-chip .chip-color{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.gcal-filter-chip .chip-name{
+  max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-transform:none;
+}
 
-/* Grille du calendrier */
+/* Grille du calendrier - cellules plus compactes */
 .gcal-grid-table{
   width:100%;border-collapse:separate;border-spacing:0;
   background:white;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;
+  table-layout:fixed;
 }
 .gcal-grid-table th{
-  background:#fafbfc;padding:10px;font-size:11px;font-weight:700;color:#666;
+  background:#fafbfc;padding:8px 4px;font-size:10.5px;font-weight:700;color:#666;
   text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #e0e0e0;
   text-align:center;
 }
 .gcal-grid-table td{
   vertical-align:top;border-right:1px solid #f0f1f3;border-bottom:1px solid #f0f1f3;
-  padding:6px;width:14.28%;height:110px;
+  padding:4px;width:14.28%;height:95px;
   position:relative;cursor:pointer;transition:background 0.15s;
+  overflow:hidden;
 }
 .gcal-grid-table td:last-child{border-right:none;}
 .gcal-grid-table tr:last-child td{border-bottom:none;}
 .gcal-grid-table td.other-month{background:#fafbfc;color:#bbb;}
 .gcal-grid-table td.other-month .gcal-daynum{color:#bbb;}
 .gcal-grid-table td.today{background:#e3f0ff;}
-.gcal-grid-table td.today .gcal-daynum{background:#1565c0;color:white;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;}
+.gcal-grid-table td.today .gcal-daynum{background:#1565c0;color:white;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;}
 .gcal-grid-table td.mandat-day{outline:2px solid #6a1b9a;outline-offset:-2px;background:#f3e5f5;}
 .gcal-grid-table td:hover:not(.other-month){background:#f5f7fa;}
 .gcal-grid-table td.today:hover{background:#d0e4fa;}
 .gcal-grid-table td.mandat-day:hover{background:#e9d6f0;}
 
-.gcal-daynum{font-size:13px;font-weight:600;color:#333;display:inline-block;margin-bottom:2px;}
+.gcal-daynum{
+  font-size:11.5px;font-weight:600;color:#444;display:inline-block;
+  margin-bottom:2px;padding:0 3px;
+}
 
-/* Pastilles d'events */
+/* Pastilles d'events - plus compactes */
 .gcal-event{
-  display:block;font-size:10.5px;line-height:1.2;
-  padding:2px 5px;margin-top:2px;border-radius:3px;
+  display:block;font-size:10px;line-height:1.25;
+  padding:1px 4px;margin-top:1px;border-radius:3px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   color:white;font-weight:500;cursor:pointer;
 }
-.gcal-event-time{font-weight:700;margin-right:3px;}
+.gcal-event-time{font-weight:700;margin-right:2px;}
 .gcal-more-events{
-  display:block;font-size:10px;color:#666;margin-top:2px;padding:1px 4px;
+  display:block;font-size:9.5px;color:#666;margin-top:2px;padding:0 3px;
   cursor:pointer;font-weight:600;
 }
 .gcal-more-events:hover{color:#1565c0;text-decoration:underline;}
@@ -1178,9 +1188,9 @@ input[type=file]{display:none;}
 
 <!-- ===== MODAL MINI-CALENDRIER GOOGLE ===== -->
 <div class="ov" id="modal-gcal-view" style="display:none">
-  <div class="modal" style="max-width:1100px;width:96%;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <h2 style="margin:0;display:flex;align-items:center;gap:10px;">
+  <div class="modal" style="max-width:1280px;width:97%;padding:18px 22px;max-height:94vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h2 style="margin:0;display:flex;align-items:center;gap:10px;font-size:18px;">
         <span>&#128197;</span> Mon calendrier Google
       </h2>
       <button class="btn-cancel" onclick="closeGCalView()" style="padding:6px 14px;">Fermer</button>
@@ -1192,22 +1202,22 @@ input[type=file]{display:none;}
       <button class="btn-gc" onclick="connectGmail()">Connecter mon Google</button>
     </div>
 
-    <!-- Filtre des calendriers -->
-    <div id="gcal-filter" style="display:none;margin-bottom:14px;padding:10px 14px;background:#f8f9fa;border-radius:9px;">
-      <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px;">Calendriers visibles</div>
-      <div id="gcal-filter-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    <!-- Filtre des calendriers (chips horizontaux scrollables) -->
+    <div id="gcal-filter" style="display:none;margin-bottom:12px;padding:8px 12px;background:#f8f9fa;border-radius:8px;border:1px solid #ecedef;">
+      <div style="font-size:10.5px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;">Calendriers visibles</div>
+      <div id="gcal-filter-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
     </div>
 
     <!-- Navigation mois -->
-    <div id="gcal-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:8px;">
+    <div id="gcal-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;gap:14px;">
+      <div style="display:flex;align-items:center;gap:6px;">
         <button class="gcal-nav-btn" onclick="gcalPrevMonth()" title="Mois pr\u00e9c\u00e9dent">&#9664;</button>
         <button class="gcal-nav-btn" onclick="gcalNextMonth()" title="Mois suivant">&#9654;</button>
         <button class="gcal-today-btn" onclick="gcalToday()">Aujourd'hui</button>
       </div>
-      <div id="gcal-month-title" style="font-size:18px;font-weight:700;color:#1a1a2e;">Juin 2026</div>
+      <div id="gcal-month-title" style="font-size:22px;font-weight:800;color:#1a1a2e;letter-spacing:-0.3px;">Mai 2026</div>
       <a id="gcal-open-google" href="https://calendar.google.com" target="_blank" rel="noopener" class="gcal-open-btn">
-        Ouvrir Google Calendar &#8599;
+        Google Calendar &#8599;
       </a>
     </div>
 
@@ -3450,23 +3460,55 @@ async function onManualAttachmentSelected(event){
 function closeEmailModal(){document.getElementById('modal-email').style.display='none';}
 
 function connectGmail(){
-  const client=google.accounts.oauth2.initTokenClient({
-    client_id:GC_ID,
-    scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
-    callback:async(resp)=>{
-      if(resp.error) return;
-      localStorage.setItem('portail_gmail_token',resp.access_token);
-      localStorage.setItem('portail_gmail_expiry',Date.now()+3500*1000);
-      try{
-        const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile',{headers:{Authorization:'Bearer '+resp.access_token}});
-        const d=await r.json();
-        localStorage.setItem('portail_gmail_email',d.emailAddress||'');
-        document.getElementById('gmail-status').textContent='Gmail: '+d.emailAddress;
-      }catch(e){}
-      document.getElementById('gmail-bar').querySelector('.btn-gc').textContent='Changer';
-    }
-  });
-  client.requestAccessToken();
+  /* Verification : la lib Google Identity Services est-elle chargee ? */
+  if(typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2){
+    toast('La lib Google n\'est pas chargee. Recharge la page (Ctrl+Shift+R)','err');
+    console.error('google.accounts.oauth2 introuvable');
+    return;
+  }
+  try{
+    const client=google.accounts.oauth2.initTokenClient({
+      client_id:GC_ID,
+      scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
+      callback:async(resp)=>{
+        if(resp.error){
+          console.error('OAuth error:', resp);
+          toast('Erreur connexion Google: '+(resp.error_description||resp.error),'err');
+          return;
+        }
+        localStorage.setItem('portail_gmail_token',resp.access_token);
+        localStorage.setItem('portail_gmail_expiry',Date.now()+3500*1000);
+        try{
+          const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile',{headers:{Authorization:'Bearer '+resp.access_token}});
+          const d=await r.json();
+          localStorage.setItem('portail_gmail_email',d.emailAddress||'');
+          const statusEl=document.getElementById('gmail-status');
+          if(statusEl) statusEl.textContent='Gmail: '+d.emailAddress;
+        }catch(e){}
+        const barBtn=document.getElementById('gmail-bar')?.querySelector('.btn-gc');
+        if(barBtn) barBtn.textContent='Changer';
+        toast('Connecte a Google !');
+        /* Si le modal du calendrier est ouvert, recharger les calendriers */
+        if(document.getElementById('modal-gcal-view').style.display === 'flex'){
+          document.getElementById('gcal-view-auth').style.display='none';
+          document.getElementById('gcal-loading').style.display='block';
+          const ok = await loadGCalendars();
+          if(ok){
+            renderGCalFilters();
+            await renderGCalGrid();
+          } else {
+            document.getElementById('gcal-loading').style.display='none';
+            document.getElementById('gcal-view-auth').style.display='block';
+            toast('Impossible de charger tes calendriers (verifie le scope dans Google Cloud)','err');
+          }
+        }
+      }
+    });
+    client.requestAccessToken();
+  }catch(e){
+    console.error('Erreur initTokenClient:', e);
+    toast('Erreur lors de l\'ouverture de la fenetre Google: '+(e.message||'inconnue'),'err');
+  }
 }
 
 /* Helper: obtient un token Google valide (Gmail + Calendar partagent le meme token).
@@ -5221,12 +5263,22 @@ function renderGCalFilters(){
   });
   sorted.forEach(c=>{
     const isOn = gcalVisibleCalIds.has(c.id);
+    /* Formater le nom : si c'est un email, prendre la partie avant @ et la mettre en title case
+       Si c'est deja un vrai nom, le garder tel quel */
+    let displayName = c.name || '';
+    if(displayName.includes('@')){
+      /* C'est probablement un email, prendre la partie avant @ */
+      const local = displayName.split('@')[0];
+      /* Si on a un nom dans les profils qui matche, l'utiliser */
+      displayName = local.replace(/[._-]/g,' ').replace(/\b\w/g, l=>l.toUpperCase());
+    }
     const chip = document.createElement('label');
     chip.className = 'gcal-filter-chip'+(isOn?' on':'');
+    chip.title = c.name; /* Tooltip avec le nom complet */
     chip.innerHTML =
       '<input type="checkbox" '+(isOn?'checked':'')+'>'+
       '<span class="chip-color" style="background:'+c.color+'"></span>'+
-      '<span>'+escapeHtml(c.name)+'</span>';
+      '<span class="chip-name">'+escapeHtml(displayName)+'</span>';
     const cb = chip.querySelector('input');
     cb.addEventListener('change',()=>{
       if(cb.checked) gcalVisibleCalIds.add(c.id);
