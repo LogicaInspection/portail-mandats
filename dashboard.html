@@ -313,7 +313,39 @@ body.archives-mode { background: #faf5ed; }
 .t-row.row-assigne { background: #fff8e1; }
 .t-row.row-assigne:hover { background: #fff3c4; }
 .t-row.row-pool { background: #e3f0ff; }
-.t-row.row-pool:hover { background: #d0e4fa; }
+/* ===== SEPARATEURS DE SECTIONS (Aujourd'hui / A venir / Realises) ===== */
+.t-sep {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 20px 10px 20px;
+  background:#fafbfc;
+  border-bottom:1px solid #f0f0f0;
+  font-size:11.5px; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.6px;
+  user-select:none;
+}
+.t-sep .sep-icon { font-size:14px; }
+.t-sep .sep-count {
+  margin-left:auto;
+  background:rgba(0,0,0,0.06); padding:2px 9px; border-radius:10px;
+  font-size:10.5px; font-weight:600;
+}
+.t-sep-aujourdhui { background:#fff8e1; color:#e65100; border-left:4px solid #f57c00; }
+.t-sep-avenir { background:#f0f7ff; color:#1565c0; border-left:4px solid #1976d2; }
+.t-sep-sansdate { background:#f5f5f5; color:#666; border-left:4px solid #9e9e9e; }
+.t-sep-realises {
+  background:#f5f5f5; color:#666; border-left:4px solid #bdbdbd;
+  cursor:pointer;
+}
+.t-sep-realises:hover { background:#eeeeee; }
+.t-sep-realises .sep-toggle {
+  font-size:10px; opacity:0.7; transition:transform 0.2s;
+}
+.t-sep-realises.collapsed .sep-toggle { transform:rotate(-90deg); }
+.t-row.row-passe { opacity:0.6; }
+.t-row.row-passe:hover { opacity:1; }
+.t-row.row-aujourdhui { background:#fffde7; }
+.t-row.row-aujourdhui:hover { background:#fff9c4; }
+.t-row.is-hidden { display:none; }
 
 /* Largeurs des colonnes - utilisent CSS variables pour permettre le drag-resize.
    Valeurs par defaut alignees sur l'ancien systeme. Le JS peut les overrider via localStorage. */
