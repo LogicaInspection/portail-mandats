@@ -917,6 +917,9 @@ async function loadMandats() {
 
   updateStats();
   updateTabCounters();
+  /* Restaurer les filtres sauvegardes (onglet, archives, tech, compagnie, statut, recherche)
+     avant le 1er render. La session storage est conservee tant que l'onglet est ouvert. */
+  restoreFilters();
   filterMandats();
   updateTaskBadge();
 }
@@ -1088,6 +1091,76 @@ function getFilteredMandats() {
 function filterMandats() {
   renderTable(getFilteredMandats());
   updateRappelsBanner(allMandats);
+  /* Sauvegarde les filtres actuels pour les restaurer au prochain chargement de la page */
+  saveFilters();
+}
+
+/* ===========================================================
+   PERSISTANCE DES FILTRES (sessionStorage)
+   Permet de revenir sur le dashboard avec les memes filtres apres
+   avoir clique sur un mandat (qui ouvre mandat.html et revient).
+   sessionStorage = persistant pour la session de navigateur, mais
+   reset si on ferme l'onglet (vs localStorage qui survit a tout).
+   =========================================================== */
+const FILTERS_KEY = 'dashboard_filters_v1';
+
+function saveFilters(){
+  try{
+    const state = {
+      tab: currentTab,
+      archives: viewArchives,
+      search: document.getElementById('search')?.value || '',
+      statut: document.getElementById('f-statut')?.value || '',
+      assign: document.getElementById('f-assign')?.value || '',
+      tech: document.getElementById('f-tech')?.value || '',
+      compagnie: document.getElementById('f-compagnie')?.value || '',
+      suivi: document.getElementById('f-suivi')?.value || '',
+    };
+    sessionStorage.setItem(FILTERS_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+
+function restoreFilters(){
+  let state = null;
+  try{ state = JSON.parse(sessionStorage.getItem(FILTERS_KEY) || 'null'); }catch(e){}
+  if(!state) return;
+
+  /* Onglet de pipeline (tous / pool / mandats / soumissions) */
+  if(state.tab && state.tab !== 'tous'){
+    currentTab = state.tab;
+    document.querySelectorAll('.ptile').forEach(t => 
+      t.classList.toggle('active', t.dataset.tab === currentTab)
+    );
+  }
+  /* Mode Archives */
+  if(state.archives === true){
+    viewArchives = true;
+    const btn = document.getElementById('btn-archives');
+    if(btn){
+      btn.classList.add('on');
+      btn.innerHTML = '\u{1F3E0} Dossiers actifs';
+    }
+    const banner = document.getElementById('archive-banner');
+    if(banner) banner.style.display = 'flex';
+    document.body.classList.add('archives-mode');
+  }
+  /* Recharger les compteurs car le mode archives change ce qui est compte */
+  updateTabCounters();
+
+  /* Champs de recherche / select simples */
+  const fields = ['search','f-statut','f-assign','f-tech','f-compagnie','f-suivi'];
+  const stateKeys = ['search','statut','assign','tech','compagnie','suivi'];
+  fields.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if(el && state[stateKeys[i]]) el.value = state[stateKeys[i]];
+  });
+
+  /* Tech chip active : refleter le f-tech dans les chips si le tech est selectionne */
+  if(state.tech){
+    document.querySelectorAll('.tech-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.techId === state.tech);
+    });
+  }
 }
 
 /* Alias pour showRappels() (qui doit declencher un render apres avoir change currentTab) */
