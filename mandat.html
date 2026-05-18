@@ -1790,17 +1790,25 @@ function setEditorHTML(quill,html){
 function plainToHtml(text){
   if(!text) return '';
   const urlRegex=/(https?:\/\/[^\s<>"']+)/g;
-  return text
-    .split('\n')
-    .map(line=>{
-      const escaped=line
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;');
-      const linked=escaped.replace(urlRegex,'<a href="$1" target="_blank" rel="noopener">$1</a>');
-      return linked.trim()===''?'<p><br></p>':'<p>'+linked+'</p>';
-    })
-    .join('');
+  /* Normaliser les sauts de ligne multiples (\n\n\n+ → \n\n max) */
+  text = text.replace(/\n{3,}/g, '\n\n');
+  /* Split par paragraphes (separes par \n\n), chaque paragraphe peut contenir des \n simples */
+  const paragraphs = text.split(/\n\n+/);
+  return paragraphs.map(para => {
+    if(!para.trim()) return '';
+    /* Echaper HTML */
+    let escaped = para
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+    /* Auto-bold : "1. Date :" → "<b>1. Date :</b>" - met en gras le numero + label */
+    escaped = escaped.replace(/^(\d+\.\s+[^:\n]+:)/gm, '<b>$1</b>');
+    /* Convertir \n simples en <br> dans un paragraphe */
+    escaped = escaped.replace(/\n/g, '<br>');
+    /* Auto-link URLs */
+    escaped = escaped.replace(urlRegex,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+    return '<p>'+escaped+'</p>';
+  }).filter(p=>p).join('');
 }
 
 /* ===== ENCODAGE FROM: HEADER (fix bug "BÃ¢timent") =====
