@@ -999,8 +999,7 @@ function updateTabCounters() {
   set('ptile-tous', c(() => true));
   set('ptile-pool', c(m => m.statut_assignation === 'pool'));
   set('ptile-mandats', c(m => !!m.date_mandat));
-  set('ptile-soumissions', c(m => m.statut_soumission_envoyee === true && !m.date_mandat));
-}
+  set('ptile-soumissions', c(m => m.statut_contact === 'soumission_envoyee' && !m.date_mandat));}
 
 function updateStats() {
   const now = new Date();
@@ -1068,7 +1067,7 @@ function getFilteredMandats() {
 
   /* Onglet pipeline (tuile cliquee) */
   if (currentTab === 'soumissions') {
-    list = list.filter(m => m.statut_soumission_envoyee === true && !m.date_mandat);
+    list = list.filter(m => m.statut_contact === 'soumission_envoyee' && !m.date_mandat);
   } else if (currentTab === 'mandats') {
     list = list.filter(m => !!m.date_mandat);
   } else if (currentTab === 'pool') {
