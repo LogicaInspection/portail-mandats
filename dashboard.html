@@ -1437,6 +1437,25 @@ function renderTable(list) {
     ? ['date','client','adresse','compagnie','type','tech','assign','suivi','total']
     : ['date','client','adresse','compagnie','type','tech','assign','suivi'];
 
+  /* ===== Date du jour au format YYYY-MM-DD (fuseau local) ===== */
+  const now = new Date();
+  const todayStr = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+
+  /* ===== Groupement par section ===== */
+  const groupes = { aujourdhui:[], avenir:[], sansdate:[], realises:[] };
+  list.forEach(m => {
+    if (!m.date_mandat) groupes.sansdate.push(m);
+    else if (m.date_mandat === todayStr) groupes.aujourdhui.push(m);
+    else if (m.date_mandat > todayStr) groupes.avenir.push(m);
+    else groupes.realises.push(m);
+  });
+  /* A venir = plus proche en haut; Realises = plus recent en haut */
+  groupes.avenir.sort((a,b) => a.date_mandat.localeCompare(b.date_mandat));
+  groupes.realises.sort((a,b) => b.date_mandat.localeCompare(a.date_mandat));
+
+  /* Etat collapse de "Realises" (localStorage, replie par defaut) */
+  const realisesCollapsed = localStorage.getItem('dashboard_realises_collapsed') !== 'false';
+
   /* Header avec poignees de redimensionnement entre chaque colonne */
   let html = `<div class="t-header ${cols}">
     <div>Date</div><div>Client</div><div>Adresse</div>
@@ -1448,19 +1467,18 @@ function renderTable(list) {
     ).join('')}
   </div>`;
 
-  list.forEach(m => {
+  /* Fonction utilitaire pour rendre une ligne mandat */
+  function renderRow(m, extraClass='') {
     const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA', {day:'numeric', month:'long', year:'numeric'}) : '&mdash;';
     const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
     const tech = m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : (m.statut_assignation === 'pool' ? '<span style="color:#1565c0;font-style:italic">Pool</span>' : '<span style="color:#bbb">&mdash;</span>');
     const badge = m.compagnie === 'logica'
       ? '<span class="badge badge-logica">Logica</span>'
       : '<span class="badge badge-geq">GEQ</span>';
-
     const rowClass = m.statut_assignation === 'assigne' ? ' row-assigne'
                    : m.statut_assignation === 'pool' ? ' row-pool'
                    : '';
-
-    html += `<div class="t-row ${cols}${rowClass}" onclick="window.location.href='mandat.html?id=${m.id}'">
+    return `<div class="t-row ${cols}${rowClass}${extraClass}" onclick="window.location.href='mandat.html?id=${m.id}'">
       <div>
         <div style="font-size:13px;font-weight:500;color:#333">${date}</div>
         ${heure ? `<div style="font-size:11px;color:#999">${heure}</div>` : ''}
@@ -1483,11 +1501,61 @@ function renderTable(list) {
       <div>${getSuiviBadge(m)}</div>
       ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</div>` : ''}
     </div>`;
-  });
+  }
+
+  /* ===== Section AUJOURD'HUI ===== */
+  if (groupes.aujourdhui.length) {
+    html += `<div class="t-sep t-sep-aujourdhui">
+      <span class="sep-icon">&#127773;</span>
+      <span>Aujourd'hui</span>
+      <span class="sep-count">${groupes.aujourdhui.length}</span>
+    </div>`;
+    groupes.aujourdhui.forEach(m => html += renderRow(m, ' row-aujourdhui'));
+  }
+
+  /* ===== Section A VENIR ===== */
+  if (groupes.avenir.length) {
+    html += `<div class="t-sep t-sep-avenir">
+      <span class="sep-icon">&#128197;</span>
+      <span>&Agrave; venir</span>
+      <span class="sep-count">${groupes.avenir.length}</span>
+    </div>`;
+    groupes.avenir.forEach(m => html += renderRow(m));
+  }
+
+  /* ===== Section SANS DATE PLANIFIEE ===== */
+  if (groupes.sansdate.length) {
+    html += `<div class="t-sep t-sep-sansdate">
+      <span class="sep-icon">&#128203;</span>
+      <span>Sans date planifi&eacute;e</span>
+      <span class="sep-count">${groupes.sansdate.length}</span>
+    </div>`;
+    groupes.sansdate.forEach(m => html += renderRow(m));
+  }
+
+  /* ===== Section REALISES (collapsible) ===== */
+  if (groupes.realises.length) {
+    html += `<div class="t-sep t-sep-realises${realisesCollapsed ? ' collapsed' : ''}" onclick="toggleRealises(this)">
+      <span class="sep-icon">&#10003;</span>
+      <span>R&eacute;alis&eacute;s</span>
+      <span class="sep-count">${groupes.realises.length}</span>
+      <span class="sep-toggle">&#9660;</span>
+    </div>`;
+    groupes.realises.forEach(m => html += renderRow(m, ' row-passe row-realise' + (realisesCollapsed ? ' is-hidden' : '')));
+  }
 
   document.getElementById('table-wrap').innerHTML = html;
   /* Active les poignees de redimensionnement apres le render */
   setupColResizers();
+}
+
+/* Toggle pour la section "Realises" (replie/deplie + memorise dans localStorage) */
+function toggleRealises(sepEl) {
+  const isCollapsed = sepEl.classList.toggle('collapsed');
+  localStorage.setItem('dashboard_realises_collapsed', isCollapsed ? 'true' : 'false');
+  document.querySelectorAll('.t-row.row-realise').forEach(row => {
+    row.classList.toggle('is-hidden', isCollapsed);
+  });
 }
 
 /* ===========================================================
