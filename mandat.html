@@ -1790,22 +1790,29 @@ function setEditorHTML(quill,html){
 function plainToHtml(text){
   if(!text) return '';
   const urlRegex=/(https?:\/\/[^\s<>"']+)/g;
-  /* Normaliser les sauts de ligne multiples (\n\n\n+ → \n\n max) */
-  text = text.replace(/\n{3,}/g, '\n\n');
-  /* Split par paragraphes (separes par \n\n), chaque paragraphe peut contenir des \n simples */
-  const paragraphs = text.split(/\n\n+/);
-  return paragraphs.map(para => {
-    if(!para.trim()) return '';
-    /* Echaper HTML */
-    let escaped = para
+  /* Chaque ligne = un <p> separe. Les lignes vides sont SAUTEES (pas de <p><br></p>)
+     car Quill normalise les <br> dans les <p>, et ca cree trop d'espace */
+  return text.split('\n').map(line => {
+    if(!line.trim()) return '';
+    /* Echaper HTML d'abord */
+    let escaped = line
       .replace(/&/g,'&amp;')
       .replace(/</g,'&lt;')
       .replace(/>/g,'&gt;');
-    /* Auto-bold : "1. Date :" → "<b>1. Date :</b>" - met en gras le numero + label */
-    escaped = escaped.replace(/^(\d+\.\s+[^:\n]+:)/gm, '<b>$1</b>');
-    /* Convertir \n simples en <br> dans un paragraphe */
-    escaped = escaped.replace(/\n/g, '<br>');
-    /* Auto-link URLs */
+    /* Auto-bold : "1. Date :" devient gras */
+    escaped = escaped.replace(/^(\d+\.\s+[^:]+:)/, '<b>$1</b>');
+    /* Placeholder [GOOGLE:url] devient le mot "Google" stylise aux couleurs Google */
+    escaped = escaped.replace(/\[GOOGLE:(https?:\/\/[^\]]+)\]/g, (match, url) =>
+      '<a href="'+url+'" target="_blank" rel="noopener" style="text-decoration:underline;font-weight:bold;">'+
+        '<span style="color:#4285F4;">G</span>'+
+        '<span style="color:#EA4335;">o</span>'+
+        '<span style="color:#FBBC05;">o</span>'+
+        '<span style="color:#4285F4;">g</span>'+
+        '<span style="color:#34A853;">l</span>'+
+        '<span style="color:#EA4335;">e</span>'+
+      '</a>'
+    );
+    /* Auto-link URLs restantes (qui ne sont pas dans un placeholder GOOGLE) */
     escaped = escaped.replace(urlRegex,'<a href="$1" target="_blank" rel="noopener">$1</a>');
     return '<p>'+escaped+'</p>';
   }).filter(p=>p).join('');
@@ -2917,9 +2924,9 @@ function getGoogleReviewLink(compagnie, region){
   /* GEQ par region */
   switch((region||'').toLowerCase()){
     case 'estrie':     return 'https://g.page/r/CfmpzSeDK_g7EBM/review';
-    case 'quebec':     return 'https://g.page/r/CYJ9_qnafVc-EBM/review';
+    case 'quebec':     return 'https://g.page/r/CcwF17qG5ZPEEBM/review';
     case 'mauricie':   return 'https://g.page/r/CWWo2Y-AWzjbEBM/review';
-    default:           return 'https://g.page/r/CcwF17qG5ZPEEAE/review'; /* fallback GEQ general */
+    default:           return 'https://g.page/r/CcwF17qG5ZPEEBM/review'; /* fallback = Quebec */
   }
 }
 
@@ -3104,13 +3111,13 @@ function getEmailContent(type){
   /* === RAPPORT D'INSPECTION FR === */
   if(type === 'rapp_inspection_fr') return {
     subj:'Voici votre rapport d\u2019inspection',
-    body:'Bonjour,\n\nMerci d\u2019avoir choisi '+compNom+'. Il nous fait plaisir de vous faire parvenir votre rapport d\u2019inspection.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : '+googleLink+'\n\nSi vous avez des questions concernant votre rapport d\u2019inspection, n\u2019h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur au '+techPhone+' et il se fera un plaisir de r\u00e9pondre \u00e0 vos questions.\n\nBien \u00e0 vous,',
+    body:'Bonjour,\n\nMerci d\u2019avoir choisi '+compNom+'. Il nous fait plaisir de vous faire parvenir votre rapport d\u2019inspection.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : [GOOGLE:'+googleLink+']\n\nSi vous avez des questions concernant votre rapport d\u2019inspection, n\u2019h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur au '+techPhone+' et il se fera un plaisir de r\u00e9pondre \u00e0 vos questions.\n\nBien \u00e0 vous,',
   };
 
   /* === INSPECTION REPORT EN === */
   if(type === 'rapp_inspection_en') return {
     subj:'Your inspection report',
-    body:'Hello,\n\nThank you for choosing '+compNomEn+'. We are pleased to send you your inspection report.\n\nIf you were satisfied with our service, please feel free to leave us a review on our page by clicking here : '+googleLink+'\n\nIf you have any questions about your inspection report, do not hesitate to contact your inspector at '+techPhone+' and he will be happy to answer them.\n\nBest regards,',
+    body:'Hello,\n\nThank you for choosing '+compNomEn+'. We are pleased to send you your inspection report.\n\nIf you were satisfied with our service, please feel free to leave us a review on our page by clicking here : [GOOGLE:'+googleLink+']\n\nIf you have any questions about your inspection report, do not hesitate to contact your inspector at '+techPhone+' and he will be happy to answer them.\n\nBest regards,',
   };
 
   /* === CONFIRMATION TEST DE QUALITE DE L'AIR FONGIQUE === */
@@ -3152,7 +3159,7 @@ function getEmailContent(type){
   /* === RAPPORT D'EXPERTISE TECHNIQUE === */
   if(type === 'rapp_expertise') return {
     subj:'Rapport d\u2019expertise technique',
-    body:'Bonjour,\n\nTel que convenu, vous trouverez en pi\u00e8ce jointe votre rapport d\u2019investigation.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : '+googleLink+'\n\nNous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire en restant disponibles pour toute question ou \u00e9claircissement suppl\u00e9mentaire.\n\nMerci !',
+    body:'Bonjour,\n\nTel que convenu, vous trouverez en pi\u00e8ce jointe votre rapport d\u2019investigation.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : [GOOGLE:'+googleLink+']\n\nNous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire en restant disponibles pour toute question ou \u00e9claircissement suppl\u00e9mentaire.\n\nMerci !',
   };
 
   /* === RESULTAT BIOTAPE === */
@@ -3164,19 +3171,19 @@ function getEmailContent(type){
   /* === RESULTATS AMIANTE MATERIAUX === */
   if(type === 'res_amiante_materiaux') return {
     subj:'R\u00e9sultats d\u2019analyse \u2013 Pr\u00e9sence d\u2019amiante dans les mat\u00e9riaux',
-    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour la pr\u00e9sence d\u2019amiante dans les mat\u00e9riaux pr\u00e9lev\u00e9s.\n\nLe rapport pr\u00e9sente les types de mat\u00e9riaux analys\u00e9s ainsi que la pr\u00e9sence ou non d\u2019amiante et, le cas \u00e9ch\u00e9ant, la concentration d\u00e9tect\u00e9e.\n\nSi des actions correctives sont recommand\u00e9es, n\u2019h\u00e9sitez pas \u00e0 nous contacter pour discuter des prochaines \u00e9tapes ou pour obtenir un accompagnement.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : '+googleLink+'\n\nMerci de votre confiance,',
+    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour la pr\u00e9sence d\u2019amiante dans les mat\u00e9riaux pr\u00e9lev\u00e9s.\n\nLe rapport pr\u00e9sente les types de mat\u00e9riaux analys\u00e9s ainsi que la pr\u00e9sence ou non d\u2019amiante et, le cas \u00e9ch\u00e9ant, la concentration d\u00e9tect\u00e9e.\n\nSi des actions correctives sont recommand\u00e9es, n\u2019h\u00e9sitez pas \u00e0 nous contacter pour discuter des prochaines \u00e9tapes ou pour obtenir un accompagnement.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : [GOOGLE:'+googleLink+']\n\nMerci de votre confiance,',
   };
 
   /* === RESULTATS AMIANTE AIR === */
   if(type === 'res_amiante_air') return {
     subj:'R\u00e9sultats d\u2019analyse \u2013 Fibre d\u2019amiante dans l\u2019air',
-    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour la pr\u00e9sence de fibres d\u2019amiante dans l\u2019air ambiant.\n\nLe rapport pr\u00e9sente la concentration totale en fibres d\u00e9tect\u00e9e ainsi que l\u2019\u00e9valuation par rapport aux valeurs guides applicables. Si une analyse plus pouss\u00e9e par microscopie \u00e9lectronique \u00e0 transmission (MET) a \u00e9t\u00e9 effectu\u00e9e, les r\u00e9sultats sp\u00e9cifiques sont \u00e9galement inclus.\n\nSi vous avez des questions ou si vous souhaitez des recommandations pour la suite, n\u2019h\u00e9sitez pas \u00e0 nous contacter.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : '+googleLink+'\n\nMerci de votre confiance,',
+    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour la pr\u00e9sence de fibres d\u2019amiante dans l\u2019air ambiant.\n\nLe rapport pr\u00e9sente la concentration totale en fibres d\u00e9tect\u00e9e ainsi que l\u2019\u00e9valuation par rapport aux valeurs guides applicables. Si une analyse plus pouss\u00e9e par microscopie \u00e9lectronique \u00e0 transmission (MET) a \u00e9t\u00e9 effectu\u00e9e, les r\u00e9sultats sp\u00e9cifiques sont \u00e9galement inclus.\n\nSi vous avez des questions ou si vous souhaitez des recommandations pour la suite, n\u2019h\u00e9sitez pas \u00e0 nous contacter.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : [GOOGLE:'+googleLink+']\n\nMerci de votre confiance,',
   };
 
   /* === RESULTATS TEST AIR FONGIQUE === */
   if(type === 'res_test_air') return {
     subj:'R\u00e9sultats d\u2019analyse \u2013 Test de qualit\u00e9 de l\u2019air fongique',
-    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour le test de qualit\u00e9 de l\u2019air fongique r\u00e9alis\u00e9 dans votre propri\u00e9t\u00e9.\n\nLe rapport pr\u00e9sente les types de moisissures d\u00e9tect\u00e9s, leur concentration ainsi qu\u2019une \u00e9valuation de la qualit\u00e9 de l\u2019air int\u00e9rieur compar\u00e9e \u00e0 l\u2019air ext\u00e9rieur.\n\nN\u2019h\u00e9sitez pas \u00e0 me contacter si vous avez des questions sur l\u2019interpr\u00e9tation des r\u00e9sultats ou si vous souhaitez discuter des prochaines \u00e9tapes possibles.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : '+googleLink+'\n\nMerci de votre confiance,',
+    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour le test de qualit\u00e9 de l\u2019air fongique r\u00e9alis\u00e9 dans votre propri\u00e9t\u00e9.\n\nLe rapport pr\u00e9sente les types de moisissures d\u00e9tect\u00e9s, leur concentration ainsi qu\u2019une \u00e9valuation de la qualit\u00e9 de l\u2019air int\u00e9rieur compar\u00e9e \u00e0 l\u2019air ext\u00e9rieur.\n\nN\u2019h\u00e9sitez pas \u00e0 me contacter si vous avez des questions sur l\u2019interpr\u00e9tation des r\u00e9sultats ou si vous souhaitez discuter des prochaines \u00e9tapes possibles.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : [GOOGLE:'+googleLink+']\n\nMerci de votre confiance,',
   };
 
   return null;
