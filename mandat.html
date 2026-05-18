@@ -926,7 +926,7 @@ input[type=file]{display:none;}
     <div class="sec-title"><span class="ic">&#128197;</span> Planification</div>
     <div class="grid2">
       <div class="fg"><label>Date</label><input id="f-date" type="date"></div>
-      <div class="fg"><label>Heure</label><input id="f-heure" type="time"></div>
+      <div class="fg"><label>Heure</label><select id="f-heure" onchange="markDirty()"></select></div>
     </div>
 
     <div class="gcal-block">
@@ -1539,6 +1539,8 @@ techsFiltered.forEach(t=>{
     document.getElementById('f-compagnie').value=comp;
     if(profile.role==='technicien') document.getElementById('f-tech').value=profile.id;
     if(comp==='logica') extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
+    /* Peupler le select Heure avec les options aux 15 min */
+    populateHeureSelect('');
     onCompagnieChange();
     updateGcalStatus();
     /* Pour nouveau mandat: aucune valeur par defaut, l'utilisateur DOIT choisir */
@@ -1607,6 +1609,55 @@ techsFiltered.forEach(t=>{
   setTimeout(()=>{formInitialized=true;},400);
 })();
 
+/* Peuple le <select> Heure avec les tranches de 15 minutes de 06h00 a 21h45.
+   Si selectedValue n'est pas dans la liste (ex: 09:47 venant de Google), on l'ajoute
+   en haut comme "Heure personnalisee" pour ne pas la perdre. */
+function populateHeureSelect(selectedValue){
+  const sel = document.getElementById('f-heure');
+  if(!sel) return;
+  sel.innerHTML = '';
+
+  /* Option vide */
+  const empty = document.createElement('option');
+  empty.value = '';
+  empty.textContent = '-- Heure --';
+  sel.appendChild(empty);
+
+  /* Liste standard : 06h00 a 21h45 par tranches de 15 min */
+  const standardHours = [];
+  for(let h=6; h<=21; h++){
+    for(let m of [0,15,30,45]){
+      const hh = String(h).padStart(2,'0');
+      const mm = String(m).padStart(2,'0');
+      standardHours.push(hh+':'+mm);
+    }
+  }
+
+  /* Si la valeur selectionnee n'est pas standard, l'ajouter en haut */
+  if(selectedValue && !standardHours.includes(selectedValue)){
+    const opt = document.createElement('option');
+    opt.value = selectedValue;
+    opt.textContent = selectedValue+' (personnalis\u00e9e)';
+    sel.appendChild(opt);
+    /* Separateur visuel */
+    const sep = document.createElement('option');
+    sep.disabled = true;
+    sep.textContent = '\u2500\u2500\u2500\u2500\u2500\u2500\u2500';
+    sel.appendChild(sep);
+  }
+
+  /* Ajouter toutes les options standard */
+  standardHours.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    sel.appendChild(opt);
+  });
+
+  /* Selectionner la valeur si fournie */
+  if(selectedValue) sel.value = selectedValue;
+}
+
 function fillForm(){
   const m=mandat;
   document.getElementById('f-compagnie').value=m.compagnie||'logica';
@@ -1616,7 +1667,8 @@ function fillForm(){
   document.getElementById('f-adresse').value=m.adresse||'';
   document.getElementById('f-region').value=m.region||'quebec';
   document.getElementById('f-date').value=m.date_mandat||'';
-  document.getElementById('f-heure').value=m.heure_mandat?m.heure_mandat.substring(0,5):'';
+  /* Heure : on peuple le select avec les tranches de 15 min, en ajoutant la valeur existante si non-standard */
+  populateHeureSelect(m.heure_mandat?m.heure_mandat.substring(0,5):'');
   document.getElementById('f-tech').value=m.technicien_id||'';
   setEditorHTML(notesEditor,m.notes||'');
   /* Suivi client: statut + prochain rappel */
