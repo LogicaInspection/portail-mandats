@@ -102,6 +102,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .mandat-selected{background:#f3e5f5;border:1.5px solid #6a1b9a;border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:#4a148c;font-weight:500;}
 .mandat-clear{background:transparent;border:none;color:#6a1b9a;cursor:pointer;font-size:14px;padding:4px 8px;border-radius:6px;}
 .mandat-clear:hover{background:rgba(106,27,154,0.1);}
+
+/* ===== Fichier joint ===== */
+.btn-add-file{
+  background:#fafbfc;border:1.5px dashed #b0bec5;color:#37474f;
+  padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-add-file:hover{border-color:#1565c0;background:#e3f0ff;color:#1565c0;}
+#fichier-info{
+  border:1.5px solid #e8eaed;border-radius:8px;background:#f8f9fa;
+  padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:13px;
+}
+.fichier-info-icon{font-size:18px;}
+.fichier-info-name{flex:1;color:#37474f;font-weight:500;word-break:break-all;}
+.fichier-info-size{font-size:11px;color:#888;}
+.fichier-info-remove{
+  background:none;border:none;color:#c62828;cursor:pointer;
+  font-size:14px;padding:4px 8px;border-radius:4px;
+}
+.fichier-info-remove:hover{background:#fee2e2;}
+
+/* Lien fichier dans la task card */
+.task-fichier-link{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#e3f0ff;color:#1565c0;
+  padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;
+  text-decoration:none;margin-top:6px;
+  transition:all 0.15s;
+}
+.task-fichier-link:hover{background:#1565c0;color:white;}
 .mfooter{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid #f3f4f6;}
 .btn-cancel{padding:10px 16px;border:1.5px solid #e5e7eb;border-radius:9px;background:white;color:#666;font-size:14px;cursor:pointer;}
 .btn-cancel:hover{background:#f5f5f5;}
@@ -214,6 +244,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
       </div>
     </div>
 
+    <!-- Fichier joint (optionnel) -->
+    <div class="mfield">
+      <label style="display:flex;align-items:center;justify-content:space-between;">
+        <span>&#128206; Fichier joint (optionnel)</span>
+        <button type="button" class="btn-add-file" onclick="document.getElementById('f-fichier').click()">Choisir un fichier</button>
+      </label>
+      <input type="file" id="f-fichier" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.docx,.doc,.xlsx" style="display:none" onchange="onFichierSelected(event)">
+      <div id="fichier-info" style="display:none;"></div>
+    </div>
+
     <div class="mfooter">
       <button class="btn-cancel" onclick="closeTacheModal()">Annuler</button>
       <button class="btn-save" onclick="submitTache()">&#10003; Enregistrer</button>
@@ -239,6 +279,13 @@ let currentTab = 'mine';     /* 'mine' ou 'assigned' */
 let currentFilter = 'active'; /* 'active' / 'echue' / 'complete' / 'all' */
 let editingId = null;
 let modalPriorite = 'normale';
+/* Etat du fichier joint dans le modal courant :
+   - selectedFile : nouveau File (pas encore uploade) si l'utilisateur en a choisi un
+   - existingFichier : {url, nom, taille} si on edite une tache avec deja un fichier */
+let selectedFile = null;
+let existingFichier = null;
+/* Marqueur : si l'utilisateur a retire le fichier existant (en mode edition) */
+let fichierRemoved = false;
 
 const PRI_LABELS = {
   'urgente': {icon:'\uD83D\uDD25', label:'Urgente'},
@@ -401,6 +448,11 @@ function renderTacheCard(t){
     ? `<a href="mandat.html?id=${t.mandat.id}" class="task-mandat-link" onclick="event.stopPropagation()">&#128279; ${escapeHtml(t.mandat.client_nom||'Mandat')}</a>`
     : '';
 
+  /* Lien fichier joint si present */
+  const fichierLink = t.fichier_url
+    ? `<a href="${t.fichier_url}" target="_blank" rel="noopener" class="task-fichier-link" onclick="event.stopPropagation()">${getFileIcon(t.fichier_nom||'')} ${escapeHtml(t.fichier_nom||'Fichier')}</a>`
+    : '';
+
   const canEdit = t.creee_par===profile.id || t.assignee_id===profile.id || profile.role==='gestionnaire';
   const canDelete = t.creee_par===profile.id || profile.role==='gestionnaire';
 
@@ -413,6 +465,7 @@ function renderTacheCard(t){
     <div class="task-body">
       <div class="task-titre">${escapeHtml(t.titre)}</div>
       ${t.description?`<div class="task-desc">${escapeHtml(t.description)}</div>`:''}
+      ${fichierLink}
       <div class="task-meta">
         <span class="task-pri-badge ${t.priorite||'normale'}">${priInfo.icon} ${priInfo.label}</span>
         ${echeanceHtml}
@@ -453,6 +506,12 @@ async function openTacheModal(){
   document.getElementById('f-mandat-search').style.display = 'block';
   document.getElementById('mandat-selected').style.display = 'none';
   document.getElementById('mandat-results').style.display = 'none';
+  /* Reset fichier joint */
+  selectedFile = null;
+  existingFichier = null;
+  fichierRemoved = false;
+  document.getElementById('f-fichier').value = '';
+  renderFichierInfo();
   setPriorite('normale');
   await loadMandatsForLink();
   document.getElementById('modal-tache').style.display = 'flex';
@@ -470,6 +529,17 @@ async function editTache(id){
   document.getElementById('f-echeance').value = t.date_echeance||'';
   setPriorite(t.priorite||'normale');
   await loadMandatsForLink();
+
+  /* Charger fichier existant si present */
+  selectedFile = null;
+  fichierRemoved = false;
+  document.getElementById('f-fichier').value = '';
+  if(t.fichier_url){
+    existingFichier = {url:t.fichier_url, nom:t.fichier_nom||'Fichier', taille:t.fichier_taille||0};
+  } else {
+    existingFichier = null;
+  }
+  renderFichierInfo();
 
   /* Reset puis pre-remplir selon donnees existantes */
   document.getElementById('f-mandat').value = '';
@@ -508,6 +578,101 @@ async function editTache(id){
 function closeTacheModal(){
   document.getElementById('modal-tache').style.display = 'none';
   editingId = null;
+  selectedFile = null;
+  existingFichier = null;
+  fichierRemoved = false;
+}
+
+/* ===== GESTION DU FICHIER JOINT ===== */
+
+function formatFileSize(bytes){
+  if(!bytes||bytes===0) return '';
+  if(bytes < 1024) return bytes+' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(1)+' KB';
+  return (bytes/(1024*1024)).toFixed(1)+' MB';
+}
+
+function getFileIcon(name){
+  const ext = (name||'').toLowerCase().split('.').pop();
+  if(['jpg','jpeg','png','gif','webp'].includes(ext)) return '\u{1F5BC}\u{FE0F}'; /* image */
+  if(ext === 'pdf') return '\u{1F4C4}'; /* PDF */
+  if(['doc','docx'].includes(ext)) return '\u{1F4DD}'; /* word */
+  if(['xls','xlsx'].includes(ext)) return '\u{1F4CA}'; /* excel */
+  return '\u{1F4CE}'; /* defaut: trombone */
+}
+
+function renderFichierInfo(){
+  const info = document.getElementById('fichier-info');
+  if(!info) return;
+  /* Priorite: fichier nouveau selectionne > fichier existant */
+  if(selectedFile){
+    info.style.display='flex';
+    info.innerHTML =
+      '<span class="fichier-info-icon">'+getFileIcon(selectedFile.name)+'</span>'+
+      '<div class="fichier-info-name">'+escapeHtml(selectedFile.name)+
+      '<div class="fichier-info-size">'+formatFileSize(selectedFile.size)+' \u00b7 Nouveau fichier</div></div>'+
+      '<button type="button" class="fichier-info-remove" onclick="removeFichier()" title="Retirer">&#10005;</button>';
+  } else if(existingFichier && !fichierRemoved){
+    info.style.display='flex';
+    const sizeTxt = existingFichier.taille ? formatFileSize(existingFichier.taille) : '';
+    info.innerHTML =
+      '<span class="fichier-info-icon">'+getFileIcon(existingFichier.nom)+'</span>'+
+      '<div class="fichier-info-name"><a href="'+existingFichier.url+'" target="_blank" rel="noopener" style="color:#1565c0;text-decoration:underline;">'+escapeHtml(existingFichier.nom)+'</a>'+
+      '<div class="fichier-info-size">'+sizeTxt+(sizeTxt?' \u00b7 ':'')+'Fichier existant</div></div>'+
+      '<button type="button" class="fichier-info-remove" onclick="removeFichier()" title="Retirer">&#10005;</button>';
+  } else {
+    info.style.display='none';
+    info.innerHTML='';
+  }
+}
+
+function onFichierSelected(event){
+  const files = event.target.files;
+  if(!files || !files.length) return;
+  const file = files[0];
+  /* Limite 10 MB */
+  if(file.size > 10*1024*1024){
+    toast('Fichier trop volumineux (max 10 MB)','err');
+    event.target.value='';
+    return;
+  }
+  selectedFile = file;
+  /* Si on remplace un fichier existant, on le marque comme retire */
+  if(existingFichier) fichierRemoved = true;
+  renderFichierInfo();
+}
+
+function removeFichier(){
+  selectedFile = null;
+  /* Si fichier existant, on le marque comme retire */
+  if(existingFichier) fichierRemoved = true;
+  document.getElementById('f-fichier').value = '';
+  renderFichierInfo();
+}
+
+/* Upload un fichier vers Supabase Storage et retourne {url, nom, taille, mimetype} */
+async function uploadFichier(file, tacheId){
+  /* Path unique : {tacheId}/{timestamp}-{nomFichier} */
+  const cleanName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const path = tacheId + '/' + Date.now() + '-' + cleanName;
+  const {data, error} = await sb.storage.from('taches-fichiers').upload(path, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type || undefined,
+  });
+  if(error) throw error;
+  /* Generer URL signee (24h, bucket prive) */
+  const {data:urlData, error:urlErr} = await sb.storage
+    .from('taches-fichiers')
+    .createSignedUrl(path, 60*60*24*365); /* 1 an */
+  if(urlErr) throw urlErr;
+  return {
+    url: urlData.signedUrl,
+    storage_path: path, /* pour pouvoir supprimer plus tard */
+    nom: file.name,
+    taille: file.size,
+    mimetype: file.type||'application/octet-stream',
+  };
 }
 
 function setPriorite(p){
@@ -644,17 +809,52 @@ async function submitTache(){
     mandat_id: mandatId,
   };
 
-  if(editingId){
-    const {error} = await sb.from('taches').update(payload).eq('id',editingId);
-    if(error){toast('Erreur: '+error.message,'err');return;}
-    toast('T\u00e2che mise \u00e0 jour');
-  } else {
-    payload.creee_par = profile.id;
-    const {error} = await sb.from('taches').insert(payload);
-    if(error){toast('Erreur: '+error.message,'err');return;}
-    toast('T\u00e2che cr\u00e9\u00e9e');
+  /* Gestion fichier joint :
+     - Si l'utilisateur a retire le fichier existant (fichierRemoved=true) : on vide les colonnes
+     - Sinon on garde le fichier existant (rien a faire) */
+  if(fichierRemoved && !selectedFile){
+    payload.fichier_url = null;
+    payload.fichier_nom = null;
+    payload.fichier_taille = null;
+    payload.fichier_mimetype = null;
   }
 
+  let tacheId = editingId;
+  let dbError = null;
+
+  if(editingId){
+    const {error} = await sb.from('taches').update(payload).eq('id',editingId);
+    dbError = error;
+  } else {
+    payload.creee_par = profile.id;
+    const {data, error} = await sb.from('taches').insert(payload).select().single();
+    dbError = error;
+    if(data) tacheId = data.id;
+  }
+
+  if(dbError){toast('Erreur: '+dbError.message,'err');return;}
+
+  /* Upload du fichier si nouveau fichier selectionne */
+  if(selectedFile && tacheId){
+    toast('Upload du fichier en cours...');
+    try{
+      const uploaded = await uploadFichier(selectedFile, tacheId);
+      const {error:upErr} = await sb.from('taches').update({
+        fichier_url: uploaded.url,
+        fichier_nom: uploaded.nom,
+        fichier_taille: uploaded.taille,
+        fichier_mimetype: uploaded.mimetype,
+      }).eq('id',tacheId);
+      if(upErr){
+        toast('Tache cree mais fichier non sauvegarde : '+upErr.message,'err');
+      }
+    }catch(e){
+      console.error('Upload fichier echec:', e);
+      toast('Echec upload fichier : '+(e.message||'erreur inconnue'),'err');
+    }
+  }
+
+  toast(editingId?'T\u00e2che mise \u00e0 jour':'T\u00e2che cr\u00e9\u00e9e');
   closeTacheModal();
   await loadTaches();
 }
