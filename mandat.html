@@ -443,6 +443,86 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 .btn-gcal:hover{background:#1976d2;color:white;}
 .btn-gcal.added{background:#e8f5e9;border-color:#43a047;color:#2e7d32;}
 .btn-gcal.added:hover{background:#43a047;color:white;}
+
+/* Bouton "Voir mon calendrier Google" - separe du bouton Ajouter */
+.btn-gcal-view{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;margin-top:10px;padding:9px 14px;
+  background:#f3e5f5;border:1.5px solid #ce93d8;color:#6a1b9a;
+  border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-gcal-view:hover{background:#6a1b9a;color:white;border-color:#6a1b9a;}
+
+/* ===== Mini-calendrier Google ===== */
+.gcal-nav-btn{
+  width:36px;height:36px;background:white;border:1.5px solid #e0e0e0;
+  border-radius:8px;cursor:pointer;font-size:11px;color:#1a1a2e;
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+}
+.gcal-nav-btn:hover{background:#1a1a2e;color:white;border-color:#1a1a2e;}
+.gcal-today-btn{
+  padding:8px 16px;background:white;border:1.5px solid #e0e0e0;color:#1a1a2e;
+  border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.15s;
+}
+.gcal-today-btn:hover{background:#1a1a2e;color:white;border-color:#1a1a2e;}
+.gcal-open-btn{
+  padding:8px 14px;background:#e3f0ff;border:1.5px solid #90caf9;color:#1565c0;
+  border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all 0.15s;
+}
+.gcal-open-btn:hover{background:#1565c0;color:white;}
+
+/* Filter chips */
+.gcal-filter-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;background:white;border:1.5px solid #e0e0e0;border-radius:14px;
+  font-size:12px;cursor:pointer;transition:all 0.15s;color:#666;
+}
+.gcal-filter-chip input{margin:0;cursor:pointer;}
+.gcal-filter-chip.on{background:#e8f5e9;border-color:#4caf50;color:#1b5e20;font-weight:600;}
+.gcal-filter-chip .chip-color{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* Grille du calendrier */
+.gcal-grid-table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  background:white;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;
+}
+.gcal-grid-table th{
+  background:#fafbfc;padding:10px;font-size:11px;font-weight:700;color:#666;
+  text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #e0e0e0;
+  text-align:center;
+}
+.gcal-grid-table td{
+  vertical-align:top;border-right:1px solid #f0f1f3;border-bottom:1px solid #f0f1f3;
+  padding:6px;width:14.28%;height:110px;
+  position:relative;cursor:pointer;transition:background 0.15s;
+}
+.gcal-grid-table td:last-child{border-right:none;}
+.gcal-grid-table tr:last-child td{border-bottom:none;}
+.gcal-grid-table td.other-month{background:#fafbfc;color:#bbb;}
+.gcal-grid-table td.other-month .gcal-daynum{color:#bbb;}
+.gcal-grid-table td.today{background:#e3f0ff;}
+.gcal-grid-table td.today .gcal-daynum{background:#1565c0;color:white;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;}
+.gcal-grid-table td.mandat-day{outline:2px solid #6a1b9a;outline-offset:-2px;background:#f3e5f5;}
+.gcal-grid-table td:hover:not(.other-month){background:#f5f7fa;}
+.gcal-grid-table td.today:hover{background:#d0e4fa;}
+.gcal-grid-table td.mandat-day:hover{background:#e9d6f0;}
+
+.gcal-daynum{font-size:13px;font-weight:600;color:#333;display:inline-block;margin-bottom:2px;}
+
+/* Pastilles d'events */
+.gcal-event{
+  display:block;font-size:10.5px;line-height:1.2;
+  padding:2px 5px;margin-top:2px;border-radius:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:white;font-weight:500;cursor:pointer;
+}
+.gcal-event-time{font-weight:700;margin-right:3px;}
+.gcal-more-events{
+  display:block;font-size:10px;color:#666;margin-top:2px;padding:1px 4px;
+  cursor:pointer;font-weight:600;
+}
+.gcal-more-events:hover{color:#1565c0;text-decoration:underline;}
 .btn-gcal-remove{width:36px;height:36px;border:1.5px solid #e0e0e0;background:white;color:#c62828;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;}
 .btn-gcal-remove:hover{background:#ffebee;border-color:#c62828;}
 .gcal-status{margin-top:8px;font-size:12px;color:#666;line-height:1.4;}
@@ -847,6 +927,10 @@ input[type=file]{display:none;}
         <button type="button" class="btn-gcal-remove" id="btn-gcal-remove" onclick="removeFromGoogleCalendar()" style="display:none" title="Retirer du calendrier">&#10005;</button>
       </div>
       <div id="gcal-status" class="gcal-status">Pas encore ajout&eacute;</div>
+      <!-- Bouton pour ouvrir le mini-calendrier mensuel -->
+      <button type="button" class="btn-gcal-view" onclick="openGCalView()">
+        &#128197; Voir mon calendrier Google
+      </button>
     </div>
 
     <div style="margin-top:14px">
@@ -1090,6 +1174,51 @@ input[type=file]{display:none;}
     </div>
   </div>
 
+</div>
+
+<!-- ===== MODAL MINI-CALENDRIER GOOGLE ===== -->
+<div class="ov" id="modal-gcal-view" style="display:none">
+  <div class="modal" style="max-width:1100px;width:96%;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h2 style="margin:0;display:flex;align-items:center;gap:10px;">
+        <span>&#128197;</span> Mon calendrier Google
+      </h2>
+      <button class="btn-cancel" onclick="closeGCalView()" style="padding:6px 14px;">Fermer</button>
+    </div>
+
+    <!-- Etat de connexion -->
+    <div id="gcal-view-auth" style="display:none;padding:16px;background:#fff3e0;border:1.5px solid #ffb74d;border-radius:10px;margin-bottom:14px;text-align:center;">
+      <p style="margin:0 0 10px 0;color:#bf6a00;">Tu dois te connecter \u00e0 Google Calendar pour voir tes rendez-vous.</p>
+      <button class="btn-gc" onclick="connectGmail()">Connecter mon Google</button>
+    </div>
+
+    <!-- Filtre des calendriers -->
+    <div id="gcal-filter" style="display:none;margin-bottom:14px;padding:10px 14px;background:#f8f9fa;border-radius:9px;">
+      <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px;">Calendriers visibles</div>
+      <div id="gcal-filter-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+
+    <!-- Navigation mois -->
+    <div id="gcal-nav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="gcal-nav-btn" onclick="gcalPrevMonth()" title="Mois pr\u00e9c\u00e9dent">&#9664;</button>
+        <button class="gcal-nav-btn" onclick="gcalNextMonth()" title="Mois suivant">&#9654;</button>
+        <button class="gcal-today-btn" onclick="gcalToday()">Aujourd'hui</button>
+      </div>
+      <div id="gcal-month-title" style="font-size:18px;font-weight:700;color:#1a1a2e;">Juin 2026</div>
+      <a id="gcal-open-google" href="https://calendar.google.com" target="_blank" rel="noopener" class="gcal-open-btn">
+        Ouvrir Google Calendar &#8599;
+      </a>
+    </div>
+
+    <!-- Loading -->
+    <div id="gcal-loading" style="display:none;text-align:center;padding:40px;color:#999;">
+      Chargement des \u00e9v\u00e9nements...
+    </div>
+
+    <!-- Grille calendrier -->
+    <div id="gcal-grid" style="display:none;"></div>
+  </div>
 </div>
 
 <div class="ov" id="modal-email" style="display:none">
@@ -4981,6 +5110,287 @@ function toast(msg,type){
   /* Duree proportionnelle a la longueur du message (min 2.8s, max 6s) */
   const dur=Math.min(6000,Math.max(2800,msg.length*70));
   setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+/* ===========================================================
+   MINI-CALENDRIER GOOGLE - Vue mensuelle des evenements
+   - Affiche les events du mois courant (tous les calendriers Google de l'utilisateur)
+   - Filtre par calendrier (chaque calendrier a sa case a cocher)
+   - Navigation mois precedent/suivant
+   - Met en evidence : aujourd'hui (bleu) + jour du mandat (violet)
+   =========================================================== */
+
+let gcalCurrentMonth = new Date();
+gcalCurrentMonth.setDate(1);
+let gcalCalendars = [];
+let gcalVisibleCalIds = null;
+let gcalEvents = [];
+
+const GCAL_FILTER_KEY = 'gcal_visible_calendars_v1';
+const GCAL_MONTH_NAMES = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin','Juillet','Ao\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
+const GCAL_DAY_NAMES = ['DIM','LUN','MAR','MER','JEU','VEN','SAM'];
+const GCAL_EVENT_COLORS = {
+  '1':'#7986cb','2':'#33b679','3':'#8e24aa','4':'#e67c73',
+  '5':'#f6c026','6':'#f5511d','7':'#039be5','8':'#616161',
+  '9':'#3f51b5','10':'#0b8043','11':'#d60000',
+};
+
+async function openGCalView(){
+  document.getElementById('modal-gcal-view').style.display='flex';
+  document.getElementById('gcal-view-auth').style.display='none';
+  document.getElementById('gcal-filter').style.display='none';
+  document.getElementById('gcal-nav').style.display='none';
+  document.getElementById('gcal-grid').style.display='none';
+  document.getElementById('gcal-loading').style.display='block';
+
+  const token = localStorage.getItem('portail_gmail_token');
+  const expiry = parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
+  if(!token || Date.now() >= expiry){
+    document.getElementById('gcal-loading').style.display='none';
+    document.getElementById('gcal-view-auth').style.display='block';
+    return;
+  }
+
+  if(!gcalCalendars.length){
+    const ok = await loadGCalendars();
+    if(!ok){
+      document.getElementById('gcal-loading').style.display='none';
+      document.getElementById('gcal-view-auth').style.display='block';
+      return;
+    }
+  }
+
+  if(mandat && mandat.date_mandat){
+    const d = new Date(mandat.date_mandat+'T12:00:00');
+    gcalCurrentMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+  } else {
+    const now = new Date();
+    gcalCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+
+  renderGCalFilters();
+  await renderGCalGrid();
+}
+
+function closeGCalView(){
+  document.getElementById('modal-gcal-view').style.display='none';
+}
+
+async function loadGCalendars(){
+  const token = localStorage.getItem('portail_gmail_token');
+  try{
+    const resp = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader',{
+      headers:{'Authorization':'Bearer '+token}
+    });
+    if(!resp.ok) return false;
+    const data = await resp.json();
+    gcalCalendars = (data.items||[]).map(c=>({
+      id:c.id, name:c.summaryOverride||c.summary,
+      color:c.backgroundColor||'#1a73e8', primary:!!c.primary,
+    }));
+    let saved = null;
+    try{ saved = JSON.parse(localStorage.getItem(GCAL_FILTER_KEY)||'null'); }catch(e){}
+    if(saved && Array.isArray(saved)){
+      gcalVisibleCalIds = new Set(saved);
+      /* Verifier que tous les ids saved existent toujours */
+      gcalVisibleCalIds = new Set([...gcalVisibleCalIds].filter(id => gcalCalendars.find(c=>c.id===id)));
+    } else {
+      gcalVisibleCalIds = new Set(gcalCalendars.map(c=>c.id));
+    }
+    return true;
+  }catch(e){
+    console.error('Erreur chargement calendriers:',e);
+    return false;
+  }
+}
+
+function renderGCalFilters(){
+  const wrap = document.getElementById('gcal-filter-list');
+  wrap.innerHTML = '';
+  const sorted = [...gcalCalendars].sort((a,b)=>{
+    if(a.primary && !b.primary) return -1;
+    if(b.primary && !a.primary) return 1;
+    return a.name.localeCompare(b.name);
+  });
+  sorted.forEach(c=>{
+    const isOn = gcalVisibleCalIds.has(c.id);
+    const chip = document.createElement('label');
+    chip.className = 'gcal-filter-chip'+(isOn?' on':'');
+    chip.innerHTML =
+      '<input type="checkbox" '+(isOn?'checked':'')+'>'+
+      '<span class="chip-color" style="background:'+c.color+'"></span>'+
+      '<span>'+escapeHtml(c.name)+'</span>';
+    const cb = chip.querySelector('input');
+    cb.addEventListener('change',()=>{
+      if(cb.checked) gcalVisibleCalIds.add(c.id);
+      else gcalVisibleCalIds.delete(c.id);
+      chip.classList.toggle('on',cb.checked);
+      localStorage.setItem(GCAL_FILTER_KEY, JSON.stringify([...gcalVisibleCalIds]));
+      renderGCalGrid();
+    });
+    wrap.appendChild(chip);
+  });
+  document.getElementById('gcal-filter').style.display='block';
+}
+
+async function renderGCalGrid(){
+  document.getElementById('gcal-loading').style.display='block';
+  document.getElementById('gcal-grid').style.display='none';
+
+  const year = gcalCurrentMonth.getFullYear();
+  const month = gcalCurrentMonth.getMonth();
+  document.getElementById('gcal-month-title').textContent = GCAL_MONTH_NAMES[month]+' '+year;
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month+1, 0);
+  const gridStart = new Date(firstDay);
+  gridStart.setDate(firstDay.getDate() - firstDay.getDay());
+  const gridEnd = new Date(lastDay);
+  gridEnd.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+  gridEnd.setHours(23,59,59,999);
+
+  await loadGCalEvents(gridStart, gridEnd);
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const mandatDateStr = mandat ? (mandat.date_mandat||'') : '';
+
+  let html = '<table class="gcal-grid-table"><thead><tr>';
+  GCAL_DAY_NAMES.forEach(d=>html+='<th>'+d+'</th>');
+  html += '</tr></thead><tbody>';
+
+  let cursor = new Date(gridStart);
+  while(cursor <= gridEnd){
+    html += '<tr>';
+    for(let i=0; i<7; i++){
+      const dStr = formatDateISO(cursor);
+      const cursorMid = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+      const isOtherMonth = cursor.getMonth() !== month;
+      const isToday = cursorMid.getTime() === today.getTime();
+      const isMandatDay = mandatDateStr === dStr;
+      const classes = [
+        isOtherMonth?'other-month':'',
+        isToday?'today':'',
+        isMandatDay?'mandat-day':'',
+      ].filter(Boolean).join(' ');
+      html += '<td class="'+classes+'" data-date="'+dStr+'" onclick="onGCalDayClick(\''+dStr+'\')">';
+      html += '<span class="gcal-daynum">'+cursor.getDate()+'</span>';
+      const dayEvents = gcalEventsForDay(cursor).filter(e=>gcalVisibleCalIds.has(e.calendarId));
+      const maxDisplay = 4;
+      dayEvents.slice(0, maxDisplay).forEach(ev=>{
+        html += buildGCalEventPill(ev);
+      });
+      if(dayEvents.length > maxDisplay){
+        html += '<span class="gcal-more-events">+'+(dayEvents.length-maxDisplay)+' autre(s)</span>';
+      }
+      html += '</td>';
+      cursor.setDate(cursor.getDate()+1);
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+
+  document.getElementById('gcal-grid').innerHTML = html;
+  document.getElementById('gcal-loading').style.display='none';
+  document.getElementById('gcal-grid').style.display='block';
+  document.getElementById('gcal-nav').style.display='flex';
+}
+
+function buildGCalEventPill(ev){
+  const cal = gcalCalendars.find(c=>c.id===ev.calendarId);
+  const color = ev.color || (cal ? cal.color : '#1a73e8');
+  const isAllDay = !!ev.allDay;
+  let timeStr = '';
+  if(!isAllDay && ev.start){
+    const h = ev.start.getHours();
+    const m = ev.start.getMinutes();
+    if(m===0) timeStr = (h<12?h+'am':(h===12?'12pm':(h-12)+'pm'));
+    else timeStr = h+':'+String(m).padStart(2,'0');
+  }
+  const title = escapeHtml(ev.summary||'(sans titre)');
+  const tooltip = (isAllDay?'Toute la journ\u00e9e':timeStr)+' \u00b7 '+title;
+  return '<span class="gcal-event" style="background:'+color+'" title="'+escapeHtml(tooltip)+'">'+
+    (timeStr?'<span class="gcal-event-time">'+timeStr+'</span>':'')+
+    title+
+  '</span>';
+}
+
+async function loadGCalEvents(start, end){
+  gcalEvents = [];
+  if(!gcalCalendars.length) return;
+  const token = localStorage.getItem('portail_gmail_token');
+  const timeMin = start.toISOString();
+  const timeMax = end.toISOString();
+
+  /* Charger en parallele tous les calendriers visibles uniquement */
+  const calsToLoad = gcalCalendars.filter(c => gcalVisibleCalIds.has(c.id));
+  const promises = calsToLoad.map(async cal=>{
+    try{
+      const url = 'https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(cal.id)+
+        '/events?timeMin='+encodeURIComponent(timeMin)+
+        '&timeMax='+encodeURIComponent(timeMax)+
+        '&singleEvents=true&orderBy=startTime&maxResults=250';
+      const resp = await fetch(url,{headers:{'Authorization':'Bearer '+token}});
+      if(!resp.ok) return [];
+      const data = await resp.json();
+      return (data.items||[]).map(it=>{
+        const allDay = !!it.start.date;
+        const startDt = allDay ? new Date(it.start.date+'T00:00:00') : new Date(it.start.dateTime);
+        const endDt = allDay ? new Date(it.end.date+'T00:00:00') : new Date(it.end.dateTime);
+        return {
+          id:it.id, calendarId:cal.id, summary:it.summary,
+          start:startDt, end:endDt, allDay:allDay,
+          color:it.colorId?GCAL_EVENT_COLORS[it.colorId]:null,
+        };
+      });
+    }catch(e){return [];}
+  });
+  const results = await Promise.all(promises);
+  results.forEach(arr=>gcalEvents.push(...arr));
+}
+
+function gcalEventsForDay(day){
+  const dayStart = new Date(day);
+  dayStart.setHours(0,0,0,0);
+  const dayEnd = new Date(day);
+  dayEnd.setHours(23,59,59,999);
+  return gcalEvents.filter(e=>e.start<=dayEnd && e.end>dayStart).sort((a,b)=>{
+    if(a.allDay && !b.allDay) return -1;
+    if(b.allDay && !a.allDay) return 1;
+    return a.start - b.start;
+  });
+}
+
+function gcalPrevMonth(){
+  gcalCurrentMonth = new Date(gcalCurrentMonth.getFullYear(), gcalCurrentMonth.getMonth()-1, 1);
+  renderGCalGrid();
+}
+function gcalNextMonth(){
+  gcalCurrentMonth = new Date(gcalCurrentMonth.getFullYear(), gcalCurrentMonth.getMonth()+1, 1);
+  renderGCalGrid();
+}
+function gcalToday(){
+  const now = new Date();
+  gcalCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  renderGCalGrid();
+}
+
+function onGCalDayClick(dateStr){
+  if(!dateStr) return;
+  const dateNice = new Date(dateStr+'T12:00:00').toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
+  if(confirm('D\u00e9finir la date du mandat au '+dateNice+' ?')){
+    document.getElementById('f-date').value = dateStr;
+    markDirty();
+    closeGCalView();
+    toast('Date du mandat mise \u00e0 jour. N\u2019oublie pas de sauvegarder !');
+  }
+}
+
+function formatDateISO(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
 }
 </script>
 </body>
