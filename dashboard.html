@@ -306,8 +306,84 @@ body.archives-mode { background: #faf5ed; }
 .t-row.row-pool { background: #e3f0ff; }
 .t-row.row-pool:hover { background: #d0e4fa; }
 
-.cols-gest { grid-template-columns: 92px 1fr 140px 70px 120px 110px 110px 130px 90px; gap: 8px; }
-.cols-tech { grid-template-columns: 92px 1fr 140px 70px 120px 110px 110px 130px; gap: 8px; }
+/* Largeurs des colonnes - utilisent CSS variables pour permettre le drag-resize.
+   Valeurs par defaut alignees sur l'ancien systeme. Le JS peut les overrider via localStorage. */
+.cols-gest { 
+  grid-template-columns: 
+    var(--col-date, 92px)
+    var(--col-client, 1fr)
+    var(--col-adresse, 140px)
+    var(--col-compagnie, 70px)
+    var(--col-type, 120px)
+    var(--col-tech, 110px)
+    var(--col-assign, 110px)
+    var(--col-suivi, 130px)
+    var(--col-total, 90px);
+  gap: 8px;
+}
+.cols-tech { 
+  grid-template-columns: 
+    var(--col-date, 92px)
+    var(--col-client, 1fr)
+    var(--col-adresse, 140px)
+    var(--col-compagnie, 70px)
+    var(--col-type, 120px)
+    var(--col-tech, 110px)
+    var(--col-assign, 110px)
+    var(--col-suivi, 130px);
+  gap: 8px;
+}
+
+/* ===== Poignees de redimensionnement de colonnes ===== */
+.t-header { position: relative; }
+.col-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  margin-left: -4px;  /* Centre la poignee sur la bordure */
+  cursor: col-resize;
+  z-index: 10;
+  background: transparent;
+  transition: background 0.15s;
+}
+.col-resizer:hover,
+.col-resizer.resizing {
+  background: rgba(21, 101, 192, 0.3);
+}
+.col-resizer.resizing {
+  background: rgba(21, 101, 192, 0.5);
+}
+/* Empeche la selection de texte pendant le resize */
+body.col-resizing { 
+  cursor: col-resize !important; 
+  user-select: none !important; 
+}
+body.col-resizing * { 
+  cursor: col-resize !important; 
+  user-select: none !important; 
+}
+
+/* Bouton reset colonnes */
+.btn-reset-cols {
+  background: #fafbfc;
+  border: 1.5px solid #cfd8dc;
+  color: #455a64;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.btn-reset-cols:hover {
+  background: #e3f0ff;
+  border-color: #1565c0;
+  color: #1565c0;
+}
 
 .badge {
   display: inline-block; padding: 3px 10px;
@@ -588,6 +664,7 @@ body.archives-mode { background: #faf5ed; }
       &#128184; Ma facturation <span class="fact-badge zero" id="fact-badge">0</span>
     </a>
     <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">&#128202; Exporter Excel</button>
+    <button class="btn-reset-cols" onclick="resetColWidthsAndRender()" title="R&eacute;initialiser la largeur des colonnes du tableau">&#128260; R&eacute;init. colonnes</button>
     <button class="btn-new" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
       + Nouveau mandat
     </button>
@@ -1240,11 +1317,20 @@ function renderTable(list) {
     return;
   }
 
+  /* Ordre des colonnes (correspond aux variables CSS) */
+  const colKeys = isGest 
+    ? ['date','client','adresse','compagnie','type','tech','assign','suivi','total']
+    : ['date','client','adresse','compagnie','type','tech','assign','suivi'];
+
+  /* Header avec poignees de redimensionnement entre chaque colonne */
   let html = `<div class="t-header ${cols}">
     <div>Date</div><div>Client</div><div>Adresse</div>
     <div>Compagnie</div><div>Type</div><div>Technicien</div><div>Assignation</div>
     <div>Suivi</div>
     ${isGest ? '<div>Total TTC</div>' : ''}
+    ${colKeys.slice(0,-1).map((k,i) => 
+      `<div class="col-resizer" data-col="${k}" data-idx="${i}" title="Glisser pour redimensionner (double-clic = reset)"></div>`
+    ).join('')}
   </div>`;
 
   list.forEach(m => {
@@ -1285,7 +1371,174 @@ function renderTable(list) {
   });
 
   document.getElementById('table-wrap').innerHTML = html;
+  /* Active les poignees de redimensionnement apres le render */
+  setupColResizers();
 }
+
+/* ===========================================================
+   REDIMENSIONNEMENT DES COLONNES DU TABLEAU
+   - Drag pour ajuster manuellement
+   - Double-clic = reset cette colonne
+   - Persistance dans localStorage
+   =========================================================== */
+
+const COL_WIDTHS_KEY = 'dashboard_col_widths_v1';
+const COL_DEFAULTS = {
+  date: '92px', client: '1fr', adresse: '140px', compagnie: '70px',
+  type: '120px', tech: '110px', assign: '110px', suivi: '130px', total: '90px'
+};
+
+/* Applique les largeurs de colonnes (depuis localStorage) sur le conteneur */
+function applyColWidths(){
+  const wrap = document.getElementById('table-wrap');
+  if(!wrap) return;
+  let saved = {};
+  try{ saved = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'); }catch(e){}
+  Object.keys(COL_DEFAULTS).forEach(k => {
+    if(saved[k]) wrap.style.setProperty('--col-'+k, saved[k]);
+    else wrap.style.removeProperty('--col-'+k);
+  });
+}
+
+/* Sauvegarde la largeur d'une colonne */
+function saveColWidth(key, value){
+  let saved = {};
+  try{ saved = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'); }catch(e){}
+  saved[key] = value;
+  localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(saved));
+}
+
+/* Reset toutes les colonnes a leur largeur par defaut */
+function resetColWidths(){
+  localStorage.removeItem(COL_WIDTHS_KEY);
+  const wrap = document.getElementById('table-wrap');
+  if(wrap){
+    Object.keys(COL_DEFAULTS).forEach(k => wrap.style.removeProperty('--col-'+k));
+  }
+}
+
+/* Active le drag-resize sur les poignees du header courant */
+function setupColResizers(){
+  applyColWidths();
+  const wrap = document.getElementById('table-wrap');
+  if(!wrap) return;
+  const header = wrap.querySelector('.t-header');
+  if(!header) return;
+  
+  const resizers = header.querySelectorAll('.col-resizer');
+  resizers.forEach(resizer => {
+    /* Positionner la poignee au-dessus de la bordure entre les colonnes */
+    /* La poignee a l'index i est placee a la fin de la colonne i (entre col i et col i+1) */
+    const idx = parseInt(resizer.dataset.idx);
+    /* On calcule la position en fonction de la position du <div> de header correspondant */
+    const headerCells = Array.from(header.children).filter(c => !c.classList.contains('col-resizer'));
+    if(headerCells[idx]){
+      /* Update position au render (les cells ont leurs vraies dimensions a ce moment) */
+      requestAnimationFrame(() => {
+        const cell = headerCells[idx];
+        const rect = cell.getBoundingClientRect();
+        const headerRect = header.getBoundingClientRect();
+        resizer.style.left = (rect.right - headerRect.left) + 'px';
+      });
+    }
+    
+    resizer.addEventListener('mousedown', startResize);
+    resizer.addEventListener('dblclick', resetThisCol);
+  });
+}
+
+let currentResize = null;
+
+function startResize(e){
+  e.preventDefault();
+  const resizer = e.currentTarget;
+  const colKey = resizer.dataset.col;
+  const idx = parseInt(resizer.dataset.idx);
+  const wrap = document.getElementById('table-wrap');
+  const header = wrap.querySelector('.t-header');
+  const headerCells = Array.from(header.children).filter(c => !c.classList.contains('col-resizer'));
+  const cell = headerCells[idx];
+  if(!cell) return;
+  
+  const startX = e.clientX;
+  const startWidth = cell.getBoundingClientRect().width;
+  
+  resizer.classList.add('resizing');
+  document.body.classList.add('col-resizing');
+  
+  currentResize = { resizer, colKey, idx, startX, startWidth, wrap };
+  
+  document.addEventListener('mousemove', doResize);
+  document.addEventListener('mouseup', endResize);
+}
+
+function doResize(e){
+  if(!currentResize) return;
+  const { colKey, startX, startWidth, wrap } = currentResize;
+  let newWidth = startWidth + (e.clientX - startX);
+  /* Largeur minimum de 50px pour eviter colonne disparue */
+  if(newWidth < 50) newWidth = 50;
+  /* Largeur maximum de 600px pour eviter overflow */
+  if(newWidth > 600) newWidth = 600;
+  wrap.style.setProperty('--col-'+colKey, newWidth+'px');
+  /* Repositionner toutes les poignees pendant le drag */
+  repositionResizers();
+}
+
+function endResize(e){
+  if(!currentResize) return;
+  const { resizer, colKey, wrap } = currentResize;
+  const finalWidth = getComputedStyle(wrap).getPropertyValue('--col-'+colKey).trim();
+  saveColWidth(colKey, finalWidth);
+  resizer.classList.remove('resizing');
+  document.body.classList.remove('col-resizing');
+  currentResize = null;
+  document.removeEventListener('mousemove', doResize);
+  document.removeEventListener('mouseup', endResize);
+}
+
+function resetThisCol(e){
+  const colKey = e.currentTarget.dataset.col;
+  let saved = {};
+  try{ saved = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'); }catch(e){}
+  delete saved[colKey];
+  localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(saved));
+  const wrap = document.getElementById('table-wrap');
+  if(wrap) wrap.style.removeProperty('--col-'+colKey);
+  /* Repositionner les poignees */
+  requestAnimationFrame(repositionResizers);
+}
+
+/* Wrapper appele par le bouton "Reinit. colonnes" */
+function resetColWidthsAndRender(){
+  resetColWidths();
+  /* Repositionner les poignees apres le reset */
+  requestAnimationFrame(repositionResizers);
+}
+
+/* Repositionne toutes les poignees en fonction des cellules actuelles */
+function repositionResizers(){
+  const wrap = document.getElementById('table-wrap');
+  if(!wrap) return;
+  const header = wrap.querySelector('.t-header');
+  if(!header) return;
+  const resizers = header.querySelectorAll('.col-resizer');
+  const headerCells = Array.from(header.children).filter(c => !c.classList.contains('col-resizer'));
+  const headerRect = header.getBoundingClientRect();
+  resizers.forEach(resizer => {
+    const idx = parseInt(resizer.dataset.idx);
+    if(headerCells[idx]){
+      const rect = headerCells[idx].getBoundingClientRect();
+      resizer.style.left = (rect.right - headerRect.left) + 'px';
+    }
+  });
+}
+
+/* Repositionner aussi sur resize de fenetre */
+window.addEventListener('resize', () => {
+  if(currentResize) return;
+  requestAnimationFrame(repositionResizers);
+});
 
 /* ===== EXCEL EXPORT ===== */
 function exportToExcel() {
