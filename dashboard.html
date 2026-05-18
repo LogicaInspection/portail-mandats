@@ -1436,7 +1436,7 @@ function renderTable(list) {
       <div>
         <div style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:2px">
           ${m.client_nom}
-          ${m.statut_soumission_envoyee === true && !m.date_mandat ? '<span class="badge-soumission">&#128221; Soumission</span>' : ''}
+          ${m.statut_contact === 'soumission_envoyee' && !m.date_mandat ? '<span class="badge-soumission">&#128221; Soumission</span>' : ''}
         </div>
         <div style="font-size:12px;color:#999">${m.client_telephone||''}</div>
       </div>
