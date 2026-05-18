@@ -557,6 +557,45 @@ input[type=file]{display:none;}
 .btn-send:hover{background:#2d2d4e;}
 .btn-cancel{padding:12px 18px;border:1.5px solid #e8eaed;border-radius:10px;background:white;color:#666;font-size:14px;cursor:pointer;}
 .gmail-bar{padding:12px 16px;background:#e3f0ff;border:1px solid #90caf9;border-radius:10px;font-size:13px;color:#1565c0;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+
+/* ===== Zone pieces jointes dans le modal email ===== */
+.btn-add-attach{
+  background:#fafbfc;border:1.5px dashed #b0bec5;color:#37474f;
+  padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-add-attach:hover{border-color:#1565c0;background:#e3f0ff;color:#1565c0;}
+
+#m-attachments-list{
+  border:1.5px solid #e8eaed;border-radius:8px;background:#fafbfc;
+  padding:10px;min-height:50px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.m-no-attach{color:#999;font-style:italic;font-size:13px;text-align:center;padding:10px 0;}
+.m-attach-item{
+  display:flex;align-items:center;gap:8px;
+  background:white;border:1px solid #e0e0e0;border-radius:6px;
+  padding:8px 10px;font-size:12.5px;
+}
+.m-attach-item .att-icon{font-size:16px;}
+.m-attach-item .att-name{flex:1;color:#37474f;font-weight:500;}
+.m-attach-item .att-source{font-size:10.5px;color:#999;padding:2px 7px;border-radius:8px;background:#eceff1;}
+.m-attach-item .att-source.auto{background:#e3f0ff;color:#1565c0;}
+.m-attach-item .att-source.document{background:#f3e5f5;color:#6a1b9a;}
+.m-attach-item .att-source.manuel{background:#e8f5e9;color:#2e7d32;}
+.m-attach-item .att-remove{
+  background:none;border:none;color:#c62828;cursor:pointer;
+  font-size:14px;padding:2px 6px;border-radius:4px;
+}
+.m-attach-item .att-remove:hover{background:#fee2e2;}
+
+/* Toggle gabarits secondaires */
+.btn-email-toggle{
+  width:100%;background:transparent;border:1.5px dashed #cfd8dc;color:#607d8b;
+  padding:9px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:all 0.2s;margin-top:8px;
+}
+.btn-email-toggle:hover{border-color:#1a1a2e;color:#1a1a2e;background:#fafbfc;}
 .btn-gc{padding:7px 16px;background:#1565c0;color:white;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;}
 
 .comm-tech-card{background:linear-gradient(135deg,#e3f0ff,#f0f7ff);border-radius:14px;padding:24px;text-align:center;}
@@ -757,6 +796,16 @@ input[type=file]{display:none;}
       <div class="fg"><label>Telephone</label><input id="f-client-tel" type="tel" placeholder="418-000-0000"></div>
       <div class="fg"><label>Courriel</label><input id="f-client-email" type="email" placeholder="client@email.com"></div>
       <div class="fg s2"><label>Adresse du mandat</label><input id="f-adresse" type="text" placeholder="123 rue Exemple, Ville, QC"></div>
+      <div class="fg"><label>R&eacute;gion du mandat</label>
+        <select id="f-region" onchange="markDirty()">
+          <option value="quebec">Qu&eacute;bec</option>
+          <option value="estrie">Estrie</option>
+          <option value="mauricie">Mauricie</option>
+          <option value="monteregie">Mont&eacute;r&eacute;gie</option>
+          <option value="saguenay">Saguenay</option>
+          <option value="autre">Autre r&eacute;gion</option>
+        </select>
+      </div>
       <div class="fg logica-only"><label>Nom du courtier acheteur</label><input id="f-courtier" type="text" placeholder="Prenom Nom"></div>
       <div class="fg logica-only"><label>Refere par</label><input id="f-reference" type="text" placeholder="Qui vous a refere ?"></div>
       <div class="fg s2 logica-only">
@@ -1053,7 +1102,17 @@ input[type=file]{display:none;}
     <div class="mfield"><label>Destinataire</label><input id="m-to" type="email"></div>
     <div class="mfield"><label>Sujet</label><input id="m-subj" type="text"></div>
     <div class="mfield"><label>Message</label><div id="m-body-editor"></div></div>
-    <div id="m-attach-info" style="font-size:12px;color:#888;margin-bottom:10px;padding:10px;background:#f8f9fa;border-radius:8px;display:none;"></div>
+    <!-- Zone des pieces jointes (auto + manuel) -->
+    <div class="mfield">
+      <label style="display:flex;align-items:center;justify-content:space-between;">
+        <span>&#128206; Pi&egrave;ces jointes</span>
+        <button type="button" class="btn-add-attach" onclick="document.getElementById('m-file-input').click()">+ Ajouter un fichier</button>
+      </label>
+      <div id="m-attachments-list">
+        <div class="m-no-attach">Aucune pi&egrave;ce jointe</div>
+      </div>
+      <input type="file" id="m-file-input" accept=".pdf,.jpg,.jpeg,.png,.docx,.doc" style="display:none" onchange="onManualAttachmentSelected(event)" multiple>
+    </div>
     <div class="mfooter">
       <button class="btn-cancel" onclick="closeEmailModal()">Annuler</button>
       <button class="btn-send" onclick="sendEmail()">&#128228; Envoyer</button>
@@ -1178,6 +1237,9 @@ const VIEW_AS_KEY='view_as_user_id';
 let realProfile=null;
 let profile=null,mandat=null,extras=[],docs=[],isNew=false;
 let currentEmailType=null;
+/* Liste des pieces jointes pour le modal email courant.
+   Format : [{name, url, source: 'pdf'|'document'|'manuel', base64?, blob?}] */
+let currentAttachments=[];
 let echantillonsSupp=0;
 let currentMode='';
 let contactsLog=[];
@@ -1411,6 +1473,7 @@ function fillForm(){
   document.getElementById('f-client-tel').value=m.client_telephone||'';
   document.getElementById('f-client-email').value=m.client_email||'';
   document.getElementById('f-adresse').value=m.adresse||'';
+  document.getElementById('f-region').value=m.region||'quebec';
   document.getElementById('f-date').value=m.date_mandat||'';
   document.getElementById('f-heure').value=m.heure_mandat?m.heure_mandat.substring(0,5):'';
   document.getElementById('f-tech').value=m.technicien_id||'';
@@ -1595,6 +1658,7 @@ function onTypeMandatChange(){
 recalc();
   updateFinTypeDisplay();
   updateHeaderTypePill();
+  renderEmails();
 }
 
 function updateBadge(){
@@ -2594,6 +2658,7 @@ async function saveMandat(){
     client_telephone:document.getElementById('f-client-tel').value||null,
     client_email:document.getElementById('f-client-email').value||null,
     adresse:document.getElementById('f-adresse').value||null,
+    region:document.getElementById('f-region').value||'quebec',
     courtier_nom:document.getElementById('f-courtier').value||null,
     reference_client:document.getElementById('f-reference').value||null,
     listing_url:document.getElementById('f-listing').value||null,
@@ -2813,92 +2878,312 @@ async function deleteDoc(id,path){
   toast('Fichier supprime');
 }
 
+/* ===========================================================
+   EMAIL TEMPLATES - REFONTE COMPLETE
+   - 14 gabarits avec accents/apostrophes propres
+   - Liens Google Reviews dynamiques selon la region
+   - Mapping gabarit ↔ type de mandat (filtrage doux)
+   - Pre-attachement des PDFs auto selon le gabarit
+   =========================================================== */
+
+/* PDFs disponibles dans Supabase Storage (bucket "Documents a joindre") */
+const PDF_BASE = 'https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/Documents%20a%20joindre/';
+const PDFS = {
+  convention_fr: PDF_BASE + 'APCHQ%20-%20Convention%20de%20Service.pdf',
+  norme_fr:      PDF_BASE + 'APCHQ%20-%20NORME%20DE%20PRATIQUE.pdf',
+  standard_en:   PDF_BASE + 'APCHQ_Standard%20Practice.pdf',
+  info_test_air: PDF_BASE + 'GEQ%20-%20Informations%20Test%20de%20qualite%20de%20l%27air.pdf',
+};
+const PDF_LABELS = {
+  convention_fr: 'APCHQ - Convention de Service.pdf',
+  norme_fr:      'APCHQ - Norme de pratique.pdf',
+  standard_en:   'APCHQ - Standard of Practice.pdf',
+  info_test_air: 'GEQ - Informations Test de qualite de l\'air.pdf',
+};
+
+/* Liens Google Reviews par compagnie et region */
+function getGoogleReviewLink(compagnie, region){
+  if(compagnie === 'logica') return 'https://g.page/r/Cc71RgXYNZtdEBM/review';
+  /* GEQ par region */
+  switch((region||'').toLowerCase()){
+    case 'estrie':     return 'https://g.page/r/CfmpzSeDK_g7EBM/review';
+    case 'quebec':     return 'https://g.page/r/CYJ9_qnafVc-EBM/review';
+    case 'mauricie':   return 'https://g.page/r/CWWo2Y-AWzjbEBM/review';
+    default:           return 'https://g.page/r/CcwF17qG5ZPEEAE/review'; /* fallback GEQ general */
+  }
+}
+
+/* Mapping gabarit ↔ types de mandat pertinents (pour le filtrage doux)
+   Si type pas dans la liste, le gabarit est dans "Autres gabarits" */
+const GABARIT_PERTINENCE = {
+  conf_inspection_fr:    ['Inspection batiment', 'Inspection parties communes', 'Inspection drain de fondation'],
+  conf_inspection_en:    ['Inspection batiment', 'Inspection parties communes'],
+  rapp_inspection_fr:    ['Inspection batiment', 'Inspection parties communes', 'Inspection drain de fondation'],
+  rapp_inspection_en:    ['Inspection batiment', 'Inspection parties communes'],
+  conf_test_air:         ['Test de qualite de l air fongique'],
+  conf_expertise:        ['Expertise infiltration eau', 'Expertise moisissure', 'Echantillonnage Merule', 'Biotape', 'Test d air Fibre d Amiante', 'Suivi de chantier', 'Redaction carnet etude'],
+  resultat_biotape:      ['Biotape'],
+  soum_amiante_air:      ['Test d air Fibre d Amiante'],
+  soum_merule:           ['Echantillonnage Merule'],
+  soum_test_air:         ['Test de qualite de l air fongique'],
+  soum_expertise:        ['Expertise infiltration eau', 'Expertise moisissure'],
+  rapp_expertise:        ['Expertise infiltration eau', 'Expertise moisissure', 'Echantillonnage Merule', 'Suivi de chantier', 'Redaction carnet etude'],
+  res_amiante_materiaux: ['Test d air Fibre d Amiante'],
+  res_amiante_air:       ['Test d air Fibre d Amiante'],
+  res_test_air:          ['Test de qualite de l air fongique'],
+};
+
+/* PDFs auto-attaches selon le gabarit
+   Valeurs possibles : 'convention_fr', 'norme_fr', 'standard_en', 'info_test_air', 'document:rapport', 'document:resultats'
+   document:* = chercher le doc correspondant dans la section Documents du mandat */
+const GABARIT_PDFS = {
+  conf_inspection_fr:    ['convention_fr', 'norme_fr'],
+  conf_inspection_en:    ['standard_en'],
+  rapp_inspection_fr:    ['document:rapport'],
+  rapp_inspection_en:    ['document:rapport'],
+  conf_test_air:         ['info_test_air'],
+  conf_expertise:        [],
+  resultat_biotape:      ['document:resultats'],
+  soum_amiante_air:      [],
+  soum_merule:           [],
+  soum_test_air:         ['info_test_air'],
+  soum_expertise:        [],
+  rapp_expertise:        ['document:rapport'],
+  res_amiante_materiaux: ['document:resultats'],
+  res_amiante_air:       ['document:resultats'],
+  res_test_air:          ['document:resultats'],
+};
+
+/* Definitions de tous les gabarits avec leur label/icone/champ statut */
+function getAllEmailButtons(comp){
+  /* comp = 'geq' ou 'logica' */
+  const isGeq = comp === 'geq';
+  const isLogica = comp === 'logica';
+  const list = [];
+
+  /* === Confirmation et rapport d'inspection (les 2 compagnies) === */
+  list.push({type:'conf_inspection_fr', icon:'\u{1F4E7}', title:'Confirmation d\u2019inspection (FR)',
+             sub:'Convention + Norme en pi\u00e8ces jointes', field:'statut_confirmation_envoyee'});
+  list.push({type:'conf_inspection_en', icon:'\u{1F4E7}', title:'Confirmation of inspection (EN)',
+             sub:'Standard of Practice in attachment', field:'statut_confirmation_envoyee'});
+  list.push({type:'rapp_inspection_fr', icon:'\u{1F4CB}', title:'Voici votre rapport d\u2019inspection (FR)',
+             sub:'Rapport en pi\u00e8ce jointe', field:'statut_rapport_envoye'});
+  list.push({type:'rapp_inspection_en', icon:'\u{1F4CB}', title:'Your inspection report (EN)',
+             sub:'Inspection report attached', field:'statut_rapport_envoye'});
+
+  /* === Gabarits GEQ exclusifs === */
+  if(isGeq){
+    list.push({type:'conf_test_air', icon:'\u{1F4E7}', title:'Confirmation - Test de qualit\u00e9 de l\u2019air fongique',
+               sub:'PDF d\u2019information en pi\u00e8ce jointe', field:'statut_confirmation_envoyee'});
+    list.push({type:'conf_expertise', icon:'\u{1F4E7}', title:'Confirmation d\u2019expertise technique',
+               sub:'', field:'statut_confirmation_envoyee'});
+    list.push({type:'soum_expertise', icon:'\u{1F4D1}', title:'Soumission - Expertise technique',
+               sub:'', field:null});
+    list.push({type:'soum_test_air', icon:'\u{1F4D1}', title:'Soumission - Test de qualit\u00e9 de l\u2019air fongique',
+               sub:'PDF d\u2019information en pi\u00e8ce jointe', field:null});
+    list.push({type:'soum_amiante_air', icon:'\u{1F4D1}', title:'Soumission - Analyse de fibre d\u2019amiante dans l\u2019air',
+               sub:'', field:null});
+    list.push({type:'soum_merule', icon:'\u{1F4D1}', title:'Soumission - Analyse ADN/PCR M\u00e9rule Pleureuse',
+               sub:'', field:null});
+    list.push({type:'rapp_expertise', icon:'\u{1F4CB}', title:'Rapport d\u2019expertise technique',
+               sub:'Rapport en pi\u00e8ce jointe', field:'statut_rapport_envoye'});
+    list.push({type:'resultat_biotape', icon:'\u2696\uFE0F', title:'R\u00e9sultat Biotape (pr\u00e9sence de moisissures)',
+               sub:'Rapport laboratoire en pi\u00e8ce jointe', field:'statut_rapport_envoye'});
+    list.push({type:'res_amiante_materiaux', icon:'\u2696\uFE0F', title:'R\u00e9sultats - Amiante dans les mat\u00e9riaux',
+               sub:'Rapport laboratoire en pi\u00e8ce jointe', field:'statut_rapport_envoye'});
+    list.push({type:'res_amiante_air', icon:'\u2696\uFE0F', title:'R\u00e9sultats - Fibre d\u2019amiante dans l\u2019air',
+               sub:'Rapport laboratoire en pi\u00e8ce jointe', field:'statut_rapport_envoye'});
+    list.push({type:'res_test_air', icon:'\u2696\uFE0F', title:'R\u00e9sultats - Test de qualit\u00e9 de l\u2019air fongique',
+               sub:'Rapport laboratoire en pi\u00e8ce jointe', field:'statut_rapport_envoye'});
+  }
+  return list;
+}
+
 function renderEmails(){
-  const comp=mandat?mandat.compagnie:document.getElementById('f-compagnie').value;
-  const list=document.getElementById('email-list');
-  list.innerHTML='';
-  const btns=comp==='logica'?[
-    {type:'conf_logica',icon:'&#128231;',title:'Confirmation d inspection',sub:'Convention de service + Norme de pratique en pieces jointes',field:'statut_confirmation_envoyee'},
-    {type:'rapp_logica',icon:'&#128203;',title:'Voici votre rapport d inspection',sub:'Rapport d inspection en piece jointe',field:'statut_rapport_envoye'},
-  ]:[
-    {type:'conf_geq_inspection',icon:'&#128231;',title:'Confirmation d inspection GEQ',sub:'Convention + Norme en pieces jointes',field:'statut_confirmation_envoyee'},
-    {type:'conf_geq_expertise',icon:'&#128231;',title:'Confirmation d expertise technique',sub:'',field:'statut_confirmation_envoyee'},
-    {type:'rapp_geq_expertise',icon:'&#128203;',title:'Rapport d expertise technique',sub:'Rapport en piece jointe',field:'statut_rapport_envoye'},
-    {type:'rapp_geq_analyse',icon:'&#9878;',title:'Resultats d analyse de qualite de l air fongique',sub:'Resultats en piece jointe',field:'statut_rapport_envoye'},
-  ];
-  btns.forEach(b=>{
-    const sent=mandat&&mandat[b.field];
-    const btn=document.createElement('button');
-    btn.className='btn-email'+(sent?' sent':'');
-    btn.innerHTML=
-      '<span class="ei">'+b.icon+'</span>'+
-      '<div><div class="et">'+b.title+'</div><div class="es">'+b.sub+'</div></div>'+
-      (sent?'<span style="margin-left:auto;font-size:12px;color:#4caf50;font-weight:700;">&#10003; Envoye</span>':'<span style="margin-left:auto;font-size:20px;color:#ccc;">&#8250;</span>');
-    btn.onclick=()=>openEmailModal(b.type);
-    list.appendChild(btn);
+  const comp = mandat?mandat.compagnie:document.getElementById('f-compagnie').value;
+  const typeMandat = mandat?mandat.type_mandat:document.getElementById('f-type-mandat').value;
+  const list = document.getElementById('email-list');
+  list.innerHTML = '';
+
+  const allBtns = getAllEmailButtons(comp);
+
+  /* Separer en 2 groupes : pertinents (selon type de mandat) + autres */
+  const pertinents = [];
+  const autres = [];
+  allBtns.forEach(b => {
+    const map = GABARIT_PERTINENCE[b.type] || [];
+    if(typeMandat && map.includes(typeMandat)) pertinents.push(b);
+    else autres.push(b);
   });
+
+  function makeButton(b){
+    const sent = mandat && b.field && mandat[b.field];
+    const btn = document.createElement('button');
+    btn.className = 'btn-email' + (sent?' sent':'');
+    btn.innerHTML =
+      '<span class="ei">'+b.icon+'</span>'+
+      '<div><div class="et">'+b.title+'</div>'+(b.sub?'<div class="es">'+b.sub+'</div>':'')+'</div>'+
+      (sent?'<span style="margin-left:auto;font-size:12px;color:#4caf50;font-weight:700;">&#10003; Envoy&eacute;</span>':'<span style="margin-left:auto;font-size:20px;color:#ccc;">&#8250;</span>');
+    btn.onclick = ()=>openEmailModal(b.type);
+    return btn;
+  }
+
+  /* Pertinents en haut */
+  pertinents.forEach(b => list.appendChild(makeButton(b)));
+
+  /* Toggle pour les autres */
+  if(autres.length > 0){
+    const toggle = document.createElement('button');
+    toggle.className = 'btn-email-toggle';
+    toggle.textContent = '\u2304 Voir tous les gabarits ('+autres.length+' autres)';
+    let expanded = false;
+    const autresWrap = document.createElement('div');
+    autresWrap.style.display = 'none';
+    autres.forEach(b => autresWrap.appendChild(makeButton(b)));
+    toggle.onclick = ()=>{
+      expanded = !expanded;
+      autresWrap.style.display = expanded ? 'block' : 'none';
+      toggle.textContent = expanded
+        ? '\u2303 Masquer les autres gabarits'
+        : '\u2304 Voir tous les gabarits ('+autres.length+' autres)';
+    };
+    list.appendChild(toggle);
+    list.appendChild(autresWrap);
+  }
 }
 
 function getEmailContent(type){
   if(!mandat) return null;
-  const dateStr=mandat.date_mandat?new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}):'[DATE \u00e0 confirmer]';
-  const heureStr=mandat.heure_mandat?mandat.heure_mandat.substring(0,5):'[HEURE \u00e0 confirmer]';
-  const adresse=mandat.adresse||'[ADRESSE]';
-  const googleGeq=profile.google_review_url_geq||'https://g.page/r/CcwF17qG5ZPEEBM/review';
-  const googleLogica=profile.google_review_url_logica||'https://g.page/r/Cc71RgXYNZtdEBM/review';
-  const techSelect=document.getElementById('f-tech');
-  const techNom=techSelect.selectedIndex>0?techSelect.options[techSelect.selectedIndex].text:profile.prenom+' '+profile.nom;
+  const dateStr = mandat.date_mandat ? new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('fr-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : '[DATE \u00e0 confirmer]';
+  const dateStrEn = mandat.date_mandat ? new Date(mandat.date_mandat+'T12:00:00').toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : '[DATE to be confirmed]';
+  const heureStr = mandat.heure_mandat ? mandat.heure_mandat.substring(0,5) : '[HEURE \u00e0 confirmer]';
+  const heureStrEn = mandat.heure_mandat ? mandat.heure_mandat.substring(0,5) : '[TIME to be confirmed]';
+  const adresse = mandat.adresse || '[ADRESSE]';
+  const techSelect = document.getElementById('f-tech');
+  const techNom = techSelect.selectedIndex>0 ? techSelect.options[techSelect.selectedIndex].text : profile.prenom+' '+profile.nom;
+  const compagnie = mandat.compagnie;
+  const region = mandat.region;
+  const compNom = compagnie==='logica' ? 'Logica Inspection en b\u00e2timent' : 'GEQ \u2013 B\u00e2timent Conseil';
+  const compNomEn = compagnie==='logica' ? 'Logica Building Inspection' : 'GEQ \u2013 Building Consulting';
+  const googleLink = getGoogleReviewLink(compagnie, region);
+  const techPhone = profile.telephone || '418-572-8906';
 
-  if(type==='conf_logica') return {
+  /* === CONFIRMATION D'INSPECTION FR === */
+  if(type === 'conf_inspection_fr') return {
     subj:'Confirmation d\u2019inspection',
-    body:'Bonjour,\n\nF\u00e9licitations et merci de confier \u00e0 Logica Inspection en b\u00e2timent la d\u00e9licate t\u00e2che d\u2019inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l\u2019inspection qui seront remplis lors de l\u2019inspection. Nous vous invitons \u00e0 en prendre connaissance.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir par courriel une copie de la D\u00e9claration des Vendeurs (DV), la fiche de vente et des rapports d\u2019inspection ant\u00e9rieurs (si disponibles et moins de 5 ans) d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un courriel distinct et les informations pour virement bancaire sont \u00e9crites au bas de cette derni\u00e8re.\n8. Les frais de l\u2019inspection sont payables le jour m\u00eame de l\u2019inspection.\n9. Frais pour services suppl\u00e9mentaires :\n- Inspection de drain de fondation par cam\u00e9ra : 225 $ + taxes\n- Test de potabilit\u00e9 de l\u2019eau (microbiologique) : 200 $ + taxes\n- Test d\u2019eau (m\u00e9taux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la pr\u00e9sence d\u2019amiante : 350 $ + taxes\n- Garage d\u00e9tach\u00e9 : (varie entre 125 $ et 250 $)\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
-    attachNote:'Pi\u00e8ces jointes : Convention de service + Norme de pratique'
+    body:'Bonjour,\n\nF\u00e9licitations et merci de confier \u00e0 '+compNom+' la d\u00e9licate t\u00e2che d\u2019inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l\u2019inspection qui seront remplis lors de l\u2019inspection. Nous vous invitons \u00e0 en prendre connaissance.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir par courriel une copie de la D\u00e9claration des Vendeurs (DV), la fiche de vente et des rapports d\u2019inspection ant\u00e9rieurs (si disponibles et moins de 5 ans) d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un courriel distinct et les informations pour virement bancaire sont \u00e9crites au bas de cette derni\u00e8re.\n8. Les frais de l\u2019inspection sont payables le jour m\u00eame de l\u2019inspection.\n9. Frais pour services suppl\u00e9mentaires :\n- Inspection de drain de fondation par cam\u00e9ra : 225 $ + taxes\n- Test de potabilit\u00e9 de l\u2019eau (microbiologique) : 200 $ + taxes\n- Test d\u2019eau (m\u00e9taux lourds) : 225 $ + taxes\n- Analyse de vermiculite pour la pr\u00e9sence d\u2019amiante : 350 $ + taxes\n- Garage d\u00e9tach\u00e9 : (varie entre 125 $ et 250 $)\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
   };
-  if(type==='rapp_logica') return {
+
+  /* === CONFIRMATION OF INSPECTION EN === */
+  if(type === 'conf_inspection_en') return {
+    subj:'Confirmation of inspection',
+    body:'Hello,\n\nCongratulations and thank you for entrusting '+compNomEn+' with the delicate task of inspecting your new property.\n\nHere are some important details for the appointment :\n\n1. Date : '+dateStrEn+'\n2. Time : '+heureStrEn+'\n3. Address : '+adresse+'\n4. Name of your inspector : '+techNom+'\n5. Attached you will find documents related to the inspection that will be completed during the inspection. We invite you to review them.\n6. On your end, we kindly ask you to send us by email a copy of the Seller\u2019s Declaration (SD), the listing sheet, and any previous inspection reports (if available and less than 5 years old) as soon as possible.\n7. The invoice will be sent in a separate email, and the bank transfer information is provided at the bottom of the invoice.\n8. The inspection fees are payable on the day of the inspection.\n9. Fees for additional services :\n- Foundation drain inspection by camera : $225 + taxes\n- Water potability test (microbiological) : $200 + taxes\n- Water test (heavy metals) : $225 + taxes\n- Vermiculite analysis for asbestos presence : $350 + taxes\n- Detached garage : (varies between $125 and $250)\n\nPlease feel free to contact us if you have any questions.\n\nBest regards !',
+  };
+
+  /* === RAPPORT D'INSPECTION FR === */
+  if(type === 'rapp_inspection_fr') return {
     subj:'Voici votre rapport d\u2019inspection',
-    body:'Bonjour,\n\nMerci d\u2019avoir choisi Logica Inspection en b\u00e2timent. Il nous fait plaisir de vous faire parvenir votre rapport d\u2019inspection.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : '+googleLogica+'\n\nSi vous avez des questions concernant votre rapport d\u2019inspection, n\u2019h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur et il se fera un plaisir de r\u00e9pondre \u00e0 vos questions.\n\nBien \u00e0 vous,',
-    attachNote:'Pi\u00e8ce jointe : Rapport d\u2019inspection'
+    body:'Bonjour,\n\nMerci d\u2019avoir choisi '+compNom+'. Il nous fait plaisir de vous faire parvenir votre rapport d\u2019inspection.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : '+googleLink+'\n\nSi vous avez des questions concernant votre rapport d\u2019inspection, n\u2019h\u00e9sitez pas \u00e0 communiquer avec votre inspecteur au '+techPhone+' et il se fera un plaisir de r\u00e9pondre \u00e0 vos questions.\n\nBien \u00e0 vous,',
   };
-  if(type==='conf_geq_inspection') return {
-    subj:'Confirmation d\u2019inspection',
-    body:'Bonjour,\n\nF\u00e9licitations et merci de confier \u00e0 GEQ \u2013 B\u00e2timent Conseil la d\u00e9licate t\u00e2che d\u2019inspecter votre nouvelle propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre inspecteur : '+techNom+'\n5. Vous trouverez ci-joint des documents relatifs \u00e0 l\u2019inspection.\n6. De votre c\u00f4t\u00e9, nous vous demandons de nous faire parvenir une copie de la D\u00e9claration des Vendeurs (DV) et des rapports d\u2019inspection ant\u00e9rieurs d\u00e8s que possible.\n7. La facture sera envoy\u00e9e dans un courriel distinct.\n8. Les frais de l\u2019inspection sont payables le jour m\u00eame.\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
-    attachNote:'Pi\u00e8ces jointes : Convention de service + Norme de pratique'
+
+  /* === INSPECTION REPORT EN === */
+  if(type === 'rapp_inspection_en') return {
+    subj:'Your inspection report',
+    body:'Hello,\n\nThank you for choosing '+compNomEn+'. We are pleased to send you your inspection report.\n\nIf you were satisfied with our service, please feel free to leave us a review on our page by clicking here : '+googleLink+'\n\nIf you have any questions about your inspection report, do not hesitate to contact your inspector at '+techPhone+' and he will be happy to answer them.\n\nBest regards,',
   };
-  if(type==='conf_geq_expertise') return {
+
+  /* === CONFIRMATION TEST DE QUALITE DE L'AIR FONGIQUE === */
+  if(type === 'conf_test_air') return {
+    subj:'Confirmation de rendez-vous \u2013 Test de qualit\u00e9 de l\u2019air fongique',
+    body:'Bonjour,\n\nNous confirmons par la pr\u00e9sente votre rendez-vous pour votre test de qualit\u00e9 de l\u2019air fongique.\n\nVeuillez prendre connaissance des informations importantes ci-dessous :\n\n- Date : '+dateStr+'\n- Heure : '+heureStr+'\n- Adresse : '+adresse+'\n- Nom de votre technicien : '+techNom+'\n\nVous trouverez en pi\u00e8ce jointe notre document explicatif complet concernant le d\u00e9roulement de l\u2019intervention, les tarifs, les services suppl\u00e9mentaires, les modalit\u00e9s de paiement, ainsi que l\u2019interpr\u00e9tation des r\u00e9sultats et les \u00e9tapes suivantes au besoin.\n\nNous vous invitons \u00e0 le lire attentivement avant notre passage.\n\nRappel important : les frais sont payables le jour de l\u2019intervention.\n\nAvant le rendez-vous, afin d\u2019assurer des r\u00e9sultats pr\u00e9cis, merci de respecter les consignes suivantes :\n\n- Fermer toutes les portes et fen\u00eatres au moins 12 heures avant le test.\n- \u00c9teindre les \u00e9changeurs d\u2019air, purificateurs d\u2019air, ventilateurs et climatiseurs au moins 24 heures avant.\n- \u00c9viter de faire le m\u00e9nage ou de d\u00e9placer tapis, v\u00eatements ou mobilier au moins 48 heures avant.\n- Sortir le compostage \u00e0 l\u2019ext\u00e9rieur au moins 48 heures avant.\n- Arroser l\u00e9g\u00e8rement les plantes d\u2019int\u00e9rieur le jour du test.\n\nCes petites pr\u00e9cautions permettent d\u2019obtenir des r\u00e9sultats beaucoup plus repr\u00e9sentatifs de la qualit\u00e9 r\u00e9elle de l\u2019air int\u00e9rieur.\n\nSi vous avez des questions avant notre intervention, n\u2019h\u00e9sitez pas \u00e0 nous \u00e9crire.\n\nMerci et au plaisir de vous aider !',
+  };
+
+  /* === CONFIRMATION D'EXPERTISE TECHNIQUE === */
+  if(type === 'conf_expertise') return {
     subj:'Confirmation d\u2019expertise technique',
-    body:'Bonjour,\n\nMerci de confier \u00e0 GEQ \u2013 B\u00e2timent Conseil l\u2019investigation de la probl\u00e9matique qui affecte votre propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre technicien : '+techNom+'\n5. Mandat : '+(mandat.type_mandat||'')+'\n6. Tarifs : 580 $ + taxes (sans rapport) ou 830 $ + taxes (avec rapport)\n7. Les frais sont payables le jour m\u00eame (par virement Interac, d\u00e9bit ou ch\u00e8que).\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
-    attachNote:''
+    body:'Bonjour,\n\nMerci de confier \u00e0 '+compNom+' l\u2019investigation de la probl\u00e9matique qui affecte votre propri\u00e9t\u00e9.\n\nVoici quelques informations importantes pour le rendez-vous :\n\n1. Date : '+dateStr+'\n2. Heure : '+heureStr+'\n3. Adresse : '+adresse+'\n4. Nom de votre technicien : '+techNom+'\n5. Mandat : '+(mandat.type_mandat||'')+'\n6. Tarifs : 580 $ + taxes (sans rapport) + 150 $/h de r\u00e9daction (avec rapport)\n7. Les frais de l\u2019investigation sont payables le jour m\u00eame de notre intervention (par virement Interac, d\u00e9bit, cr\u00e9dit ou ch\u00e8que).\n8. Frais pour services suppl\u00e9mentaires : Veuillez noter que des frais suppl\u00e9mentaires peuvent s\u2019ajouter dans le cas d\u2019une investigation sur une autre cause ou une autre probl\u00e9matique.\n9. D\u00e9lais de r\u00e9daction de rapport : Un maximum de 5 jours ouvrables est allou\u00e9 pour la r\u00e9daction du rapport.\n\nS\u2019il vous pla\u00eet, n\u2019h\u00e9sitez pas \u00e0 nous contacter si vous avez des questions.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es !',
   };
-  if(type==='rapp_geq_expertise') return {
+
+  /* === SOUMISSION EXPERTISE TECHNIQUE === */
+  if(type === 'soum_expertise') return {
+    subj:'Soumission \u2013 Expertise technique',
+    body:'Bonjour,\n\nComme convenu, vous trouverez dans ce pr\u00e9sent courriel notre soumission pour l\u2019expertise technique sur votre propri\u00e9t\u00e9.\n\nNotre objectif est simple : identifier la cause principale de la probl\u00e9matique qui affecte votre b\u00e2timent, qu\u2019il s\u2019agisse d\u2019une infiltration d\u2019eau, de moisissure, d\u2019un probl\u00e8me d\u2019humidit\u00e9, d\u2019odeurs persistantes ou de toute autre anomalie li\u00e9e \u00e0 l\u2019enveloppe ou au comportement du b\u00e2timent.\n\nNous ne faisons pas seulement constater les sympt\u00f4mes : nous cherchons la source r\u00e9elle du probl\u00e8me afin de vous orienter vers la bonne solution, \u00e9viter les travaux inutiles et vous permettre de prendre des d\u00e9cisions \u00e9clair\u00e9es.\n\nTarification :\n\n- Expertise verbale sur place : 580 $ + taxes\n  (incluant la visite, l\u2019analyse de la situation et nos recommandations verbales)\n\n- Rapport \u00e9crit (au besoin) : 150 $/heure + taxes\n  (si vous souhaitez un document officiel d\u00e9taill\u00e9 avec constats, causes probables et recommandations)\n\nDe plus, dans le rare cas o\u00f9 nous ne sommes pas en mesure d\u2019identifier la cause principale de la probl\u00e9matique, seuls les frais de d\u00e9placement de 350 $ + taxes seront factur\u00e9s.\n\nNotre approche est bas\u00e9e sur l\u2019exp\u00e9rience terrain, l\u2019analyse technique et la transparence \u2013 pas de zone grise, seulement des r\u00e9ponses concr\u00e8tes.\n\nSi vous avez des questions ou souhaitez planifier le rendez-vous, n\u2019h\u00e9sitez pas \u00e0 nous contacter.\n\nAu plaisir de vous aider,',
+  };
+
+  /* === SOUMISSION TEST DE QUALITE DE L'AIR FONGIQUE === */
+  if(type === 'soum_test_air') return {
+    subj:'Soumission \u2013 Test de qualit\u00e9 de l\u2019air fongique',
+    body:'Bonjour,\n\nComme convenu, vous trouverez en pi\u00e8ce jointe notre document complet pr\u00e9sentant notre service de test de qualit\u00e9 de l\u2019air fongique.\n\nCe document contient :\n- Le d\u00e9roulement complet de l\u2019intervention\n- Nos tarifs et services suppl\u00e9mentaires\n- Les modalit\u00e9s de paiement\n- L\u2019interpr\u00e9tation des r\u00e9sultats et les \u00e9tapes suivantes au besoin\n\nNous vous invitons \u00e0 le lire attentivement avant de confirmer.\n\nSi vous souhaitez planifier un rendez-vous ou si vous avez des questions, n\u2019h\u00e9sitez pas \u00e0 nous contacter.\n\nAu plaisir de vous aider,',
+  };
+
+  /* === SOUMISSION AMIANTE DANS L'AIR === */
+  if(type === 'soum_amiante_air') return {
+    subj:'Soumission \u2013 Analyse de fibre d\u2019amiante dans l\u2019air',
+    body:'Bonjour,\n\n\u00c0 la suite de la d\u00e9contamination du grenier et du retrait de la vermiculite contamin\u00e9e \u00e0 l\u2019amiante, nous proc\u00e9derons \u00e0 un pr\u00e9l\u00e8vement d\u2019air visant \u00e0 d\u00e9tecter la pr\u00e9sence de fibres d\u2019amiante \u00e0 l\u2019\u00e9tage situ\u00e9 directement sous le grenier.\n\nM\u00e9thodologie :\n\n- Un pr\u00e9l\u00e8vement d\u2019air d\u2019une dur\u00e9e de 4 heures sera effectu\u00e9 sur place par notre technicien.\n- L\u2019analyse initiale sera effectu\u00e9e en laboratoire par microscopie \u00e0 contraste de phase (MCP), une m\u00e9thode standard pour l\u2019\u00e9valuation de la concentration totale en fibres dans l\u2019air.\n- Si le filtre est surcharg\u00e9 de fibres (ex. : poussi\u00e8res de cellulose, fibres min\u00e9rales non amiant\u00e9es ou poussi\u00e8res de construction) et que la concentration totale d\u00e9passe les valeurs guides, une analyse plus pouss\u00e9e par microscopie \u00e9lectronique \u00e0 transmission (MET) pourra \u00eatre exig\u00e9e pour quantifier sp\u00e9cifiquement les fibres d\u2019amiante.\n  Dans ce cas, des frais suppl\u00e9mentaires de 550 $ + taxes s\u2019appliqueront.\n\nTarification :\n\n- D\u00e9placement du technicien (installation et r\u00e9cup\u00e9ration de l\u2019appareil) : inclus\n- Pr\u00e9l\u00e8vement et analyse en laboratoire par MCP : 700 $ + taxes\n- Frais additionnels en cas d\u2019analyse MET requise : 550 $ + taxes (rarement n\u00e9cessaire)\n\nTotal estim\u00e9 (hors MET) : 700 $ + taxes\n\nNotes importantes :\n\n- Les r\u00e9sultats d\u2019analyse seront transmis d\u00e8s r\u00e9ception du rapport du laboratoire (d\u00e9lais habituels de 5 \u00e0 7 jours ouvrables).\n- L\u2019analyse par MET n\u2019est requise que si la surcharge emp\u00eache une lecture fiable des r\u00e9sultats par MCP.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es,',
+  };
+
+  /* === SOUMISSION MERULE === */
+  if(type === 'soum_merule') return {
+    subj:'Soumission \u2013 Analyse ADN/PCR pour la pr\u00e9sence de M\u00e9rule Pleureuse',
+    body:'Bonjour,\n\nSuite \u00e0 votre demande, nous vous proposons l\u2019intervention d\u2019un expert en b\u00e2timent pour effectuer un pr\u00e9l\u00e8vement de l\u2019\u00e9chantillon suspect et proc\u00e9der \u00e0 une analyse ADN afin de d\u00e9terminer s\u2019il s\u2019agit bien de Serpula lacrymans (m\u00e9rule pleureuse).\n\nLe co\u00fbt de cette prestation est de 800 $ + taxes, incluant le d\u00e9placement, le pr\u00e9l\u00e8vement et l\u2019analyse en laboratoire.\n\nSi vous souhaitez aller de l\u2019avant, merci de nous confirmer afin que nous puissions planifier l\u2019intervention.\n\nN\u2019h\u00e9sitez pas \u00e0 nous contacter pour toute question.\n\nVeuillez accepter nos salutations les plus distingu\u00e9es,',
+  };
+
+  /* === RAPPORT D'EXPERTISE TECHNIQUE === */
+  if(type === 'rapp_expertise') return {
     subj:'Rapport d\u2019expertise technique',
-    body:'Bonjour,\n\nTel que convenu, vous trouverez en pi\u00e8ce jointe votre rapport d\u2019investigation.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : '+googleGeq+'\n\nNous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire.\n\nMerci !',
-    attachNote:'Pi\u00e8ce jointe : Rapport d\u2019expertise'
+    body:'Bonjour,\n\nTel que convenu, vous trouverez en pi\u00e8ce jointe votre rapport d\u2019investigation.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page en cliquant ici : '+googleLink+'\n\nNous vous remercions de votre confiance et r\u00e9it\u00e9rons notre engagement \u00e0 vous satisfaire en restant disponibles pour toute question ou \u00e9claircissement suppl\u00e9mentaire.\n\nMerci !',
   };
-  if(type==='rapp_geq_analyse') return {
-    subj:'R\u00e9sultats d\u2019analyse de qualit\u00e9 de l\u2019air fongique',
-    body:'Bonjour,\n\nVous trouverez ci-joint les certificats d\u2019analyse des tests de qualit\u00e9 de l\u2019air fongique. N\u2019h\u00e9sitez pas \u00e0 communiquer avec nous pour toute question.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : '+googleGeq+'\n\nMerci !',
-    attachNote:'Pi\u00e8ce jointe : R\u00e9sultats d\u2019analyse'
+
+  /* === RESULTAT BIOTAPE === */
+  if(type === 'resultat_biotape') return {
+    subj:'R\u00e9sultat du Biotape',
+    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe le rapport d\u2019analyse relatif \u00e0 l\u2019\u00e9chantillonnage effectu\u00e9 par bio-tape pour v\u00e9rifier la pr\u00e9sence \u00e9ventuelle de moisissures.\n\nLe laboratoire y indique les types de moisissures d\u00e9tect\u00e9s, s\u2019il y a lieu, ainsi que leur concentration estim\u00e9e. Ce rapport vous permettra de mieux \u00e9valuer la situation et de d\u00e9terminer, au besoin, les actions correctives \u00e0 envisager.\n\nN\u2019h\u00e9sitez pas \u00e0 me contacter si vous avez des questions ou si vous souhaitez obtenir des recommandations ou un accompagnement pour la suite.\n\nCordialement,',
   };
+
+  /* === RESULTATS AMIANTE MATERIAUX === */
+  if(type === 'res_amiante_materiaux') return {
+    subj:'R\u00e9sultats d\u2019analyse \u2013 Pr\u00e9sence d\u2019amiante dans les mat\u00e9riaux',
+    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour la pr\u00e9sence d\u2019amiante dans les mat\u00e9riaux pr\u00e9lev\u00e9s.\n\nLe rapport pr\u00e9sente les types de mat\u00e9riaux analys\u00e9s ainsi que la pr\u00e9sence ou non d\u2019amiante et, le cas \u00e9ch\u00e9ant, la concentration d\u00e9tect\u00e9e.\n\nSi des actions correctives sont recommand\u00e9es, n\u2019h\u00e9sitez pas \u00e0 nous contacter pour discuter des prochaines \u00e9tapes ou pour obtenir un accompagnement.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : '+googleLink+'\n\nMerci de votre confiance,',
+  };
+
+  /* === RESULTATS AMIANTE AIR === */
+  if(type === 'res_amiante_air') return {
+    subj:'R\u00e9sultats d\u2019analyse \u2013 Fibre d\u2019amiante dans l\u2019air',
+    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour la pr\u00e9sence de fibres d\u2019amiante dans l\u2019air ambiant.\n\nLe rapport pr\u00e9sente la concentration totale en fibres d\u00e9tect\u00e9e ainsi que l\u2019\u00e9valuation par rapport aux valeurs guides applicables. Si une analyse plus pouss\u00e9e par microscopie \u00e9lectronique \u00e0 transmission (MET) a \u00e9t\u00e9 effectu\u00e9e, les r\u00e9sultats sp\u00e9cifiques sont \u00e9galement inclus.\n\nSi vous avez des questions ou si vous souhaitez des recommandations pour la suite, n\u2019h\u00e9sitez pas \u00e0 nous contacter.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : '+googleLink+'\n\nMerci de votre confiance,',
+  };
+
+  /* === RESULTATS TEST AIR FONGIQUE === */
+  if(type === 'res_test_air') return {
+    subj:'R\u00e9sultats d\u2019analyse \u2013 Test de qualit\u00e9 de l\u2019air fongique',
+    body:'Bonjour,\n\nVeuillez trouver en pi\u00e8ce jointe les r\u00e9sultats d\u2019analyse pour le test de qualit\u00e9 de l\u2019air fongique r\u00e9alis\u00e9 dans votre propri\u00e9t\u00e9.\n\nLe rapport pr\u00e9sente les types de moisissures d\u00e9tect\u00e9s, leur concentration ainsi qu\u2019une \u00e9valuation de la qualit\u00e9 de l\u2019air int\u00e9rieur compar\u00e9e \u00e0 l\u2019air ext\u00e9rieur.\n\nN\u2019h\u00e9sitez pas \u00e0 me contacter si vous avez des questions sur l\u2019interpr\u00e9tation des r\u00e9sultats ou si vous souhaitez discuter des prochaines \u00e9tapes possibles.\n\nDe plus, si vous avez \u00e9t\u00e9 satisfait par notre service, n\u2019h\u00e9sitez pas \u00e0 nous laisser un commentaire sur notre page : '+googleLink+'\n\nMerci de votre confiance,',
+  };
+
   return null;
 }
 
-function openEmailModal(type){
+async function openEmailModal(type){
   currentEmailType=type;
   const content=getEmailContent(type);
   if(!content) return;
-  /* Lazy init de l'editeur Quill au premier ouverture du modal */
+  /* Lazy init de l'editeur Quill */
   if(!emailBodyEditor){
     emailBodyEditor=initRichEditor('m-body-editor','Message...');
   }
   document.getElementById('modal-email-title').textContent=content.subj;
   document.getElementById('m-to').value=mandat.client_email||'';
   document.getElementById('m-subj').value=content.subj;
-  /* Pre-remplir avec le template (la signature sera ajoutee au moment de l'envoi
-     car Quill ne supporte pas les tags <div>, <table>, <img> qu'on a dans les signatures) */
   setEditorHTML(emailBodyEditor, plainToHtml(content.body));
-  const ai=document.getElementById('m-attach-info');
-  if(content.attachNote){ai.textContent=content.attachNote;ai.style.display='block';}
-  else{ai.style.display='none';}
+
+  /* Charger les pieces jointes automatiques selon le gabarit */
+  currentAttachments=[];
+  await loadAutoAttachments(type);
+  renderAttachmentsList();
+
+  /* Reset le file input */
+  const fi=document.getElementById('m-file-input');
+  if(fi) fi.value='';
+
+  /* Gmail bar */
   const token=localStorage.getItem('portail_gmail_token');
   const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
   const bar=document.getElementById('gmail-bar');
@@ -2912,6 +3197,98 @@ function openEmailModal(type){
   }
   document.getElementById('modal-email').style.display='flex';
 }
+
+/* ===== PIECES JOINTES =====
+   Charge les fichiers auto-attaches selon le gabarit choisi.
+   - 'convention_fr', 'norme_fr', 'standard_en', 'info_test_air' = PDFs du bucket Supabase
+   - 'document:rapport' / 'document:resultats' = documents uploades dans le mandat */
+async function loadAutoAttachments(type){
+  const list = GABARIT_PDFS[type] || [];
+  for(const pdfKey of list){
+    if(pdfKey.startsWith('document:')){
+      /* Chercher dans la section Documents du mandat */
+      const docType = pdfKey.replace('document:','');
+      if(!mandat) continue;
+      /* Cherche un document du mandat dont le titre/categorie contient le mot-cle */
+      const matching = (docs||[]).filter(d=>{
+        const t = (d.titre||'').toLowerCase();
+        const c = (d.categorie||'').toLowerCase();
+        if(docType==='rapport') return t.includes('rapport') || c.includes('rapport');
+        if(docType==='resultats') return t.includes('resultat') || t.includes('r\u00e9sultat') || c.includes('resultat') || c.includes('analyse');
+        return false;
+      });
+      matching.forEach(d=>{
+        currentAttachments.push({
+          name: d.titre || d.nom_fichier || 'Document',
+          url: d.url,
+          source: 'document',
+        });
+      });
+    } else if(PDFS[pdfKey]){
+      currentAttachments.push({
+        name: PDF_LABELS[pdfKey] || pdfKey,
+        url: PDFS[pdfKey],
+        source: 'auto',
+      });
+    }
+  }
+}
+
+function renderAttachmentsList(){
+  const wrap = document.getElementById('m-attachments-list');
+  if(!wrap) return;
+  if(!currentAttachments.length){
+    wrap.innerHTML = '<div class="m-no-attach">Aucune pi&egrave;ce jointe</div>';
+    return;
+  }
+  wrap.innerHTML='';
+  currentAttachments.forEach((att, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'm-attach-item';
+    const srcLbl = att.source==='auto' ? 'PDF auto' : (att.source==='document' ? 'Document du mandat' : 'Fichier ajout\u00e9');
+    div.innerHTML =
+      '<span class="att-icon">\u{1F4CE}</span>'+
+      '<span class="att-name">'+escapeHtml(att.name)+'</span>'+
+      '<span class="att-source '+att.source+'">'+srcLbl+'</span>'+
+      '<button type="button" class="att-remove" onclick="removeAttachment('+idx+')" title="Retirer">&#10005;</button>';
+    wrap.appendChild(div);
+  });
+}
+
+function removeAttachment(idx){
+  currentAttachments.splice(idx, 1);
+  renderAttachmentsList();
+}
+
+async function onManualAttachmentSelected(event){
+  const files = event.target.files;
+  if(!files || !files.length) return;
+  for(const file of files){
+    /* Limite a 10 MB par fichier pour eviter les erreurs Gmail */
+    if(file.size > 10*1024*1024){
+      toast('Fichier trop volumineux : '+file.name+' (max 10 MB)','err');
+      continue;
+    }
+    /* Convertir en base64 */
+    const b64 = await new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onload = ()=>resolve(r.result.split(',')[1]);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+    currentAttachments.push({
+      name: file.name,
+      base64: b64,
+      mimetype: file.type || 'application/octet-stream',
+      source: 'manuel',
+    });
+  }
+  /* Reset le file input pour pouvoir re-uploader le meme fichier si besoin */
+  event.target.value='';
+  renderAttachmentsList();
+}
+
+/* Helper escapeHtml deja defini plus haut (ligne ~1719) */
 
 function closeEmailModal(){document.getElementById('modal-email').style.display='none';}
 
@@ -2963,27 +3340,106 @@ async function sendEmail(){
   if(!token||Date.now()>=expiry){toast('Veuillez connecter Gmail','err');return;}
   const to=document.getElementById('m-to').value.trim();
   const subj=document.getElementById('m-subj').value.trim();
-  /* Recupere le HTML de l'editeur Quill (sanitize via DOMPurify) */
   const bodyHtmlEdite=getEditorHTML(emailBodyEditor);
   if(!to){toast('Adresse courriel requise','err');return;}
   if(!bodyHtmlEdite.trim()){toast('Le message ne peut pas etre vide','err');return;}
   if(!await confirmTestAction('Envoyer un VRAI courriel a '+to)) return;
   toast('Envoi en cours...');
-  /* From: header avec nom UTF-8 encode pour eviter les bugs d'encodage */
   const compagnie = document.getElementById('f-compagnie').value;
   const fromHeader = buildFromHeader(compagnie);
-  /* Ajout de la signature complete (avec logo + table + divs) au moment de l'envoi */
   const bodyHtml = bodyHtmlEdite + buildSignatureHtml(compagnie);
-  const headers = [
-    'Content-Type: text/html; charset="UTF-8"',
-    'MIME-Version: 1.0',
-    'To: '+to,
-    'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?='
-  ];
-  if(fromHeader) headers.push('From: '+fromHeader);
-  /* Email envoye en text/html pour preserver la mise en page Quill */
-  const mime=headers.concat(['',bodyHtml]).join('\r\n');
-  const encoded=btoa(unescape(encodeURIComponent(mime))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+  /* === PRECHARGEMENT DES PIECES JOINTES ===
+     Pour les fichiers qui ont une URL (PDFs auto + documents du mandat),
+     on doit les telecharger en base64 avant l'envoi */
+  const preparedAttachments = [];
+  for(const att of currentAttachments){
+    try {
+      if(att.base64){
+        /* Deja en base64 (fichier manuel) */
+        preparedAttachments.push({
+          name: att.name,
+          mimetype: att.mimetype || 'application/octet-stream',
+          base64: att.base64,
+        });
+      } else if(att.url){
+        /* Telecharger depuis URL */
+        const resp = await fetch(att.url);
+        if(!resp.ok) throw new Error('HTTP '+resp.status);
+        const blob = await resp.blob();
+        /* Encode byte par byte (evite stack overflow sur gros PDF) */
+        const bytes = new Uint8Array(await blob.arrayBuffer());
+        let bin = '';
+        for(let i=0; i<bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        const b64 = btoa(bin);
+        preparedAttachments.push({
+          name: att.name,
+          mimetype: blob.type || 'application/pdf',
+          base64: b64,
+        });
+      }
+    } catch(e){
+      console.error('Erreur chargement piece jointe '+att.name+':', e);
+      toast('Erreur chargement : '+att.name, 'err');
+      return;
+    }
+  }
+
+  /* === CONSTRUCTION DU MIME ===
+     Si pas de pieces jointes : envoi simple en text/html
+     Si pieces jointes : envoi multipart/mixed */
+  let mime;
+  if(preparedAttachments.length === 0){
+    const headers = [
+      'Content-Type: text/html; charset="UTF-8"',
+      'MIME-Version: 1.0',
+      'To: '+to,
+      'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?='
+    ];
+    if(fromHeader) headers.push('From: '+fromHeader);
+    mime = headers.concat(['', bodyHtml]).join('\r\n');
+  } else {
+    const boundary='----=_EmailBoundary_'+Date.now();
+    const subjEnc='=?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=';
+    const parts = [
+      'To: '+to,
+      'Subject: '+subjEnc,
+      'MIME-Version: 1.0',
+      'Content-Type: multipart/mixed; boundary="'+boundary+'"',
+    ];
+    if(fromHeader) parts.splice(1, 0, 'From: '+fromHeader);
+    parts.push(
+      '',
+      '--'+boundary,
+      'Content-Type: text/html; charset="UTF-8"',
+      'Content-Transfer-Encoding: quoted-printable',
+      '',
+      bodyHtml.replace(/=/g, '=3D'),
+    );
+    /* Ajout de chaque piece jointe */
+    for(const att of preparedAttachments){
+      /* Encode le nom du fichier pour les caracteres non-ASCII */
+      const nameEnc = att.name.replace(/[^\x20-\x7E]/g, c=>'=?UTF-8?B?'+btoa(unescape(encodeURIComponent(c)))+'?=');
+      parts.push(
+        '',
+        '--'+boundary,
+        'Content-Type: '+att.mimetype+'; name="'+nameEnc+'"',
+        'Content-Disposition: attachment; filename="'+nameEnc+'"',
+        'Content-Transfer-Encoding: base64',
+        '',
+        att.base64,
+      );
+    }
+    parts.push('', '--'+boundary+'--');
+    mime = parts.join('\r\n');
+  }
+
+  /* Encodage URL-safe base64 byte-by-byte (evite stack overflow) */
+  const bytes = new TextEncoder().encode(mime);
+  let bin = '';
+  for(let i=0; i<bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  const encoded = btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
   const resp=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{
     method:'POST',
     headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
@@ -2992,9 +3448,13 @@ async function sendEmail(){
   if(resp.ok){
     toast('Courriel envoye !');
     closeEmailModal();
-    const field=currentEmailType.includes('conf')?'statut_confirmation_envoyee':'statut_rapport_envoye';
-    const btnId=currentEmailType.includes('conf')?'st-conf':'st-rapp';
-    if(mandat){
+    /* Met a jour le statut envoy correspondant */
+    let field=null,btnId=null;
+    if(currentEmailType.includes('conf')){field='statut_confirmation_envoyee';btnId='st-conf';}
+    else if(currentEmailType.includes('rapp')||currentEmailType.includes('res')||currentEmailType.includes('resultat')){
+      field='statut_rapport_envoye';btnId='st-rapp';
+    }
+    if(field && mandat){
       await sb.from('mandats').update({[field]:true}).eq('id',mandat.id);
       mandat[field]=true;
       setStBtn(btnId,true);
