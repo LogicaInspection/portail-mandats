@@ -1236,6 +1236,7 @@ const VIEW_AS_KEY='view_as_user_id';
 
 let realProfile=null;
 let profile=null,mandat=null,extras=[],docs=[],isNew=false;
+let emailLogs=[]; /* Phase email - types d'emails envoyes pour ce mandat */
 let currentEmailType=null;
 /* Liste des pieces jointes pour le modal email courant.
    Format : [{name, url, source: 'pdf'|'document'|'manuel', base64?, blob?}] */
@@ -1461,6 +1462,7 @@ techsFiltered.forEach(t=>{
   updateReclamerBtn();
   updateAssignInfo();
   loadHistorique();
+  await loadEmailLogs();
   /* Activer la detection des modifications APRES l'init complete
      pour eviter de marquer dirty pendant le chargement initial */
   setTimeout(()=>{formInitialized=true;},400);
@@ -3017,7 +3019,9 @@ function renderEmails(){
   });
 
   function makeButton(b){
-    const sent = mandat && b.field && mandat[b.field];
+    /* Verifie si CE type d'email precis a ete envoye pour ce mandat
+       (via email_logs - tracking individuel par type, pas par categorie) */
+    const sent = emailLogs.some(l => l.type_email === b.type);
     const btn = document.createElement('button');
     btn.className = 'btn-email' + (sent?' sent':'');
     btn.innerHTML =
@@ -3050,6 +3054,15 @@ function renderEmails(){
     list.appendChild(toggle);
     list.appendChild(autresWrap);
   }
+}
+
+/* Charge les emails envoyes pour ce mandat (pour savoir lesquels marquer comme "envoye") */
+async function loadEmailLogs(){
+  if(!mandat){emailLogs=[];return;}
+  try{
+    const {data}=await sb.from('email_logs').select('type_email,envoye_at').eq('mandat_id',mandat.id);
+    emailLogs=data||[];
+  }catch(e){emailLogs=[];}
 }
 
 function getEmailContent(type){
@@ -3448,10 +3461,28 @@ async function sendEmail(){
   if(resp.ok){
     toast('Courriel envoye !');
     closeEmailModal();
-    /* Met a jour le statut envoy correspondant */
+    /* === LOG INDIVIDUEL DANS email_logs ===
+       Chaque type d'email est logue separement pour pouvoir l'identifier dans renderEmails */
+    if(mandat){
+      try{
+        const {data:{session}}=await sb.auth.getSession();
+        await sb.from('email_logs').insert({
+          mandat_id: mandat.id,
+          type_email: currentEmailType,
+          destinataire: to,
+          sujet: subj,
+          envoye_par: session?.user?.id,
+        });
+      }catch(e){console.error('Email log insert failed:', e);}
+      /* Recharger la liste pour rafraichir les badges "Envoye" individuels */
+      await loadEmailLogs();
+    }
+    /* Aussi mettre a jour le statut general (pour compat avec actions auto Confirmation/Rapport)
+       NOTE: avec le tracking individuel, ces flags sont moins critiques mais on les garde
+       pour pas casser updateFinalBtn et les autres logiques. */
     let field=null,btnId=null;
-    if(currentEmailType.includes('conf')){field='statut_confirmation_envoyee';btnId='st-conf';}
-    else if(currentEmailType.includes('rapp')||currentEmailType.includes('res')||currentEmailType.includes('resultat')){
+    if(currentEmailType.startsWith('conf_')){field='statut_confirmation_envoyee';btnId='st-conf';}
+    else if(currentEmailType.startsWith('rapp_')||currentEmailType.startsWith('res_')||currentEmailType.startsWith('resultat_')){
       field='statut_rapport_envoye';btnId='st-rapp';
     }
     if(field && mandat){
