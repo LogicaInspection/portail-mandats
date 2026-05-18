@@ -53,31 +53,29 @@ body.test-mode .content { padding-top: 18px; }
 }
 .hright{display:flex;gap:8px;align-items:center;}
 
-/* ===== SECTION "Suivi du mandat" - 3 sous-blocs compacts cote a cote ===== */
-.sec.suivi-mandat-sec{border-left:4px solid #4caf50;margin-bottom:14px;padding:0;overflow:hidden;}
-.suivi-mandat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
-@media (max-width: 1100px){.suivi-mandat-grid{grid-template-columns:1fr 1fr;}}
-@media (max-width: 780px){.suivi-mandat-grid{grid-template-columns:1fr;}}
+/* ===== SECTION "Suivi du mandat" - 2 sous-blocs avec titres pro ===== */
+.sec.suivi-mandat-sec{border-left:4px solid #4caf50;margin-bottom:18px;padding:0;overflow:hidden;}
+.suivi-mandat-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+@media (max-width: 980px){.suivi-mandat-grid{grid-template-columns:1fr;}}
 
-.suivi-mandat-block{padding:12px 18px;}
+.suivi-mandat-block{padding:18px 24px;}
 .suivi-mandat-block + .suivi-mandat-block{border-left:1px solid #f0f1f3;}
-@media (max-width: 1100px){.suivi-mandat-block:nth-child(3){border-left:none;border-top:1px solid #f0f1f3;}}
-@media (max-width: 780px){.suivi-mandat-block + .suivi-mandat-block{border-left:none;border-top:1px solid #f0f1f3;}}
+@media (max-width: 980px){.suivi-mandat-block + .suivi-mandat-block{border-left:none;border-top:1px solid #f0f1f3;}}
 
 .suivi-mandat-title{
-  display:flex;align-items:center;gap:7px;
-  font-size:13px;font-weight:700;color:#1a1a2e;
-  margin-bottom:9px;padding-bottom:7px;
-  border-bottom:1.5px solid #f5f5f5;
+  display:flex;align-items:center;gap:8px;
+  font-size:15px;font-weight:700;color:#1a1a2e;
+  margin-bottom:14px;padding-bottom:10px;
+  border-bottom:2px solid #f5f5f5;
 }
-.suivi-mandat-title .ic{font-size:15px;}
+.suivi-mandat-title .ic{font-size:18px;}
 .suivi-mandat-title .statut-required{
-  margin-left:auto;color:#ff8f00;font-size:11px;font-weight:600;
+  margin-left:auto;color:#ff8f00;font-size:12px;font-weight:600;
   animation:dirty-blink 1.6s ease-in-out infinite;display:none;
 }
 .suivi-mandat-title .statut-required.show{display:inline;}
 
-.suivi-mandat-pills{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.suivi-mandat-pills{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
 
 /* ===== Pills "Suivi client" (cliquables) ===== */
 .statut-pill{
@@ -810,14 +808,14 @@ input[type=file]{display:none;}
 
 <div class="content">
 
- <!-- ===== Section "Suivi du mandat" - 3 blocs compacts cote a cote ===== -->
+  <!-- ===== Section "Suivi du mandat" - 2 blocs cote a cote avec titres pro ===== -->
   <div class="sec suivi-mandat-sec" id="sec-suivi-mandat" style="display:none">
     <div class="suivi-mandat-grid">
       <div class="suivi-mandat-block">
         <div class="suivi-mandat-title">
           <span class="ic">&#128242;</span>
           <span>Suivi client</span>
-          <span class="statut-required" id="statut-required">&#9888;&#65039; Choisir</span>
+          <span class="statut-required" id="statut-required">&#9888;&#65039; Choisir un statut</span>
         </div>
         <div class="suivi-mandat-pills" id="suivi-statut-pills"></div>
       </div>
@@ -828,28 +826,29 @@ input[type=file]{display:none;}
         </div>
         <div class="suivi-mandat-pills">
           <span class="action-badge" id="action-conf" title="S'allume lorsque la confirmation est envoyee au client">
-            <span class="ck-mini" id="ck-conf"></span> Confirmation
+            <span class="ck-mini" id="ck-conf"></span> Confirmation envoy&eacute;e
           </span>
           <span class="action-badge" id="action-fact" title="S'allume lorsque la facture est envoyee">
-            <span class="ck-mini" id="ck-fact"></span> Facture
+            <span class="ck-mini" id="ck-fact"></span> Facture envoy&eacute;e
           </span>
           <span class="action-badge" id="action-rapp" title="S'allume lorsque le rapport est envoye">
-            <span class="ck-mini" id="ck-rapp"></span> Rapport
+            <span class="ck-mini" id="ck-rapp"></span> Rapport envoy&eacute;
           </span>
         </div>
       </div>
 
       <!-- Finalisation manuelle - bypass des conditions auto (seul gestionnaire) -->
-      <div class="suivi-mandat-block" id="block-finaliser-manuel" style="display:none;">
+      <div class="suivi-mandat-block" id="block-finaliser-manuel" style="display:none;border-top:1.5px dashed #e0e0e0;padding-top:14px;margin-top:14px;">
         <div class="suivi-mandat-title">
           <span class="ic">&#127942;</span>
           <span>Finalisation manuelle</span>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button type="button" id="btn-finaliser-manuel" class="btn-finaliser-manuel" onclick="finaliserManuel()" title="Force la finalisation meme si les conditions auto ne sont pas remplies. Mode de paiement requis.">
-            &#10003; Finaliser et archiver
+        <p style="margin:6px 0 10px 0;font-size:12.5px;color:#666;">Marque ce mandat comme finalis&eacute; et archive-le, m&ecirc;me si toutes les conditions automatiques ne sont pas remplies. <strong>Requiert que le mode de paiement soit renseign&eacute;</strong> (preuve de paiement).</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button type="button" id="btn-finaliser-manuel" class="btn-finaliser-manuel" onclick="finaliserManuel()">
+            &#10003; Finaliser et archiver le mandat
           </button>
-          <span id="finaliser-manuel-status" style="font-size:11.5px;color:#888;"></span>
+          <span id="finaliser-manuel-status" style="font-size:12px;color:#666;"></span>
         </div>
       </div>
     </div>
@@ -3430,6 +3429,33 @@ function getEmailContent(type){
   /* === CONFIRMATION TEST DE QUALITE DE L'AIR FONGIQUE === */
   if(type === 'conf_test_air') return {
     subj:'Confirmation de rendez-vous \u2013 Test de qualit\u00e9 de l\u2019air fongique',
+    bodyHtml:
+      '<p>Bonjour,</p>'+
+      '<p>Nous confirmons par la pr\u00e9sente votre rendez-vous pour votre <strong>test de qualit\u00e9 de l\u2019air fongique</strong>.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#f0f7ff;border-left:4px solid #1976d2;margin:18px 0;"><tr><td style="padding:14px 18px;">'+
+        '<p style="margin:0 0 10px 0;font-weight:700;color:#1565c0;font-size:14px;letter-spacing:0.4px;">\uD83D\uDCC5 INFORMATIONS DE VOTRE RENDEZ-VOUS</p>'+
+        '<p style="margin:5px 0;"><strong>Date :</strong> '+dateStr+'</p>'+
+        '<p style="margin:5px 0;"><strong>Heure :</strong> '+heureStr+'</p>'+
+        '<p style="margin:5px 0;"><strong>Adresse :</strong> '+adresse+'</p>'+
+        '<p style="margin:5px 0;"><strong>Technicien :</strong> '+techNom+'</p>'+
+      '</td></tr></table>'+
+      '<p>Vous trouverez en pi\u00e8ce jointe notre <strong>document explicatif complet</strong> concernant le d\u00e9roulement de l\u2019intervention, les tarifs, les services suppl\u00e9mentaires, les modalit\u00e9s de paiement, ainsi que l\u2019interpr\u00e9tation des r\u00e9sultats et les \u00e9tapes suivantes au besoin.</p>'+
+      '<p>Nous vous invitons \u00e0 le lire <strong>attentivement avant notre passage</strong>.</p>'+
+      '<table style="width:100%;border-collapse:collapse;background:#fff8e1;border-left:4px solid #f57c00;margin:18px 0;"><tr><td style="padding:12px 18px;">'+
+        '<p style="margin:0;"><strong style="color:#e65100;">\u26A0\uFE0F Rappel important :</strong> les frais sont <strong>payables le jour de l\u2019intervention</strong>.</p>'+
+      '</td></tr></table>'+
+      '<h3 style="color:#2e7d32;margin-top:22px;margin-bottom:10px;font-size:16px;">\u2705 Pr\u00e9paration avant le test</h3>'+
+      '<p>Afin d\u2019assurer des <strong>r\u00e9sultats pr\u00e9cis</strong>, merci de respecter les consignes suivantes :</p>'+
+      '<ul style="padding-left:20px;margin:8px 0 14px 0;">'+
+        '<li style="margin:7px 0;"><strong>12 heures avant</strong> \u2014 Fermer toutes les portes et fen\u00eatres</li>'+
+        '<li style="margin:7px 0;"><strong>24 heures avant</strong> \u2014 \u00c9teindre les \u00e9changeurs d\u2019air, purificateurs d\u2019air, ventilateurs et climatiseurs</li>'+
+        '<li style="margin:7px 0;"><strong>48 heures avant</strong> \u2014 \u00c9viter de faire le m\u00e9nage ou de d\u00e9placer tapis, v\u00eatements ou mobilier</li>'+
+        '<li style="margin:7px 0;"><strong>48 heures avant</strong> \u2014 Sortir le compostage \u00e0 l\u2019ext\u00e9rieur</li>'+
+        '<li style="margin:7px 0;"><strong>Le jour du test</strong> \u2014 Arroser l\u00e9g\u00e8rement les plantes d\u2019int\u00e9rieur</li>'+
+      '</ul>'+
+      '<p style="font-style:italic;color:#555;">Ces petites pr\u00e9cautions permettent d\u2019obtenir des r\u00e9sultats <strong>beaucoup plus repr\u00e9sentatifs</strong> de la qualit\u00e9 r\u00e9elle de l\u2019air int\u00e9rieur.</p>'+
+      '<p>Si vous avez des questions avant notre intervention, n\u2019h\u00e9sitez pas \u00e0 nous \u00e9crire.</p>'+
+      '<p>Merci et au plaisir de vous aider !</p>',
     body:'Bonjour,\n\nNous confirmons par la pr\u00e9sente votre rendez-vous pour votre test de qualit\u00e9 de l\u2019air fongique.\n\nVeuillez prendre connaissance des informations importantes ci-dessous :\n\n- Date : '+dateStr+'\n- Heure : '+heureStr+'\n- Adresse : '+adresse+'\n- Nom de votre technicien : '+techNom+'\n\nVous trouverez en pi\u00e8ce jointe notre document explicatif complet concernant le d\u00e9roulement de l\u2019intervention, les tarifs, les services suppl\u00e9mentaires, les modalit\u00e9s de paiement, ainsi que l\u2019interpr\u00e9tation des r\u00e9sultats et les \u00e9tapes suivantes au besoin.\n\nNous vous invitons \u00e0 le lire attentivement avant notre passage.\n\nRappel important : les frais sont payables le jour de l\u2019intervention.\n\nAvant le rendez-vous, afin d\u2019assurer des r\u00e9sultats pr\u00e9cis, merci de respecter les consignes suivantes :\n\n- Fermer toutes les portes et fen\u00eatres au moins 12 heures avant le test.\n- \u00c9teindre les \u00e9changeurs d\u2019air, purificateurs d\u2019air, ventilateurs et climatiseurs au moins 24 heures avant.\n- \u00c9viter de faire le m\u00e9nage ou de d\u00e9placer tapis, v\u00eatements ou mobilier au moins 48 heures avant.\n- Sortir le compostage \u00e0 l\u2019ext\u00e9rieur au moins 48 heures avant.\n- Arroser l\u00e9g\u00e8rement les plantes d\u2019int\u00e9rieur le jour du test.\n\nCes petites pr\u00e9cautions permettent d\u2019obtenir des r\u00e9sultats beaucoup plus repr\u00e9sentatifs de la qualit\u00e9 r\u00e9elle de l\u2019air int\u00e9rieur.\n\nSi vous avez des questions avant notre intervention, n\u2019h\u00e9sitez pas \u00e0 nous \u00e9crire.\n\nMerci et au plaisir de vous aider !',
   };
 
@@ -3507,7 +3533,9 @@ async function openEmailModal(type){
   document.getElementById('modal-email-title').textContent=content.subj;
   document.getElementById('m-to').value=mandat.client_email||'';
   document.getElementById('m-subj').value=content.subj;
-  setEditorHTML(emailBodyEditor, plainToHtml(content.body));
+  /* Si le gabarit fournit bodyHtml, on l'utilise tel quel (HTML rich).
+     Sinon on convertit le body plain text via plainToHtml() (comportement historique). */
+  setEditorHTML(emailBodyEditor, content.bodyHtml ? content.bodyHtml : plainToHtml(content.body));
 
   /* Charger les pieces jointes automatiques selon le gabarit */
   currentAttachments=[];
