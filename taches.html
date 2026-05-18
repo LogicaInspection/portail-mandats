@@ -99,7 +99,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .mandat-result-name{font-weight:600;color:#1a1a2e;}
 .mandat-result-meta{font-size:11px;color:#888;margin-top:2px;}
 .mandat-result-empty{padding:14px;text-align:center;color:#bbb;font-size:13px;font-style:italic;}
-.mandat-selected{background:#f3e5f5;border:1.5px solid #6a1b9a;border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:#4a148c;font-weight:500;}
+.mandat-selected{background:#f3e5f5;border:1.5px solid #6a1b9a;border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:#4a148c;font-weight:500;transition:background 0.15s;}
+.mandat-selected:hover{background:#e9d6f0;}
+/* Le label entier est un lien cliquable - prend tout l'espace dispo */
+.mandat-selected-link{display:block;flex:1;color:inherit;text-decoration:none;line-height:1.4;cursor:pointer;}
+.mandat-selected-link:hover{color:#6a1b9a;}
+.mandat-selected-link:hover b{text-decoration:underline;}
 .mandat-clear{background:transparent;border:none;color:#6a1b9a;cursor:pointer;font-size:14px;padding:4px 8px;border-radius:6px;}
 .mandat-clear:hover{background:rgba(106,27,154,0.1);}
 
@@ -566,7 +571,10 @@ async function editTache(id){
       document.getElementById('f-mandat-search').style.display = 'none';
       const selBox = document.getElementById('mandat-selected');
       selBox.style.display = 'flex';
-      document.getElementById('mandat-selected-label').innerHTML = '<b>Mandat li&eacute;</b><br><span style="font-size:11px;font-weight:400;opacity:0.75;">ID: '+t.mandat_id.substring(0,8)+'...</span>';
+      document.getElementById('mandat-selected-label').innerHTML =
+        '<a href="mandat.html?id='+t.mandat_id+'" target="_blank" rel="noopener" class="mandat-selected-link" title="Ouvrir le mandat dans un nouvel onglet">'+
+          '<b>Mandat li&eacute;</b><br><span style="font-size:11px;font-weight:400;opacity:0.75;">ID: '+t.mandat_id.substring(0,8)+'... &nbsp;&#8599;</span>'+
+        '</a>';
     }
   } else {
     document.getElementById('f-lier-mandat').checked = false;
@@ -766,8 +774,11 @@ function selectMandat(id, nom, meta){
   document.getElementById('mandat-results').style.display = 'none';
   const selBox = document.getElementById('mandat-selected');
   selBox.style.display = 'flex';
+  /* Le label complet ouvre le mandat au clic (sauf si on clique le bouton X qui retire) */
   document.getElementById('mandat-selected-label').innerHTML =
-    '<b>'+nom+'</b><br><span style="font-size:11px;font-weight:400;opacity:0.75;">'+meta+'</span>';
+    '<a href="mandat.html?id='+id+'" target="_blank" rel="noopener" class="mandat-selected-link" title="Ouvrir le mandat dans un nouvel onglet">'+
+      '<b>'+nom+'</b><br><span style="font-size:11px;font-weight:400;opacity:0.75;">'+meta+' &nbsp;&#8599;</span>'+
+    '</a>';
 }
 
 function clearMandatSelection(){
