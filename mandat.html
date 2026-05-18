@@ -118,6 +118,23 @@ body.test-mode .content { padding-top: 18px; }
 .btn-final-ready{background:#4caf50;color:white;box-shadow:0 2px 12px rgba(76,175,80,0.5);animation:pulse 2s infinite;}
 .btn-final-done{background:#2e7d32;color:white;}
 .btn-final-pending{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.2);cursor:not-allowed;}
+
+/* Bouton finalisation manuelle */
+.btn-finaliser-manuel{
+  background:linear-gradient(135deg,#43a047 0%,#2e7d32 100%);
+  color:white;border:none;padding:10px 18px;border-radius:9px;
+  font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.3px;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:all 0.2s;box-shadow:0 2px 8px rgba(46,125,50,0.25);
+}
+.btn-finaliser-manuel:hover:not(:disabled){
+  background:linear-gradient(135deg,#2e7d32 0%,#1b5e20 100%);
+  transform:translateY(-1px);box-shadow:0 4px 12px rgba(46,125,50,0.35);
+}
+.btn-finaliser-manuel:disabled{
+  background:#e0e0e0;color:#999;cursor:not-allowed;
+  box-shadow:none;transform:none;
+}
 @keyframes pulse{0%,100%{box-shadow:0 2px 12px rgba(76,175,80,0.5);}50%{box-shadow:0 2px 24px rgba(76,175,80,0.8);}}
 
 .content{max-width:1500px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px;}
@@ -817,6 +834,21 @@ input[type=file]{display:none;}
           <span class="action-badge" id="action-rapp" title="S'allume lorsque le rapport est envoye">
             <span class="ck-mini" id="ck-rapp"></span> Rapport envoy&eacute;
           </span>
+        </div>
+      </div>
+
+      <!-- Finalisation manuelle - bypass des conditions auto (seul gestionnaire) -->
+      <div class="suivi-mandat-block" id="block-finaliser-manuel" style="display:none;border-top:1.5px dashed #e0e0e0;padding-top:14px;margin-top:14px;">
+        <div class="suivi-mandat-title">
+          <span class="ic">&#127942;</span>
+          <span>Finalisation manuelle</span>
+        </div>
+        <p style="margin:6px 0 10px 0;font-size:12.5px;color:#666;">Marque ce mandat comme finalis&eacute; et archive-le, m&ecirc;me si toutes les conditions automatiques ne sont pas remplies. <strong>Requiert que le mode de paiement soit renseign&eacute;</strong> (preuve de paiement).</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button type="button" id="btn-finaliser-manuel" class="btn-finaliser-manuel" onclick="finaliserManuel()">
+            &#10003; Finaliser et archiver le mandat
+          </button>
+          <span id="finaliser-manuel-status" style="font-size:12px;color:#666;"></span>
         </div>
       </div>
     </div>
@@ -2399,6 +2431,89 @@ function updateFinalBtn(){
       container.appendChild(div);
     });
   }
+
+  /* Bloc Finalisation manuelle (gestionnaire seulement, mandat non complete) */
+  updateFinaliserManuelBlock();
+}
+
+/* Affiche / cache le bloc de finalisation manuelle et active/desactive le bouton
+   selon que le mode de paiement est renseigne ou non.
+   Visible UNIQUEMENT pour gestionnaire ET si mandat existe ET pas deja complete. */
+function updateFinaliserManuelBlock(){
+  const block=document.getElementById('block-finaliser-manuel');
+  if(!block) return;
+  const isComplete=mandat&&mandat.est_complete;
+  const isGest=profile&&profile.role==='gestionnaire';
+  /* Cache si non-gestionnaire, mandat inexistant, ou deja complete */
+  if(!isGest || !mandat || isComplete){
+    block.style.display='none';
+    return;
+  }
+  block.style.display='block';
+
+  /* Verifier si le mode de paiement est renseigne (preuve de paiement) */
+  const modePaie = mandat ? mandat.mode_paiement : currentModePaiement;
+  const btn=document.getElementById('btn-finaliser-manuel');
+  const status=document.getElementById('finaliser-manuel-status');
+  if(modePaie){
+    btn.disabled=false;
+    status.innerHTML='<span style="color:#2e7d32;">&#10003; Mode de paiement : '+escapeHtml(getModePaiementLabel(modePaie))+'</span>';
+  } else {
+    btn.disabled=true;
+    status.innerHTML='<span style="color:#c62828;">&#9888;&#65039; Le client doit avoir pay&eacute; (renseigne le mode de paiement)</span>';
+  }
+}
+
+/* Helper : libelle convivial du mode de paiement */
+function getModePaiementLabel(mp){
+  const labels={
+    'square_credit':'Square - Credit',
+    'square_debit':'Square - Debit',
+    'virement_interac':'Virement Interac',
+    'depot_direct':'Depot direct',
+    'cheque':'Cheque',
+    'argent_comptant':'Argent comptant',
+  };
+  return labels[mp]||mp;
+}
+
+/* Finalise le mandat MANUELLEMENT (bypass des conditions auto)
+   Seule condition : mode de paiement renseigne. */
+async function finaliserManuel(){
+  if(!mandat){toast('Sauvegardez le mandat avant','err');return;}
+  const modePaie = mandat.mode_paiement || currentModePaiement;
+  if(!modePaie){
+    toast('Le mode de paiement doit etre renseigne (preuve de paiement)','err');
+    return;
+  }
+  if(!await confirmTestAction('Finaliser MANUELLEMENT ce mandat et l\'archiver (bypass des conditions auto)')) return;
+  const now=new Date().toISOString();
+  const {error}=await sb.from('mandats').update({
+    est_complete:true,
+    complete_at:now,
+    complete_par:profile.id,
+    statut_final:true,
+  }).eq('id',mandat.id);
+  if(error){toast('Erreur: '+error.message,'err');return;}
+  mandat.est_complete=true;
+  mandat.complete_at=now;
+  mandat.complete_par=profile.id;
+  mandat.statut_final=true;
+  /* Log dans historique pour traçabilite */
+  try{
+    await sb.from('mandats_historique').insert({
+      mandat_id:mandat.id,
+      action:'finalisation_manuelle',
+      effectue_par:profile.id,
+      details:{
+        mode_paiement:modePaie,
+        bypass_conditions:true,
+        date:now,
+      }
+    });
+  }catch(e){}
+  toast('Mandat finalise manuellement et archive !');
+  setTimeout(()=>{window.location.href='dashboard.html';},1200);
 }
 
 async function toggleFinal(){
