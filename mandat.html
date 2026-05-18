@@ -1188,7 +1188,7 @@ input[type=file]{display:none;}
 
     <!-- Etat de connexion -->
     <div id="gcal-view-auth" style="display:none;padding:16px;background:#fff3e0;border:1.5px solid #ffb74d;border-radius:10px;margin-bottom:14px;text-align:center;">
-      <p style="margin:0 0 10px 0;color:#bf6a00;">Tu dois te connecter \u00e0 Google Calendar pour voir tes rendez-vous.</p>
+      <p style="margin:0 0 10px 0;color:#bf6a00;">Tu dois te connecter &agrave; Google Calendar pour voir tes rendez-vous.</p>
       <button class="btn-gc" onclick="connectGmail()">Connecter mon Google</button>
     </div>
 
@@ -3452,7 +3452,7 @@ function closeEmailModal(){document.getElementById('modal-email').style.display=
 function connectGmail(){
   const client=google.accounts.oauth2.initTokenClient({
     client_id:GC_ID,
-    scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events',
+    scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
     callback:async(resp)=>{
       if(resp.error) return;
       localStorage.setItem('portail_gmail_token',resp.access_token);
@@ -3479,7 +3479,7 @@ function getGoogleToken(){
     /* Pas de token valide: demande une autorisation */
     const client=google.accounts.oauth2.initTokenClient({
       client_id:GC_ID,
-      scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events',
+      scope:'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
       callback:(resp)=>{
         if(resp.error) return reject(resp.error);
         localStorage.setItem('portail_gmail_token',resp.access_token);
@@ -5182,6 +5182,14 @@ async function loadGCalendars(){
     const resp = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader',{
       headers:{'Authorization':'Bearer '+token}
     });
+    /* 401/403 = scope manquant ou token expire - on force une reconnexion */
+    if(resp.status === 401 || resp.status === 403){
+      console.warn('Token Google manque le scope calendar.readonly. Reconnexion requise.');
+      /* Effacer le token actuel pour forcer reconnexion avec le bon scope */
+      localStorage.removeItem('portail_gmail_token');
+      localStorage.removeItem('portail_gmail_expiry');
+      return false;
+    }
     if(!resp.ok) return false;
     const data = await resp.json();
     gcalCalendars = (data.items||[]).map(c=>({
@@ -5192,7 +5200,6 @@ async function loadGCalendars(){
     try{ saved = JSON.parse(localStorage.getItem(GCAL_FILTER_KEY)||'null'); }catch(e){}
     if(saved && Array.isArray(saved)){
       gcalVisibleCalIds = new Set(saved);
-      /* Verifier que tous les ids saved existent toujours */
       gcalVisibleCalIds = new Set([...gcalVisibleCalIds].filter(id => gcalCalendars.find(c=>c.id===id)));
     } else {
       gcalVisibleCalIds = new Set(gcalCalendars.map(c=>c.id));
