@@ -399,6 +399,35 @@ textarea{resize:vertical;min-height:80px;line-height:1.6;}
 /* Quand commission validee : champ commission verrouille visuellement */
 .fin-input.locked{background:#f1f8f4;border-color:#a5d6a7;color:#1b5e20;font-weight:700;cursor:not-allowed;}
 
+/* === Verrouillage prix de base + extras quand commission validee (Phase 5) === */
+/* Inputs prix de base et extras verrouilles */
+.fin-input.locked-price{background:#f1f8f4;border-color:#a5d6a7;color:#1b5e20;font-weight:700;cursor:not-allowed;}
+.fin-input.locked-price:focus{outline:none;box-shadow:0 0 0 2px rgba(165,214,167,0.5);}
+/* Rangee d'extra verrouillee */
+.extra-row.locked-row{background:#f1f8f4;border-radius:6px;padding:2px 4px;}
+.extra-row.locked-row input[type="checkbox"]{cursor:not-allowed;}
+.extra-row.locked-row .btn-rm{display:none;}
+/* Badge cadenas pres du label "Prix de base" */
+.price-lock-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-left:8px;padding:2px 8px;border-radius:10px;
+  background:#e8f5e9;color:#1b5e20;font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.3px;
+  border:1px solid #a5d6a7;vertical-align:middle;
+}
+/* Message d'info affiche dans la section finance quand verrouille */
+.price-lock-info{
+  margin:8px 0 10px 0;padding:9px 12px;
+  background:#e8f5e9;border-left:3px solid #4caf50;border-radius:6px;
+  font-size:12px;color:#1b5e20;display:flex;align-items:center;gap:8px;
+}
+.price-lock-info .lock-icon{font-size:14px;}
+.price-lock-info .unlock-link{
+  margin-left:auto;color:#c62828;font-weight:700;cursor:pointer;text-decoration:underline;
+}
+.price-lock-info .unlock-link:hover{color:#8e0000;}
+
+
 /* Badge pour le tech (read-only) */
 .commission-status-tech{
   margin-top:10px;padding:8px 12px;border-radius:8px;
@@ -1080,7 +1109,7 @@ input[type=file]{display:none;}
 
 <div class="fin-card">
       <div class="fin-row">
-        <span class="fin-label">Prix de base</span>
+        <span class="fin-label">Prix de base<span class="price-lock-badge" id="prix-lock-badge" style="display:none">&#128274; Verrouille</span></span>
         <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()">
       </div>
       <div class="fin-row geq-only" id="redaction-row">
@@ -1099,6 +1128,13 @@ input[type=file]{display:none;}
           <div class="commission-validation-meta" id="commission-validation-meta"></div>
         </div>
       </div>
+    </div>
+
+    <!-- Info bar verrouillage prix (visible quand commission validee) -->
+    <div class="price-lock-info" id="price-lock-info" style="display:none">
+      <span class="lock-icon">&#128274;</span>
+      <span><strong>Prix de base et services additionnels verrouilles</strong> &mdash; commission validee</span>
+      <span class="unlock-link" id="price-unlock-link" style="display:none" onclick="unlockPriceFields()">Deverrouiller</span>
     </div>
 
     <div style="margin-bottom:6px"><label>Services supplementaires</label></div>
@@ -1908,6 +1944,11 @@ function toggleSansLettre(){
 function renderExtras(){
   const list=document.getElementById('extras-list');
   const isGest=profile.role==='gestionnaire';
+  /* Phase 5 : verrouillage quand commission validee */
+  const locked = mandat && !!mandat.commission_validee;
+  const disAttr = locked ? ' disabled' : '';
+  const roAttr = locked ? ' readonly' : '';
+  const lockedRowCls = locked ? ' locked-row' : '';
   list.innerHTML='';
   if(!extras.length){
     list.innerHTML='<div style="font-size:13px;color:#bbb;padding:8px 0;text-align:center;">Aucun service supplementaire</div>';
@@ -1920,23 +1961,29 @@ function renderExtras(){
 
   extras.forEach((ex,i)=>{
     const row=document.createElement('div');
-    row.className='extra-row';
+    row.className='extra-row'+lockedRowCls;
     /* Nom du service: input editable si service custom, span fige sinon */
     const nameHtml = ex.custom
-      ? '<input class="extra-name-input" type="text" placeholder="Nom du service..." value="'+escapeAttr(ex.service_nom||'')+'" oninput="extraSetNom('+i+',this.value)">'
+      ? '<input class="extra-name-input" type="text" placeholder="Nom du service..." value="'+escapeAttr(ex.service_nom||'')+'" oninput="extraSetNom('+i+',this.value)"'+roAttr+'>'
       : '<span class="extra-name">'+escapeHtml(ex.service_nom||'')+'</span>';
+    /* Classe locked-price sur les inputs prix/commission si commission validee */
+    const inputCls = locked ? 'fin-input small locked-price' : 'fin-input small';
     row.innerHTML=
-      '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)">'+
+      '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)"'+disAttr+'>'+
       nameHtml+
-      '<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value)">'+
+      '<input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value)"'+roAttr+'>'+
       /* Commission editable pour gestionnaire ET technicien (le tech propose, le gestionnaire valide) */
-      ((isGest||profile.role==='technicien')?'<input class="fin-input small" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)">':'<span></span>')+
-      ((profile.role==='gestionnaire'||profile.role==='secretaire')?'<button class="btn-rm" onclick="removeExtra('+i+')">&#10005;</button>':'<span></span>');
+      ((isGest||profile.role==='technicien')?'<input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)"'+roAttr+'>':'<span></span>')+
+      ((!locked&&(profile.role==='gestionnaire'||profile.role==='secretaire'))?'<button class="btn-rm" onclick="removeExtra('+i+')">&#10005;</button>':'<span></span>');
     list.appendChild(row);
   });
 
-  if(document.getElementById('f-compagnie').value==='geq'){
-    document.querySelector('.btn-add-extra').style.display='block';
+  /* Bouton "+ Ajouter un service" cache si verrouille */
+  const btnAdd = document.querySelector('.btn-add-extra');
+  if(document.getElementById('f-compagnie').value==='geq' && !locked){
+    if(btnAdd) btnAdd.style.display='block';
+  } else if(btnAdd) {
+    btnAdd.style.display='none';
   }
   recalc();
 }
@@ -2882,6 +2929,28 @@ async function saveMandat(){
   /* Livraison B - Capturer l'ancien technicien_id avant la sauvegarde
      pour detecter si on assigne un NOUVEAU tech (declencher la notif) */
   const oldTechId = mandat ? (mandat.technicien_id||null) : null;
+
+  /* === Phase 5 : Defense-in-depth pour le verrouillage des prix.
+     Si la commission est validee, on FORCE le prix de base et les extras
+     a rester identiques a la BD, peu importe ce que le DOM contient.
+     Cela protege meme si quelqu'un manipule le HTML via les devtools. */
+  if(mandat && mandat.commission_validee){
+    /* Restaure le prix de base depuis la BD */
+    const prixInput=document.getElementById('prix-base');
+    if(prixInput && parseFloat(prixInput.value)!==parseFloat(mandat.prix_base||0)){
+      prixInput.value=mandat.prix_base||0;
+      toast('Prix de base verrouille (commission validee)','err');
+    }
+    /* Restaure les extras depuis la BD (rechargement complet pour eviter les mutations en memoire) */
+    try{
+      const {data:exBd}=await sb.from('mandat_extras').select('*').eq('mandat_id',mandat.id).order('created_at');
+      if(exBd){
+        extras=exBd;
+        renderExtras();
+      }
+    }catch(e){console.warn('Impossible de recharger les extras verrouilles:',e);}
+  }
+
   /* Validation: statut de contact OBLIGATOIRE */
   if(!currentStatutContact){
     toast('Veuillez selectionner un statut Suivi client dans le haut de la page','err');
@@ -4561,6 +4630,33 @@ async function renderCommissionValidation(){
     }
   }
 
+  /* === Phase 5 : Verrouille aussi le PRIX DE BASE + les EXTRAS quand commission validee.
+     Empeche un tech de modifier les montants apres que la commission ait ete calculee/payee.
+     Seul Bass peut deverrouiller via le lien "Deverrouiller" (qui invalide aussi la commission). */
+  const BASS_UID = '72fed940-9f61-471d-ad81-378af125146e';
+  if(prixInput){
+    if(valide){
+      prixInput.classList.add('locked-price');
+      prixInput.readOnly=true;
+    } else {
+      prixInput.classList.remove('locked-price');
+      prixInput.readOnly=false;
+    }
+  }
+  /* Badge cadenas a cote du label "Prix de base" */
+  const lockBadge=document.getElementById('prix-lock-badge');
+  if(lockBadge) lockBadge.style.display = valide ? 'inline-flex' : 'none';
+
+  /* Info bar au-dessus des services additionnels */
+  const lockInfo=document.getElementById('price-lock-info');
+  const unlockLink=document.getElementById('price-unlock-link');
+  if(lockInfo) lockInfo.style.display = valide ? 'flex' : 'none';
+  /* Lien "Deverrouiller" visible UNIQUEMENT pour Bass */
+  if(unlockLink) unlockLink.style.display = (valide && profile.id===BASS_UID) ? 'inline' : 'none';
+
+  /* Re-render les extras pour appliquer le verrou (champs prix/commission/checkbox) */
+  if(typeof renderExtras==='function') renderExtras();
+
   /* Badge cote tech (read-only) */
   const techBadge=document.getElementById('comm-status-tech');
   if(techBadge){
@@ -4622,6 +4718,40 @@ async function toggleCommissionValidation(){
     mandat.commission_validee_par=profile.id;
     toast('Commission valid\u00e9e');
   }
+  renderCommissionValidation();
+}
+
+/* === Phase 5 : Deverrouiller les prix (Bass seulement) ===
+   Cette action invalide AUTOMATIQUEMENT la commission, forcant Bass a la revalider
+   apres ajustement du prix. Cela garantit que le verrou n'est jamais contournable
+   sans qu'une nouvelle validation soit faite, et trace dans l'historique. */
+async function unlockPriceFields(){
+  const BASS_UID = '72fed940-9f61-471d-ad81-378af125146e';
+  if(profile.id !== BASS_UID){
+    toast('Seul Bass peut deverrouiller les prix','err');
+    return;
+  }
+  if(!mandat || !mandat.commission_validee){
+    toast('Les prix ne sont pas verrouilles','err');
+    return;
+  }
+  const confirmMsg = 'Deverrouiller les prix ?\n\nCela va AUSSI devalider la commission. Tu devras la revalider apres avoir ajuste les prix.\n\nContinuer ?';
+  if(!window.confirm(confirmMsg)) return;
+  /* On reutilise la logique de devalidation (qui synchronise aussi l'UI) */
+  const {error}=await sb.from('mandats').update({
+    commission_validee:false,
+    commission_validee_at:null,
+    commission_validee_par:null,
+  }).eq('id',mandat.id);
+  if(error){toast('Erreur: '+error.message,'err');return;}
+  mandat.commission_validee=false;
+  mandat.commission_validee_at=null;
+  mandat.commission_validee_par=null;
+  /* Log dans l'historique si la fonction existe */
+  if(typeof logHistoriqueAction==='function'){
+    try{ await logHistoriqueAction('prix_deverrouilles','Prix deverrouilles + commission devalidee par Bass'); }catch(e){}
+  }
+  toast('Prix deverrouilles. La commission devra etre revalidee.');
   renderCommissionValidation();
 }
 
