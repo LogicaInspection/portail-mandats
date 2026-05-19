@@ -3125,6 +3125,26 @@ async function saveMandat(){
 
     toast('Mandat cree !');
     markClean();
+
+    /* ===== NOTIFICATION EMAIL AU TECH ASSIGNE (creation de mandat) =====
+       Meme logique que pour les UPDATE (plus bas), mais adapt\u00e9e \u00e0 la cr\u00e9ation :
+       - Pas d'oldTechId puisque le mandat n'existait pas avant
+       - On notifie si un tech est assign\u00e9, que ce n'est pas soi-m\u00eame, et mode 'assigne'
+       Appel "fire and forget" pour ne pas retarder la redirection vers le dashboard. */
+    const currentUserId_new = session.user.id;
+    if (techId && techId !== currentUserId_new && statutAssign === 'assigne') {
+      sb.functions.invoke('notify-tech-assignment', {
+        body: {
+          mandat_id: data.id,
+          tech_id: techId,
+          assigneur_id: currentUserId_new,
+        },
+      }).then(({data:nData, error:nErr}) => {
+        if (nErr) console.error('Notif tech (creation) failed:', nErr);
+        else console.log('Notif tech (creation) envoyee:', nData);
+      });
+    }
+
     setTimeout(()=>window.location.href='dashboard.html',800);
     return;
   } else {
