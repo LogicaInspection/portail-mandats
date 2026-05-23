@@ -862,26 +862,9 @@ input[type=file]{display:none;}
         </div>
         <div class="suivi-mandat-pills" id="suivi-statut-pills"></div>
       </div>
-      <div class="suivi-mandat-block">
-        <div class="suivi-mandat-title">
-          <span class="ic">&#9889;</span>
-          <span>Actions automatiques</span>
-        </div>
-        <div class="suivi-mandat-pills">
-          <span class="action-badge" id="action-conf" title="S'allume lorsque la confirmation est envoyee au client">
-            <span class="ck-mini" id="ck-conf"></span> Confirmation envoy&eacute;e
-          </span>
-          <span class="action-badge" id="action-fact" title="S'allume lorsque la facture est envoyee">
-            <span class="ck-mini" id="ck-fact"></span> Facture envoy&eacute;e
-          </span>
-          <span class="action-badge" id="action-rapp" title="S'allume lorsque le rapport est envoye">
-            <span class="ck-mini" id="ck-rapp"></span> Rapport envoy&eacute;
-          </span>
-        </div>
-      </div>
-
-      <!-- Finalisation manuelle - bypass des conditions auto (seul gestionnaire) -->
-      <div class="suivi-mandat-block" id="block-finaliser-manuel" style="display:none;border-top:1.5px dashed #e0e0e0;padding-top:14px;margin-top:14px;">
+      <!-- Finalisation manuelle - bypass des conditions auto (seul gestionnaire)
+           Remplace l'ancien bloc "Actions automatiques" (epuration UI) -->
+      <div class="suivi-mandat-block" id="block-finaliser-manuel" style="display:none;">
         <div class="suivi-mandat-title">
           <span class="ic">&#127942;</span>
           <span>Finalisation manuelle</span>
