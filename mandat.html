@@ -41,7 +41,12 @@ body.test-mode .content { padding-top: 18px; }
 .header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.15);}
 .btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;}
 .btn-back:hover{background:rgba(255,255,255,0.2);}
-.hcenter{display:flex;align-items:center;gap:10px;}
+.hcenter{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;}
+.htop{display:flex;align-items:center;gap:10px;}
+.hmeta{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,0.7);line-height:1;}
+.hmeta-label{opacity:0.65;}
+.hmeta-val{font-weight:600;color:rgba(255,255,255,0.95);}
+.hmeta-sep{opacity:0.4;}
 #htitle{font-size:16px;font-weight:600;}
 .badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;}
 .badge-logica{background:#1565c0;color:white;}
@@ -823,9 +828,18 @@ input[type=file]{display:none;}
 <div class="header">
   <button class="btn-back" onclick="goBack()">&#8592; Retour</button>
   <div class="hcenter">
-    <span id="htitle">Nouveau mandat</span>
-    <span id="hbadge" class="badge" style="display:none"></span>
-    <span id="htype-pill" class="header-type-pill" style="display:none"></span>
+    <div class="htop">
+      <span id="htitle">Nouveau mandat</span>
+      <span id="hbadge" class="badge" style="display:none"></span>
+      <span id="htype-pill" class="header-type-pill" style="display:none"></span>
+    </div>
+    <div class="hmeta" id="hmeta" style="display:none">
+      <span class="hmeta-label">Cr&eacute;&eacute; par</span>
+      <span id="h-cree-par" class="hmeta-val">&mdash;</span>
+      <span class="hmeta-sep">&bull;</span>
+      <span class="hmeta-label">Assign&eacute; &agrave;</span>
+      <span id="h-assigne" class="hmeta-val">&mdash;</span>
+    </div>
   </div>
   <div class="hright">
     <span id="dirty-indicator" class="dirty-indicator" style="display:none">&#9679; Modifications non sauvegard&eacute;es</span>
@@ -1443,6 +1457,7 @@ const VIEW_AS_KEY='view_as_user_id';
 
 let realProfile=null;
 let profile=null,mandat=null,extras=[],docs=[],isNew=false;
+let usersById={}; /* Map id -> {prenom,nom,role,full} pour affichage header (createur + tech assigne) */
 let emailLogs=[]; /* Phase email - types d'emails envoyes pour ce mandat */
 let currentEmailType=null;
 /* Liste des pieces jointes pour le modal email courant.
@@ -1567,6 +1582,14 @@ async function confirmTestAction(actionLabel){
     .in('role',['technicien','gestionnaire'])
     .eq('dashboard_access',true)
     .order('nom');
+
+  /* Charger TOUS les profils pour les lookups d'affichage (createur peut etre secretaire,
+     tech assigne peut etre dans une autre categorie). Map global usersById. */
+  const {data:allUsers}=await sb.from('profiles').select('id,nom,prenom,role');
+  usersById={};
+  (allUsers||[]).forEach(u=>{
+    usersById[u.id]={prenom:u.prenom||'',nom:u.nom||'',role:u.role||'',full:((u.prenom||'')+' '+(u.nom||'')).trim()||'Inconnu'};
+  });
   const tsel=document.getElementById('f-tech');
   /* Exclure Michael Gauthier: gestionnaire avec acces GEQ Suivi mais pas Portail Mandats */
   const techsFiltered=(techs||[]).filter(t=>!(t.prenom==='Michael'&&t.nom==='Gauthier'));
@@ -1826,6 +1849,43 @@ if(m.type_mandat){
   updateGcalStatus();
   updateFactureStatus();
   updateAddFactureUI();
+  updateHeaderMeta();
+}
+
+/* ===== Header meta : "Cree par X | Assigne a Y" =====
+   - cree_par : lit mandat.cree_par (fixe une fois le mandat charge)
+   - assigne  : lit la valeur courante du <select id="f-tech"> pour refleter
+                les changements non encore sauvegardes
+   - Si pool ouvert : affiche "Pool ouvert"
+   - Si nouveau mandat (isNew sans donnees) : cache la ligne meta */
+function updateHeaderMeta(){
+  const wrap=document.getElementById('hmeta');
+  if(!wrap) return;
+
+  if(isNew && !mandat){
+    wrap.style.display='none';
+    return;
+  }
+
+  /* Createur */
+  let creeParTxt='\u2014';
+  if(mandat && mandat.cree_par && usersById[mandat.cree_par]){
+    creeParTxt=usersById[mandat.cree_par].full;
+  }
+
+  /* Assigne a : valeur courante du select (refletant changements non sauvegardes) */
+  let assigneTxt='Non assign\u00e9';
+  const techSel=document.getElementById('f-tech');
+  const techId=techSel?techSel.value:'';
+  if(techId && usersById[techId]){
+    assigneTxt=usersById[techId].full;
+  } else if(mandat && mandat.statut_assignation==='pool'){
+    assigneTxt='Pool ouvert';
+  }
+
+  document.getElementById('h-cree-par').textContent=creeParTxt;
+  document.getElementById('h-assigne').textContent=assigneTxt;
+  wrap.style.display='flex';
 }
 
 function onCompagnieChange(){
@@ -2676,6 +2736,7 @@ function updateAssignInfo(){
     info.textContent='Mandat directement disponible dans le pool. Premier tech qui le reclame, le prend.';
   }
   info.style.display='block';
+  updateHeaderMeta();
 }
 
 function lockAssignControls(locked){
