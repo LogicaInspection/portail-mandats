@@ -1882,7 +1882,7 @@ function onCompagnieChange(){
     extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
     renderExtras();
   }
-  if(comp==='geq') onTypeMandatChange();
+  if(comp==='geq') onTypeMandatChange(true);
   updateBadge();
   renderEmails();
   updateFinTypeDisplay();
@@ -1907,7 +1907,7 @@ function updateFinTypeDisplay(){
   }
 }
 
-function onTypeMandatChange(){
+function onTypeMandatChange(skipAutoFill){
   const type=document.getElementById('f-type-mandat').value;
   const isGest=profile.role==='gestionnaire';
 
@@ -1920,26 +1920,31 @@ function onTypeMandatChange(){
     return Object.values(lookup).includes(v);
   }
 
-  /* Prix de base : applique le nouveau prix auto si l'ancienne valeur etait un auto-fill */
-  const prixInput = document.getElementById('prix-base');
-  if(isAutoFill(prixInput.value, PRIX_AUTO)){
-    prixInput.value = PRIX_AUTO[type] || 0;
-  }
-
-  /* Commission tech : meme logique (gestionnaire seulement) */
-  if(isGest){
-    const commInput = document.getElementById('comm-base');
-    if(isAutoFill(commInput.value, COMM_AUTO)){
-      commInput.value = COMM_AUTO[type] || 0;
+  /* skipAutoFill = true quand cette fonction est appelee depuis onCompagnieChange()
+     lors du chargement initial d'un mandat existant. Sinon une valeur custom (ex: 700)
+     qui adonne a matcher un auto-fill d'un autre type serait ecrasee. */
+  if(!skipAutoFill){
+    /* Prix de base : applique le nouveau prix auto si l'ancienne valeur etait un auto-fill */
+    const prixInput = document.getElementById('prix-base');
+    if(isAutoFill(prixInput.value, PRIX_AUTO)){
+      prixInput.value = PRIX_AUTO[type] || 0;
     }
-  }
 
-  /* Frais de labo : meme logique (gestionnaire seulement).
-     Reset a 0 si le nouveau type n'a pas de frais labo. */
-  if(isGest){
-    const labInput = document.getElementById('frais-lab');
-    if(isAutoFill(labInput.value, FRAIS_LAB)){
-      labInput.value = FRAIS_LAB[type] || 0;
+    /* Commission tech : meme logique (gestionnaire seulement) */
+    if(isGest){
+      const commInput = document.getElementById('comm-base');
+      if(isAutoFill(commInput.value, COMM_AUTO)){
+        commInput.value = COMM_AUTO[type] || 0;
+      }
+    }
+
+    /* Frais de labo : meme logique (gestionnaire seulement).
+       Reset a 0 si le nouveau type n'a pas de frais labo. */
+    if(isGest){
+      const labInput = document.getElementById('frais-lab');
+      if(isAutoFill(labInput.value, FRAIS_LAB)){
+        labInput.value = FRAIS_LAB[type] || 0;
+      }
     }
   }
 
