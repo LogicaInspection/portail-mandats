@@ -820,8 +820,9 @@ let timerInterval = null;
     document.getElementById('ministats-tech').style.display = 'flex';
   }
 
-  /* Show export button only for Bass (real gestionnaire, not impersonated) */
-  if (realProfile.role === 'gestionnaire' && session.user.id === BASS_UID) {
+  /* Show export button + Finance only quand on est r&eacute;ellement Bass (PAS en mode test) */
+  /* En mode test, profile devient l&apos;utilisateur impersonn&eacute; donc profile.id !== BASS_UID */
+  if (profile.id === BASS_UID) {
     document.getElementById('btn-export-excel').style.display = 'inline-block';
     document.getElementById('btn-finance').style.display = 'inline-flex';
   }
