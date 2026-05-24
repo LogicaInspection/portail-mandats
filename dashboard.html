@@ -288,6 +288,15 @@ body.archives-mode { background: #faf5ed; }
   transition: all 0.15s; border: none; cursor: pointer;
 }
 .btn-finance:hover { background: linear-gradient(135deg,#bf360c,#e65100); transform: translateY(-1px); }
+
+.btn-ma-finance {
+  background: linear-gradient(135deg,#1565c0,#0d47a1);
+  color: white; padding: 10px 18px; border-radius: 10px;
+  font-size: 14px; font-weight: 500; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background 0.2s; border: none; cursor: pointer;
+}
+.btn-ma-finance:hover { background: linear-gradient(135deg,#0d47a1,#1565c0); }
 .btn-facturation .fact-badge {
   background: #ffc107; color: #1a1a2e;
   font-size: 11px; font-weight: 700;
@@ -704,6 +713,9 @@ body.col-resizing * {
     <a class="btn-facturation" href="ma-facturation.html" title="Ma facturation de commission">
       &#128184; Ma facturation <span class="fact-badge zero" id="fact-badge">0</span>
     </a>
+    <a class="btn-ma-finance" id="btn-ma-finance" href="ma-finance.html" title="Tableau de bord de mes commissions" style="display:none">
+      &#128181; Finance
+    </a>
     <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">&#128202; Exporter Excel</button>
     <a class="btn-finance" id="btn-finance" href="finance.html" style="display:none">&#128181; Finances</a>
     <button class="btn-reset-cols" onclick="resetColWidthsAndRender()" title="R&eacute;initialiser la largeur des colonnes du tableau">&#128260; R&eacute;init. colonnes</button>
@@ -818,6 +830,7 @@ let timerInterval = null;
     await loadTechs();
   } else if (profile.role === 'technicien') {
     document.getElementById('ministats-tech').style.display = 'flex';
+    document.getElementById('btn-ma-finance').style.display = 'inline-flex';
   }
 
   /* Show export button + Finance only quand on est r&eacute;ellement Bass (PAS en mode test) */
