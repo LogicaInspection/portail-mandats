@@ -423,9 +423,9 @@ function getPeriodRange(){
 }
 
 function getMandatDate(m){
-  /* Utilise complete_at si dispo, sinon date_mandat */
-  if(m.complete_at) return new Date(m.complete_at);
+  /* Priorise date_mandat (date d'execution reelle) sur complete_at (date d'archivage) */
   if(m.date_mandat) return new Date(m.date_mandat+'T12:00:00');
+  if(m.complete_at) return new Date(m.complete_at);
   return null;
 }
 
