@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma commission - Portail Mandats</title>
+<style>
+:root{
+  --primary:#1a1a2e;--accent:#1565c0;--green:#2e7d32;--red:#c62828;
+  --orange:#e65100;--blue:#1565c0;--gray:#666;--lightgray:#f8f9fa;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f6f8;color:#1a1a2e;font-size:14px;}
+
+/* TopBar */
+.topbar{background:#1a1a2e;color:white;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.topbar h1{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;}
+.topbar-sub{font-size:12px;color:#bdbdbd;font-weight:500;margin-left:8px;}
+.test-mode-badge{background:#f59e0b;color:#1a1a2e;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-left:10px;}
+.topbar-actions{display:flex;gap:10px;align-items:center;}
+.btn-back{background:rgba(255,255,255,0.1);color:white;border:1.5px solid rgba(255,255,255,0.3);padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;}
+.btn-back:hover{background:white;color:#1a1a2e;}
+
+/* Container */
+.container{max-width:1400px;margin:0 auto;padding:20px 24px;}
+
+/* Info bar */
+.info-bar{background:#e3f2fd;border-left:4px solid #1565c0;padding:10px 16px;border-radius:8px;margin-bottom:18px;font-size:13px;color:#0d47a1;display:flex;align-items:center;gap:10px;}
+
+/* Filtre de periode */
+.period-bar{background:white;border-radius:12px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.period-bar-label{font-size:11px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;}
+.period-btn{padding:7px 14px;background:#fafbfc;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-weight:600;color:#666;cursor:pointer;transition:all 0.15s;}
+.period-btn:hover{background:#e3f0ff;border-color:#90caf9;color:#1565c0;}
+.period-btn.on{background:#1a1a2e;color:white;border-color:#1a1a2e;}
+.period-dates{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:12px;color:#888;}
+.period-dates input{padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;}
+
+/* Tuiles stats */
+.stat-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.stat-tile{background:white;border-radius:12px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.06);position:relative;overflow:hidden;}
+.stat-tile::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;}
+.stat-tile.week::before{background:#1976d2;}
+.stat-tile.month::before{background:#7b1fa2;}
+.stat-tile.year::before{background:#2e7d32;}
+.stat-tile.total::before{background:#1565c0;}
+.stat-tile-label{font-size:11px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px;}
+.stat-tile-value{font-size:26px;font-weight:800;color:#1a1a2e;letter-spacing:-0.5px;}
+.stat-tile-sub{font-size:11px;color:#999;margin-top:6px;}
+
+/* Sections */
+.section{background:white;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);padding:18px 22px;margin-bottom:18px;}
+.section h2{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+
+/* Filtres dashboard */
+.filters-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.filters-row select{padding:7px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;background:white;}
+
+/* Graphique mois par mois */
+.chart-container{position:relative;height:280px;padding:0;}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:240px;padding:10px 0;}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative;}
+.chart-bar{width:100%;max-width:60px;background:linear-gradient(180deg,#1976d2 0%,#0d47a1 100%);border-radius:6px 6px 0 0;transition:all 0.3s;cursor:pointer;position:relative;}
+.chart-bar:hover{background:linear-gradient(180deg,#1e88e5 0%,#1565c0 100%);}
+.chart-bar-tooltip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;margin-bottom:6px;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:10;}
+.chart-bar:hover .chart-bar-tooltip{opacity:1;}
+.chart-bar-value{font-size:10px;color:#666;font-weight:600;margin-top:4px;text-align:center;}
+
+/* Repartitions */
+.repartitions{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.repart-card{background:white;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);padding:16px 18px;}
+.repart-card h3{font-size:13px;font-weight:700;color:#666;margin-bottom:12px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:0.4px;}
+.repart-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f1f3;font-size:13px;}
+.repart-item:last-child{border-bottom:none;}
+.repart-item-color{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+.repart-item-label{flex:1;color:#333;font-weight:500;text-transform:capitalize;}
+.repart-item-bar-wrap{flex:2;height:6px;background:#f0f1f3;border-radius:3px;overflow:hidden;}
+.repart-item-bar{height:100%;border-radius:3px;transition:width 0.4s;}
+.repart-item-amount{font-weight:700;color:#1a1a2e;min-width:70px;text-align:right;}
+.repart-item-pct{font-size:11px;color:#888;min-width:38px;text-align:right;}
+.repart-item-count{font-size:11px;color:#999;min-width:60px;text-align:right;}
+
+/* Table mandats */
+.table-mandats{width:100%;border-collapse:collapse;}
+.table-mandats th{background:#fafbfc;padding:10px 12px;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.4px;text-align:left;border-bottom:1.5px solid #e0e0e0;}
+.table-mandats td{padding:10px 12px;font-size:13px;border-bottom:1px solid #f0f1f3;}
+.table-mandats tr:hover{background:#f8f9fa;cursor:pointer;}
+.table-mandats td.commission{font-weight:700;color:#1565c0;text-align:right;}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
+.badge-geq{background:#fdecea;color:#b71c1c;}
+.badge-logica{background:#e3f0ff;color:#1565c0;}
+
+/* Empty state */
+.empty{text-align:center;padding:40px;color:#999;font-size:14px;}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:#999;}
+.spinner{display:inline-block;width:30px;height:30px;border:3px solid #f0f1f3;border-top-color:#1a1a2e;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Export button */
+.btn-export{background:#1da564;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background 0.15s;}
+.btn-export:hover{background:#178a64;}
+
+@media(max-width:1024px){
+  .stat-tiles{grid-template-columns:repeat(2,1fr);}
+  .repartitions{grid-template-columns:1fr;}
+}
+@media(max-width:640px){
+  .stat-tiles{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>
+    &#128181; Ma commission
+    <span class="topbar-sub" id="tech-name"></span>
+    <span class="test-mode-badge" id="test-mode-badge" style="display:none">Mode test</span>
+  </h1>
+  <div class="topbar-actions">
+    <a href="dashboard.html" class="btn-back">&larr; Dashboard</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="info-bar">
+    <span>&#8505;&#65039;</span>
+    <span>Affichage des mandats finalis&eacute;s avec <strong>commission valid&eacute;e</strong> par le gestionnaire seulement.</span>
+  </div>
+
+  <!-- Filtre de periode -->
+  <div class="period-bar">
+    <span class="period-bar-label">P&eacute;riode :</span>
+    <button class="period-btn" data-period="week" onclick="setPeriod('week')">Cette semaine</button>
+    <button class="period-btn on" data-period="month" onclick="setPeriod('month')">Ce mois</button>
+    <button class="period-btn" data-period="quarter" onclick="setPeriod('quarter')">Ce trimestre</button>
+    <button class="period-btn" data-period="year" onclick="setPeriod('year')">Cette ann&eacute;e</button>
+    <button class="period-btn" data-period="last-year" onclick="setPeriod('last-year')">An. derni&egrave;re</button>
+    <button class="period-btn" data-period="all" onclick="setPeriod('all')">Tout</button>
+    <button class="period-btn" data-period="custom" onclick="setPeriod('custom')">Personnalis&eacute;</button>
+    <div class="period-dates" id="period-dates" style="display:none;">
+      Du <input type="date" id="date-start" onchange="onCustomDate()">
+      au <input type="date" id="date-end" onchange="onCustomDate()">
+    </div>
+  </div>
+
+  <!-- Loading initial -->
+  <div id="loading-main" class="loading">
+    <div class="spinner"></div>
+    <p style="margin-top:12px">Chargement des donn&eacute;es...</p>
+  </div>
+
+  <!-- Contenu principal (cache au depart) -->
+  <div id="main-content" style="display:none;">
+
+    <!-- Tuiles de stats -->
+    <div class="stat-tiles">
+      <div class="stat-tile week">
+        <div class="stat-tile-label">Cette semaine</div>
+        <div class="stat-tile-value" id="stat-week">0 $</div>
+        <div class="stat-tile-sub" id="stat-week-count">0 mandat(s)</div>
+      </div>
+      <div class="stat-tile month">
+        <div class="stat-tile-label">Ce mois</div>
+        <div class="stat-tile-value" id="stat-month">0 $</div>
+        <div class="stat-tile-sub" id="stat-month-count">0 mandat(s)</div>
+      </div>
+      <div class="stat-tile year">
+        <div class="stat-tile-label">Cette ann&eacute;e</div>
+        <div class="stat-tile-value" id="stat-year">0 $</div>
+        <div class="stat-tile-sub" id="stat-year-count">0 mandat(s)</div>
+      </div>
+      <div class="stat-tile total">
+        <div class="stat-tile-label">P&eacute;riode s&eacute;lectionn&eacute;e</div>
+        <div class="stat-tile-value" id="stat-period">0 $</div>
+        <div class="stat-tile-sub" id="stat-period-count">0 mandat(s)</div>
+      </div>
+    </div>
+
+    <!-- Graphique : evolution -->
+    <div class="section">
+      <h2>&#128200; &Eacute;volution mois par mois <span style="font-weight:400;color:#888;font-size:12px;margin-left:8px;">(12 derniers mois)</span></h2>
+      <div class="chart-container">
+        <div class="chart-bars" id="chart-bars"></div>
+        <div style="display:flex;gap:6px;padding-top:6px;border-top:1px solid #f0f1f3;" id="chart-labels"></div>
+      </div>
+    </div>
+
+    <!-- Repartitions -->
+    <div class="repartitions">
+      <div class="repart-card">
+        <h3>&#127970; Par compagnie</h3>
+        <div id="repart-compagnie"></div>
+      </div>
+      <div class="repart-card">
+        <h3>&#128295; Par type de mandat</h3>
+        <div id="repart-type"></div>
+      </div>
+      <div class="repart-card">
+        <h3>&#128506;&#65039; Par r&eacute;gion</h3>
+        <div id="repart-region"></div>
+      </div>
+    </div>
+
+    <!-- Tableau detaille -->
+    <div class="section" style="margin-top:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <h2 style="margin:0;">&#128203; D&eacute;tail des mandats <span style="font-weight:400;color:#888;font-size:12px;margin-left:8px;" id="table-count">(0)</span></h2>
+        <button class="btn-export" onclick="exportToExcel()">&#128202; Exporter Excel</button>
+      </div>
+
+      <!-- Filtres avances -->
+      <div class="filters-row">
+        <select id="filter-compagnie" onchange="renderAll()">
+          <option value="">Toutes les compagnies</option>
+          <option value="geq">GEQ</option>
+          <option value="logica">Logica</option>
+        </select>
+        <select id="filter-type" onchange="renderAll()">
+          <option value="">Tous les types</option>
+        </select>
+        <select id="filter-region" onchange="renderAll()">
+          <option value="">Toutes les r&eacute;gions</option>
+          <option value="quebec">Qu&eacute;bec</option>
+          <option value="estrie">Estrie</option>
+          <option value="mauricie">Mauricie</option>
+          <option value="monteregie">Mont&eacute;r&eacute;gie</option>
+          <option value="saguenay">Saguenay</option>
+          <option value="autre">Autre</option>
+        </select>
+        <input type="text" id="filter-search" placeholder="Rechercher client/adresse..." oninput="renderAll()" style="padding:7px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;flex:1;min-width:200px;">
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="table-mandats" id="table-mandats">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Client</th>
+              <th>Compagnie</th>
+              <th>Type</th>
+              <th>R&eacute;gion</th>
+              <th style="text-align:right;">Total TTC</th>
+              <th style="text-align:right;">Ma commission</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script>
+const SUPABASE_URL='https://mosgioiumzsewbzsydeh.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const BASS_UID='72fed940-9f61-471d-ad81-378af125146e';
+const VIEW_AS_KEY='view_as_user_id';
+
+let allMandats=[];
+let currentPeriod='month';
+let customStart=null,customEnd=null;
+let typeMandats=[];
+let currentUserId=null;
+let currentProfile=null;
+
+const TYPE_COLORS={
+  'inspection':'#1565c0','expertise':'#7b1fa2','suivi':'#2e7d32',
+  'fdp':'#e65100','test':'#c62828','default':'#666',
+};
+
+function getTypeColor(type){
+  if(!type) return TYPE_COLORS.default;
+  const t = type.toLowerCase();
+  for(const key in TYPE_COLORS){
+    if(t.includes(key)) return TYPE_COLORS[key];
+  }
+  return TYPE_COLORS.default;
+}
+
+const REGION_LABELS={
+  'quebec':'Qu\u00e9bec','estrie':'Estrie','mauricie':'Mauricie',
+  'monteregie':'Mont\u00e9r\u00e9gie','saguenay':'Saguenay','autre':'Autre',
+};
+const REGION_COLORS={
+  'quebec':'#1565c0','estrie':'#2e7d32','mauricie':'#e65100',
+  'monteregie':'#7b1fa2','saguenay':'#c62828','autre':'#666',
+};
+
+const MONTH_NAMES=['Janv','F\u00e9vr','Mars','Avr','Mai','Juin','Juil','Ao\u00fbt','Sept','Oct','Nov','D\u00e9c'];
+
+function money(v){
+  if(v==null||isNaN(v)) return '0 $';
+  return new Intl.NumberFormat('fr-CA',{minimumFractionDigits:0,maximumFractionDigits:0}).format(v)+' $';
+}
+function moneyFull(v){
+  if(v==null||isNaN(v)) return '0,00 $';
+  return new Intl.NumberFormat('fr-CA',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v)+' $';
+}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ===== INIT ===== */
+(async function init(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){window.location='index.html';return;}
+
+  /* Determiner l'utilisateur effectif (reel ou impersonne via mode test) */
+  const viewAsId = localStorage.getItem(VIEW_AS_KEY);
+  let effectiveUserId = session.user.id;
+  let inTestMode = false;
+  if(viewAsId && session.user.id === BASS_UID && viewAsId !== BASS_UID){
+    effectiveUserId = viewAsId;
+    inTestMode = true;
+  }
+
+  /* Charger le profil effectif */
+  const {data:p, error:pErr} = await sb.from('profiles').select('*').eq('id', effectiveUserId).single();
+  if(pErr || !p){
+    document.body.innerHTML='<div style="padding:40px;text-align:center;"><h1>Erreur</h1><p>Profil introuvable.</p><p><a href="dashboard.html">Retour au dashboard</a></p></div>';
+    return;
+  }
+  currentProfile = p;
+  currentUserId = effectiveUserId;
+
+  /* Cette page est reservee aux techniciens (ou Bass en mode test as tech) */
+  if(p.role !== 'technicien'){
+    document.body.innerHTML='<div style="max-width:600px;margin:80px auto;padding:40px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;border:3px solid #1565c0;border-radius:12px;background:#e3f2fd;box-shadow:0 4px 12px rgba(0,0,0,0.08);">'+
+      '<div style="font-size:48px;margin-bottom:12px;">&#128181;</div>'+
+      '<h2 style="color:#0d47a1;margin:0 0 16px;font-size:22px;">Page r&eacute;serv&eacute;e aux techniciens</h2>'+
+      '<p style="color:#1565c0;margin:0 0 28px;font-size:15px;line-height:1.5;">Cette page affiche les commissions individuelles des techniciens. Pour voir l\u0027ensemble des finances, utilise la page Finance principale.</p>'+
+      '<a href="dashboard.html" style="display:inline-block;background:#1565c0;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Retour dashboard</a>'+
+    '</div>';
+    return;
+  }
+
+  /* Afficher le nom du tech + badge mode test si applicable */
+  document.getElementById('tech-name').textContent = (p.prenom||'')+' '+(p.nom||'');
+  if(inTestMode){
+    document.getElementById('test-mode-badge').style.display='inline-block';
+  }
+
+  await loadData();
+})();
+
+async function loadData(){
+  /* Charger tous les mandats finalises + commission validee du tech courant */
+  const {data,error}=await sb.from('mandats')
+    .select('id,client_nom,adresse,compagnie,type_mandat,region,date_mandat,complete_at,total_ttc,commission_totale,est_complete,commission_validee,technicien_id')
+    .eq('est_complete',true)
+    .eq('commission_validee',true)
+    .eq('technicien_id',currentUserId)
+    .order('date_mandat',{ascending:false,nullsFirst:false});
+  if(error){
+    document.getElementById('loading-main').innerHTML='<p style="color:#c62828;">Erreur : '+error.message+'</p>';
+    return;
+  }
+  allMandats=(data||[]).filter(m=>m.commission_totale!=null);
+  /* Construire la liste unique des types de mandat pour le filtre */
+  const types = new Set(allMandats.map(m=>m.type_mandat).filter(Boolean));
+  typeMandats = [...types].sort();
+  const sel = document.getElementById('filter-type');
+  typeMandats.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('loading-main').style.display='none';
+  document.getElementById('main-content').style.display='block';
+  renderAll();
+}
+
+/* ===== PERIODE ===== */
+function setPeriod(p){
+  currentPeriod=p;
+  document.querySelectorAll('.period-btn').forEach(b => 
+    b.classList.toggle('on', b.dataset.period===p)
+  );
+  document.getElementById('period-dates').style.display = (p==='custom')?'flex':'none';
+  if(p==='custom' && !customStart){
+    const now=new Date();
+    customStart=new Date(now.getFullYear(),now.getMonth(),1);
+    customEnd=new Date(now.getFullYear(),now.getMonth()+1,0);
+    document.getElementById('date-start').value=isoDate(customStart);
+    document.getElementById('date-end').value=isoDate(customEnd);
+  }
+  renderAll();
+}
+
+function onCustomDate(){
+  const s=document.getElementById('date-start').value;
+  const e=document.getElementById('date-end').value;
+  customStart = s ? new Date(s+'T00:00:00') : null;
+  customEnd = e ? new Date(e+'T23:59:59') : null;
+  renderAll();
+}
+
+function isoDate(d){
+  return d.toISOString().substring(0,10);
+}
+
+function getPeriodRange(){
+  const now=new Date();
+  const year=now.getFullYear();
+  const month=now.getMonth();
+  switch(currentPeriod){
+    case 'week':{
+      const day=now.getDay();
+      const diff=now.getDate()-day+(day===0?-6:1);
+      const start=new Date(year,month,diff,0,0,0);
+      const end=new Date(start);
+      end.setDate(start.getDate()+6);
+      end.setHours(23,59,59,999);
+      return {start,end};
+    }
+    case 'month':{
+      const start=new Date(year,month,1,0,0,0);
+      const end=new Date(year,month+1,0,23,59,59);
+      return {start,end};
+    }
+    case 'quarter':{
+      const q=Math.floor(month/3);
+      const start=new Date(year,q*3,1,0,0,0);
+      const end=new Date(year,q*3+3,0,23,59,59);
+      return {start,end};
+    }
+    case 'year':{
+      const start=new Date(year,0,1,0,0,0);
+      const end=new Date(year,11,31,23,59,59);
+      return {start,end};
+    }
+    case 'last-year':{
+      const start=new Date(year-1,0,1,0,0,0);
+      const end=new Date(year-1,11,31,23,59,59);
+      return {start,end};
+    }
+    case 'custom':{
+      if(customStart && customEnd) return {start:customStart,end:customEnd};
+      return null;
+    }
+    case 'all':
+    default: return null;
+  }
+}
+
+function getMandatDate(m){
+  /* Priorise date_mandat (date d'execution reelle) sur complete_at */
+  if(m.date_mandat) return new Date(m.date_mandat+'T12:00:00');
+  if(m.complete_at) return new Date(m.complete_at);
+  return null;
+}
+
+function getFiltered(){
+  const range = getPeriodRange();
+  const fComp=document.getElementById('filter-compagnie').value;
+  const fType=document.getElementById('filter-type').value;
+  const fRegion=document.getElementById('filter-region').value;
+  const fSearch=(document.getElementById('filter-search').value||'').toLowerCase().trim();
+  return allMandats.filter(m=>{
+    if(range){
+      const d = getMandatDate(m);
+      if(!d || d<range.start || d>range.end) return false;
+    }
+    if(fComp && m.compagnie!==fComp) return false;
+    if(fType && m.type_mandat!==fType) return false;
+    if(fRegion && m.region!==fRegion) return false;
+    if(fSearch){
+      const hay = ((m.client_nom||'')+' '+(m.adresse||'')).toLowerCase();
+      if(!hay.includes(fSearch)) return false;
+    }
+    return true;
+  });
+}
+
+/* ===== RENDU ===== */
+function renderAll(){
+  renderStatTiles();
+  renderChart();
+  renderRepartitions();
+  renderTable();
+}
+
+function renderStatTiles(){
+  const now=new Date();
+  const year=now.getFullYear();
+  const month=now.getMonth();
+
+  /* Cette semaine */
+  const day=now.getDay();
+  const diff=now.getDate()-day+(day===0?-6:1);
+  const weekStart=new Date(year,month,diff,0,0,0);
+  const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);weekEnd.setHours(23,59,59,999);
+  const weekList=allMandats.filter(m=>{
+    const d=getMandatDate(m); return d && d>=weekStart && d<=weekEnd;
+  });
+  document.getElementById('stat-week').textContent=money(weekList.reduce((s,m)=>s+(m.commission_totale||0),0));
+  document.getElementById('stat-week-count').textContent=weekList.length+' mandat(s)';
+
+  /* Ce mois */
+  const mStart=new Date(year,month,1,0,0,0);
+  const mEnd=new Date(year,month+1,0,23,59,59);
+  const mList=allMandats.filter(m=>{
+    const d=getMandatDate(m); return d && d>=mStart && d<=mEnd;
+  });
+  document.getElementById('stat-month').textContent=money(mList.reduce((s,m)=>s+(m.commission_totale||0),0));
+  document.getElementById('stat-month-count').textContent=mList.length+' mandat(s)';
+
+  /* Cette annee */
+  const yStart=new Date(year,0,1,0,0,0);
+  const yEnd=new Date(year,11,31,23,59,59);
+  const yList=allMandats.filter(m=>{
+    const d=getMandatDate(m); return d && d>=yStart && d<=yEnd;
+  });
+  document.getElementById('stat-year').textContent=money(yList.reduce((s,m)=>s+(m.commission_totale||0),0));
+  document.getElementById('stat-year-count').textContent=yList.length+' mandat(s)';
+
+  /* Periode selectionnee */
+  const list=getFiltered();
+  document.getElementById('stat-period').textContent=money(list.reduce((s,m)=>s+(m.commission_totale||0),0));
+  document.getElementById('stat-period-count').textContent=list.length+' mandat(s)';
+}
+
+function renderChart(){
+  /* Pour le chart on ignore les filtres sauf compagnie/type/region/search */
+  const fComp=document.getElementById('filter-compagnie').value;
+  const fType=document.getElementById('filter-type').value;
+  const fRegion=document.getElementById('filter-region').value;
+  const search=(document.getElementById('filter-search').value||'').toLowerCase().trim();
+  const baseList = allMandats.filter(m=>
+    (!fComp||m.compagnie===fComp) &&
+    (!fType||m.type_mandat===fType) &&
+    (!fRegion||m.region===fRegion) &&
+    (!search||((m.client_nom||'').toLowerCase().includes(search) ||
+    (m.adresse||'').toLowerCase().includes(search)))
+  );
+
+  const now=new Date();
+  const months=[];
+  for(let i=11; i>=0; i--){
+    const d=new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const start=new Date(d.getFullYear(), d.getMonth(), 1);
+    const end=new Date(d.getFullYear(), d.getMonth()+1, 0, 23,59,59);
+    const sum = baseList.filter(m=>{
+      const md=getMandatDate(m);
+      return md && md>=start && md<=end;
+    }).reduce((s,m)=>s+(m.commission_totale||0), 0);
+    months.push({
+      label: MONTH_NAMES[d.getMonth()] + (d.getMonth()===0 ? ' '+String(d.getFullYear()).substring(2) : ''),
+      value: sum,
+    });
+  }
+
+  const max=Math.max(...months.map(m=>m.value), 1);
+  const barsHtml = months.map(m => {
+    const h = Math.max(2, (m.value/max)*220);
+    return '<div class="chart-bar-wrap">'+
+      '<div class="chart-bar-tooltip">'+m.label+' : '+money(m.value)+'</div>'+
+      '<div class="chart-bar" style="height:'+h+'px"></div>'+
+      '<div class="chart-bar-value">'+(m.value>0?money(m.value):'')+'</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('chart-bars').innerHTML = barsHtml;
+
+  const labelsHtml = months.map(m => 
+    '<div style="flex:1;text-align:center;font-size:10.5px;color:#888;font-weight:600;">'+m.label+'</div>'
+  ).join('');
+  document.getElementById('chart-labels').innerHTML = labelsHtml;
+}
+
+function renderRepartitions(){
+  const list = getFiltered();
+  /* Par compagnie */
+  const byComp = groupBy(list, m=>m.compagnie||'autre');
+  renderRepartitionList('repart-compagnie', byComp, {
+    'geq':{label:'GEQ', color:'#b71c1c'},
+    'logica':{label:'Logica', color:'#1565c0'},
+    'autre':{label:'Autre', color:'#666'},
+  });
+
+  /* Par type */
+  const byType = groupBy(list, m=>m.type_mandat||'(sans type)');
+  const typeMeta={};
+  Object.keys(byType).forEach(t => {
+    typeMeta[t] = {label:t, color:getTypeColor(t)};
+  });
+  renderRepartitionList('repart-type', byType, typeMeta);
+
+  /* Par region */
+  const byRegion = groupBy(list, m=>m.region||'quebec');
+  const regionMeta={};
+  Object.keys(byRegion).forEach(r => {
+    regionMeta[r] = {label:REGION_LABELS[r]||r, color:REGION_COLORS[r]||'#666'};
+  });
+  renderRepartitionList('repart-region', byRegion, regionMeta);
+}
+
+function groupBy(list, keyFn){
+  const map={};
+  list.forEach(m=>{
+    const key = keyFn(m);
+    if(!map[key]) map[key] = {count:0, total:0};
+    map[key].count++;
+    map[key].total += (m.commission_totale||0);
+  });
+  return map;
+}
+
+function renderRepartitionList(containerId, dataMap, meta){
+  const wrap=document.getElementById(containerId);
+  const entries=Object.entries(dataMap).sort((a,b)=>b[1].total-a[1].total);
+  if(!entries.length){
+    wrap.innerHTML='<div class="empty" style="padding:20px;">Aucune donn&eacute;e</div>';
+    return;
+  }
+  const totalSum=entries.reduce((s,[,v])=>s+v.total,0);
+  wrap.innerHTML = entries.map(([key,v])=>{
+    const info = meta[key] || {label:key, color:'#666'};
+    const pct = totalSum>0 ? (v.total/totalSum*100) : 0;
+    return '<div class="repart-item">'+
+      '<span class="repart-item-color" style="background:'+info.color+'"></span>'+
+      '<span class="repart-item-label">'+escapeHtml(info.label)+'</span>'+
+      '<span class="repart-item-count">'+v.count+' mandat'+(v.count>1?'s':'')+'</span>'+
+      '<div class="repart-item-bar-wrap"><div class="repart-item-bar" style="width:'+pct.toFixed(1)+'%;background:'+info.color+'"></div></div>'+
+      '<span class="repart-item-amount">'+money(v.total)+'</span>'+
+      '<span class="repart-item-pct">'+pct.toFixed(0)+'%</span>'+
+    '</div>';
+  }).join('');
+}
+
+function renderTable(){
+  const list = getFiltered();
+  document.getElementById('table-count').textContent = '('+list.length+')';
+  const tbody=document.getElementById('table-body');
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="7" class="empty">Aucun mandat avec commission valid&eacute;e pour cette p&eacute;riode</td></tr>';
+    return;
+  }
+  /* Trier par date d'execution descendante */
+  const sorted=[...list].sort((a,b)=>{
+    const da=getMandatDate(a);
+    const db=getMandatDate(b);
+    return (db||0)-(da||0);
+  });
+  tbody.innerHTML = sorted.map(m=>{
+    const d=getMandatDate(m);
+    const dateStr = d ? d.toLocaleDateString('fr-CA',{day:'numeric',month:'short',year:'numeric'}) : '\u2014';
+    const badge = m.compagnie==='logica' ? '<span class="badge badge-logica">Logica</span>' : '<span class="badge badge-geq">GEQ</span>';
+    const region = REGION_LABELS[m.region]||REGION_LABELS.quebec;
+    return '<tr onclick="window.location=\'mandat.html?id='+m.id+'\'">'+
+      '<td>'+dateStr+'</td>'+
+      '<td><strong>'+escapeHtml(m.client_nom||'\u2014')+'</strong></td>'+
+      '<td>'+badge+'</td>'+
+      '<td style="font-size:12px;color:#666;">'+escapeHtml(m.type_mandat||'\u2014')+'</td>'+
+      '<td style="font-size:12px;color:#666;">'+region+'</td>'+
+      '<td style="text-align:right;">'+moneyFull(m.total_ttc)+'</td>'+
+      '<td class="commission">'+moneyFull(m.commission_totale)+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+/* ===== EXPORT EXCEL ===== */
+function exportToExcel(){
+  const list = getFiltered();
+  if(!list.length){
+    alert('Aucun mandat \u00e0 exporter.');
+    return;
+  }
+  const rows = list.map(m=>{
+    const d=getMandatDate(m);
+    return {
+      'Date': d ? d.toLocaleDateString('fr-CA') : '',
+      'Client': m.client_nom||'',
+      'Adresse': m.adresse||'',
+      'Compagnie': (m.compagnie||'').toUpperCase(),
+      'Type': m.type_mandat||'',
+      'R\u00e9gion': REGION_LABELS[m.region]||'',
+      'Total TTC': parseFloat(m.total_ttc)||0,
+      'Ma commission': parseFloat(m.commission_totale)||0,
+    };
+  });
+  rows.push({
+    'Date':'','Client':'TOTAL','Adresse':'','Compagnie':'','Type':'','R\u00e9gion':'',
+    'Total TTC': rows.reduce((s,r)=>s+r['Total TTC'],0),
+    'Ma commission': rows.reduce((s,r)=>s+r['Ma commission'],0),
+  });
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:25},{wch:35},{wch:10},{wch:25},{wch:14},{wch:12},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Ma commission');
+  const techName=(currentProfile.prenom||'')+'_'+(currentProfile.nom||'');
+  const dateStr = new Date().toISOString().substring(0,10);
+  XLSX.writeFile(wb,'Commission_'+techName+'_'+currentPeriod+'_'+dateStr+'.xlsx');
+}
+</script>
+</body>
+</html>
