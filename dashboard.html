@@ -931,7 +931,7 @@ function updateTileCounts() {
   document.getElementById('tile-tous').textContent = c(() => true);
   document.getElementById('tile-pool').textContent = c(m => m.statut_assignation === 'pool');
   document.getElementById('tile-soum').textContent = c(m => m.statut_contact === 'soumission_envoyee');
-  document.getElementById('tile-aucun').textContent = c(m => m.statut_contact === 'pas_contacte' || !m.statut_contact);
+  document.getElementById('tile-aucun').textContent = c(m => m.statut_contact === 'pas_contacte');
   document.getElementById('tile-msg').textContent = c(m => m.statut_contact === 'message_laisse');
 
   /* Sidebar nav counts */
@@ -1007,7 +1007,7 @@ function getFilteredMandats() {
   /* Filtre par tile selectionnee */
   if (currentFilter === 'pool') list = list.filter(m => m.statut_assignation === 'pool');
   else if (currentFilter === 'soumission_envoyee') list = list.filter(m => m.statut_contact === 'soumission_envoyee');
-  else if (currentFilter === 'pas_contacte') list = list.filter(m => m.statut_contact === 'pas_contacte' || !m.statut_contact);
+  else if (currentFilter === 'pas_contacte') list = list.filter(m => m.statut_contact === 'pas_contacte');
   else if (currentFilter === 'message_laisse') list = list.filter(m => m.statut_contact === 'message_laisse');
   else if (currentFilter === 'rappels') {
     const isGest = profile.role === 'gestionnaire';
