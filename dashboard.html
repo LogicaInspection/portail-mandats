@@ -4,593 +4,431 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portail Mandats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+:root{
+  --ink:#0f1419;
+  --ink-2:#374151;
+  --ink-3:#6b7280;
+  --ink-4:#9ca3af;
+  --line:#e5e7eb;
+  --line-2:#f3f4f6;
+  --bg:#fafafa;
+  --bg-2:#f5f5f4;
+  --white:#ffffff;
+  --primary:#b71c1c;
+  --primary-hover:#991b1b;
+  --primary-soft:#fef2f2;
+  --navy:#1a1a2e;
+  --logica:#1565c0;
+  --logica-soft:#e3f0ff;
+  --geq:#b71c1c;
+  --geq-soft:#fdecea;
+  --warn:#d97706;
+  --warn-soft:#fef3c7;
+  --good:#059669;
+  --good-soft:#d1fae5;
+  --info:#0891b2;
+  --info-soft:#cffafe;
+  --danger:#dc2626;
+  --danger-soft:#fee2e2;
+  --shadow-xs:0 1px 2px rgba(16,24,40,0.04);
+  --shadow-sm:0 1px 3px rgba(16,24,40,0.06),0 1px 2px rgba(16,24,40,0.04);
+  --shadow-md:0 4px 12px rgba(16,24,40,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:'Inter','-apple-system','BlinkMacSystemFont','Segoe UI',sans-serif;
+  background:var(--bg);color:var(--ink);
+  font-size:13.5px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;letter-spacing:-0.005em;
+  display:flex;flex-direction:column;
+}
+.serif{font-family:'Instrument Serif',Georgia,serif;font-weight:400;letter-spacing:-0.01em;}
 
-body.test-mode { background: #fff8eb; }
-body.test-mode .main { border: 3px solid #f59e0b; border-top: none; padding-top: 18px; }
-body.test-mode::before {
-  content: ''; position: fixed; inset: 0;
-  border: 3px solid #f59e0b; border-top: none; pointer-events: none; z-index: 9999;
+/* ===== Mode Test / Archives banners ===== */
+body.test-mode .app{outline:3px solid #f59e0b;outline-offset:-3px;}
+.test-banner{
+  background:#fff3cd;border-bottom:2px solid #f59e0b;
+  padding:9px 22px;display:none;align-items:center;justify-content:space-between;
+  font-size:13px;color:#78350f;flex-shrink:0;
 }
-.test-banner {
-  background: #fff3cd; border-bottom: 3px solid #f59e0b;
-  padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
-  font-size: 14px; color: #78350f; position: sticky; top: 0; z-index: 200;
+body.test-mode .test-banner{display:flex;}
+.test-banner-left{display:flex;align-items:center;gap:10px;}
+.badge-test{
+  background:#f59e0b;color:white;font-size:10.5px;font-weight:700;
+  padding:3px 9px;border-radius:20px;letter-spacing:0.4px;
 }
-.test-banner-left { display: flex; align-items: center; gap: 10px; }
-.test-banner .badge-test {
-  background: #f59e0b; color: white; font-size: 11px; font-weight: 700;
-  padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px;
+.btn-exit-test{
+  padding:5px 12px;background:white;border:1px solid #f59e0b;color:#92400e;
+  border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.15s;
+  font-family:inherit;
 }
-.test-banner .btn-exit-test {
-  padding: 6px 14px; background: white; border: 1px solid #f59e0b; color: #92400e;
-  border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
-}
-.test-banner .btn-exit-test:hover { background: #f59e0b; color: white; }
+.btn-exit-test:hover{background:#f59e0b;color:white;}
 
-.btn-view-as {
-  padding: 7px 14px; background: #fff7e6; border: 1px solid #f59e0b;
-  border-radius: 8px; font-size: 13px; color: #92400e; cursor: pointer; transition: all 0.15s;
+body.archives-mode .main{background:#fffaf3;}
+.archive-banner{
+  background:#fff3e0;border:1px solid #ffb74d;
+  padding:10px 14px;border-radius:10px;margin-bottom:14px;
+  display:none;align-items:center;gap:10px;font-size:13px;color:#bf360c;
 }
-.btn-view-as:hover { background: #fde68a; }
+body.archives-mode .archive-banner{display:flex;}
+.archive-banner .btn-exit-archives{
+  margin-left:auto;background:white;border:1px solid #ff9800;color:#bf360c;
+  padding:5px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;
+}
+.archive-banner .btn-exit-archives:hover{background:#ff9800;color:white;}
 
-.modal-viewas {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  display: flex; align-items: center; justify-content: center; z-index: 1500;
+.rappels-banner{
+  display:none;background:#fffbeb;border:1px solid #fcd34d;
+  padding:11px 14px;border-radius:10px;margin-bottom:14px;
+  align-items:center;gap:11px;font-size:13px;
 }
-.modal-viewas-box {
-  background: white; border-radius: 16px; padding: 28px;
-  width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+.rappels-banner.show{display:flex;}
+.rappels-banner-icon{font-size:18px;}
+.rappels-banner-content{flex:1;min-width:0;}
+.rappels-banner-title{font-weight:600;color:#92400e;font-size:13px;}
+.rappels-banner-sub{font-size:11.5px;color:#a16207;margin-top:2px;}
+.rappels-banner-btn{
+  background:#f59e0b;color:white;border:none;
+  padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;
+  cursor:pointer;font-family:inherit;transition:background 0.15s;
 }
-.modal-viewas-box h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 6px; }
-.modal-viewas-box p { font-size: 13px; color: #888; margin-bottom: 20px; }
-.profile-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 10px;
-  margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
-}
-.profile-row:hover { background: #fff7e6; border-color: #f59e0b; }
-.profile-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: #1a1a2e; color: white;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; flex-shrink: 0;
-}
-.profile-info { flex: 1; }
-.profile-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
-.profile-meta { font-size: 12px; color: #888; margin-top: 2px; }
-.role-badge {
-  display: inline-block; padding: 2px 8px; border-radius: 10px;
-  font-size: 10px; font-weight: 600; text-transform: uppercase;
-}
-.role-gestionnaire { background: #fdecea; color: #b71c1c; }
-.role-technicien   { background: #e3f0ff; color: #1565c0; }
-.role-secretaire   { background: #f3e8ff; color: #6b21a8; }
-.role-autre        { background: #f3f4f6; color: #6b7280; }
+.rappels-banner-btn:hover{background:#d97706;}
 
-.header {
-  background: white; border-bottom: 1px solid #e5e7eb;
-  padding: 0 32px; display: flex; align-items: center;
-  justify-content: space-between; height: 64px;
-  position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-body.test-mode .header { top: 47px; }
-.header-left { display: flex; align-items: center; gap: 16px; }
-.header-left img { height: 36px; object-fit: contain; }
-.header-divider { width: 1px; height: 28px; background: #e5e7eb; }
-.header-title { font-size: 16px; font-weight: 600; color: #1a1a2e; }
-.header-right { display: flex; align-items: center; gap: 12px; }
-.user-info { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #555; }
-.user-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: #1a1a2e; color: white;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700;
-}
-.btn-logout {
-  padding: 7px 14px; border: 1px solid #e5e7eb; border-radius: 8px;
-  background: white; color: #555; font-size: 13px; cursor: pointer; transition: all 0.2s;
-}
-.btn-logout:hover { background: #f5f5f5; }
+/* ===== Layout ===== */
+.app{display:grid;grid-template-columns:236px 1fr 296px;flex:1;min-height:0;overflow:hidden;}
 
-.main { max-width: 1400px; margin: 0 auto; padding: 28px 24px; }
+/* ===== Sidebar Left ===== */
+.sidebar{background:var(--white);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;overflow-y:auto;}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px;border-bottom:1px solid var(--line-2);margin-bottom:16px;}
+.brand-mark{
+  width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-1px;
+}
+.brand-name{font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-0.01em;}
+.brand-sub{font-size:11px;color:var(--ink-3);font-weight:500;margin-top:1px;}
 
-.tabs {
-  display: flex; gap: 4px; margin-bottom: 24px;
-  background: white; padding: 4px; border-radius: 12px;
-  width: fit-content; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+.nav-section-label{
+  font-size:10.5px;font-weight:600;color:var(--ink-4);text-transform:uppercase;
+  letter-spacing:0.08em;padding:0 12px;margin:14px 0 6px;
 }
-.tab {
-  padding: 8px 20px; border-radius: 8px; border: none;
-  background: none; font-size: 14px; font-weight: 500;
-  color: #888; cursor: pointer; transition: all 0.2s;
+.nav{display:flex;flex-direction:column;gap:1px;}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--ink-2);cursor:pointer;
+  transition:all 0.15s;text-decoration:none;position:relative;
 }
-.tab.active { background: #1a1a2e; color: white; }
-.tab:hover:not(.active) { background: #f5f5f5; color: #444; }
+.nav-item:hover{background:var(--bg-2);color:var(--ink);}
+.nav-item.active{background:var(--primary);color:#fff;}
+.nav-item.active .nav-icon{opacity:1;}
+.nav-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;opacity:0.7;flex-shrink:0;}
+.nav-badge{
+  margin-left:auto;background:var(--bg-2);color:var(--ink-3);
+  font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:10px;
+  min-width:20px;text-align:center;
+}
+.nav-item.active .nav-badge{background:rgba(255,255,255,0.2);color:#fff;}
+.nav-badge.alert{background:var(--danger);color:#fff;}
+.nav-ext{margin-left:auto;color:var(--ink-4);font-size:11px;}
 
-/* ===== PIPELINE TILES (Tous / Pool / Mandats / Soumissions envoyees) ===== */
-.pipeline-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
-.ptile {
-  background: white; border-radius: 14px; padding: 22px 22px 20px;
-  cursor: pointer; transition: all 0.2s; border: 2px solid #e5e7eb;
-  position: relative; user-select: none;
-}
-.ptile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
-.ptile-label { font-size: 14px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 10px; color: #555; }
-.ptile-num { font-size: 38px; font-weight: 700; line-height: 1; color: #1a1a2e; }
-.ptile-sub { font-size: 12px; color: #888; margin-top: 6px; }
-/* Variantes de couleur par type */
-.ptile-tous.active { border-color: #1a1a2e; background: #fafafa; }
-.ptile-tous.active .ptile-label, .ptile-tous.active .ptile-sub { color: #1a1a2e; }
-.ptile-pool { border-color: #b3d4f0; }
-.ptile-pool .ptile-label { color: #1565c0; }
-.ptile-pool .ptile-num { color: #0d47a1; }
-.ptile-pool .ptile-sub { color: #1565c0; }
-.ptile-pool.active { background: #e3f0ff; border-color: #1565c0; border-width: 3px; }
-.ptile-mandats { border-color: #c5e1a5; }
-.ptile-mandats .ptile-label { color: #2e7d32; }
-.ptile-mandats .ptile-num { color: #1b5e20; }
-.ptile-mandats .ptile-sub { color: #2e7d32; }
-.ptile-mandats.active { background: #e8f5e9; border-color: #2e7d32; border-width: 3px; }
-.ptile-soumissions { border-color: #ffcc80; }
-.ptile-soumissions .ptile-label { color: #e65100; }
-.ptile-soumissions .ptile-num { color: #bf360c; }
-.ptile-soumissions .ptile-sub { color: #e65100; }
-.ptile-soumissions.active { background: #fff3e0; border-color: #e65100; border-width: 3px; }
+.sidebar-spacer{flex:1;min-height:14px;}
 
-/* ===== MINISTATS (barre compacte) ===== */
-.ministats {
-  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
-  background: #fafafa; border: 1px solid #e5e7eb; border-radius: 8px;
-  padding: 8px 16px; font-size: 12px; color: #555; flex-wrap: wrap;
+.user-card{
+  display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:10px;
+  border:1px solid var(--line);background:var(--white);
 }
-.ministats .ms-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.6px; margin-right: 4px; }
-.ministats b { font-weight: 700; color: #1a1a2e; font-size: 14px; }
-.ministats .ms-sep { width: 1px; height: 16px; background: #e5e7eb; }
+.user-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#1a1a2e,#374151);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;letter-spacing:0.02em;flex-shrink:0;
+}
+.user-name{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.2;}
+.user-role{font-size:11px;color:var(--ink-3);margin-top:2px;text-transform:capitalize;}
+.user-card-info{min-width:0;flex:1;}
+.user-actions{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
+.user-action-link{
+  display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:7px;
+  font-size:11.5px;color:var(--ink-3);background:none;border:none;cursor:pointer;
+  font-family:inherit;text-align:left;transition:all 0.15s;
+}
+.user-action-link:hover{background:var(--bg-2);color:var(--ink);}
+.user-action-link.warn{color:#92400e;}
+.user-action-link.warn:hover{background:#fff7e6;color:#7c2d12;}
 
-/* Anciens stats-row caches (mais ID gardes pour compat JS updateStats) */
-.stats-row { display: none; }
-.stat-card { display: none; }
-.stat-label, .stat-value, .stat-sub { display: none; }
+/* ===== Main ===== */
+.main{overflow-y:auto;padding:22px 30px 36px;}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px;gap:16px;}
+.page-title{
+  font-family:'Instrument Serif',serif;font-size:34px;font-weight:400;line-height:1;
+  letter-spacing:-0.02em;color:var(--ink);
+}
+.page-title .accent{color:var(--primary);font-style:italic;}
+.page-sub{font-size:12.5px;color:var(--ink-3);margin-top:5px;}
+.stats-line{
+  font-size:11.5px;color:var(--ink-3);
+  margin:6px 0 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+}
+.stats-line .stat-num{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+.stats-line .stat-dot{width:3px;height:3px;border-radius:50%;background:var(--ink-4);}
+.stats-line .stat-label{display:inline-flex;align-items:center;gap:6px;}
 
-.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-.search-input {
-  flex: 1; min-width: 200px; max-width: 320px;
-  padding: 10px 16px; border: 1.5px solid #e5e7eb;
-  border-radius: 10px; font-size: 14px; outline: none; transition: border 0.2s;
+.head-actions{display:flex;gap:8px;flex-shrink:0;}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;
+  font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.15s;
+  border:1px solid transparent;font-family:inherit;letter-spacing:-0.005em;text-decoration:none;
 }
-.search-input:focus { border-color: #1a1a2e; }
-select.filter {
-  padding: 10px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px;
-  font-size: 14px; background: white; outline: none; color: #444; cursor: pointer;
-}
-select.filter:focus { border-color: #1a1a2e; }
+.btn-ghost{background:var(--white);border-color:var(--line);color:var(--ink-2);}
+.btn-ghost:hover{border-color:var(--ink-4);color:var(--ink);}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-hover);}
+.btn svg{width:14px;height:14px;}
 
-/* ===== Barre de chips Techniciens (remplace le select f-tech) ===== */
-.tech-chips-bar {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin: -4px 0 16px 0;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+/* ===== Stat Tiles ===== */
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0 20px;}
+.tile{
+  background:var(--white);border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px 13px;cursor:pointer;transition:all 0.18s ease;position:relative;overflow:hidden;
 }
-.tech-chips-bar.show { display: flex; }
-.tech-chips-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-right: 4px;
-}
-.tech-chip {
-  padding: 8px 16px;
-  background: white;
-  color: #475569;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  user-select: none;
-}
-.tech-chip:hover { border-color: #94a3b8; background: #f1f5f9; }
-.tech-chip.active {
-  background: #1a1a2e;
-  color: white;
-  border-color: #1a1a2e;
-  font-weight: 600;
-}
-.tech-chip.active:hover { background: #0f0f1e; }
-.btn-fdp {
-  margin-left: auto; padding: 10px 18px;
-  background: white; color: #1a1a2e; border: 1.5px solid #e5e7eb;
-  border-radius: 10px; font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: all 0.2s;
-}
-.btn-fdp:hover { border-color: #1a1a2e; background: #fafafa; }
+.tile:hover{border-color:var(--ink-4);transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.tile.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+.tile.active .tile-label{color:rgba(255,255,255,0.7);}
+.tile.active .tile-dot{background:rgba(255,255,255,0.9);}
+.tile.active .tile-meta{color:rgba(255,255,255,0.55);}
+.tile.active .tile-value{color:#fff;}
+.tile-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+.tile-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tile.tile-all .tile-dot{background:var(--primary);}
+.tile.tile-pool .tile-dot{background:var(--warn);}
+.tile.tile-soum .tile-dot{background:var(--logica);}
+.tile.tile-aucun .tile-dot{background:var(--danger);}
+.tile.tile-msg .tile-dot{background:var(--info);}
+.tile-label{font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.04em;}
+.tile-value{font-family:'Instrument Serif',serif;font-weight:400;font-size:36px;line-height:1;letter-spacing:-0.02em;color:var(--ink);}
+.tile-meta{font-size:11px;color:var(--ink-4);margin-top:5px;font-weight:500;}
 
-.btn-archives {
-  padding: 10px 18px;
-  background: white; color: #666; border: 1.5px solid #e5e7eb;
-  border-radius: 10px; font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: all 0.2s;
-}
-.btn-archives:hover { border-color: #888; background: #f9f9f9; }
-.btn-archives.on { background: #f57c00; color: white; border-color: #f57c00; }
+/* ===== Table Card ===== */
+.table-card{background:var(--white);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+.table-head-row{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--line-2);}
+.table-title{font-size:13.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;}
+.count-pill{font-size:11px;font-weight:600;color:var(--ink-3);background:var(--bg-2);padding:2px 8px;border-radius:10px;}
 
-.archive-banner {
-  display: flex; align-items: center; gap: 10px;
-  background: #fff3e0; border-left: 4px solid #f57c00;
-  padding: 10px 16px; border-radius: 0 8px 8px 0;
-  margin-bottom: 14px; font-size: 13px; color: #bf360c;
+.table-scroll{overflow-x:auto;}
+table.mandats{width:100%;border-collapse:collapse;table-layout:fixed;}
+table.mandats colgroup col{}
+table.mandats thead th{
+  text-align:left;font-size:10.5px;font-weight:600;color:var(--ink-4);
+  text-transform:uppercase;letter-spacing:0.06em;padding:10px 14px;
+  background:var(--bg-2);border-bottom:1px solid var(--line);white-space:nowrap;
 }
-body.archives-mode { background: #faf5ed; }
-.btn-export {
-  margin-left: auto; padding: 10px 22px;
-  background: #1d9e75; color: white; border: none;
-  border-radius: 10px; font-size: 14px; font-weight: 500;
-  cursor: pointer; transition: background 0.2s; display: none;
-}
-.btn-export:hover { background: #178a64; }
-.btn-new {
-  padding: 10px 22px;
-  background: #1a1a2e; color: white; border: none;
-  border-radius: 10px; font-size: 14px; font-weight: 500;
-  cursor: pointer; transition: background 0.2s;
-}
-.btn-new:hover { background: #2d2d4e; }
+table.mandats thead th:first-child{padding-left:18px;}
+table.mandats thead th:last-child{padding-right:18px;}
 
-.btn-tasks {
-  position: relative;
-  padding: 10px 18px;
-  background: #6a1b9a; color: white; border: none;
-  border-radius: 10px; font-size: 14px; font-weight: 500;
-  cursor: pointer; transition: background 0.2s;
-  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+/* Section separators (Aujourd'hui / A venir / etc) */
+tr.t-sep td{
+  padding:9px 18px 8px;background:#fafbfc;
+  font-size:11px;font-weight:700;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:0.06em;
+  border-bottom:1px solid var(--line-2);border-top:1px solid var(--line-2);
 }
-.btn-tasks:hover { background: #5a1083; }
-.btn-tasks .task-badge {
-  background: #ff5722; color: white;
-  font-size: 11px; font-weight: 700;
-  padding: 2px 7px; border-radius: 10px;
-  min-width: 18px; text-align: center;
+tr.t-sep td .sep-content{display:flex;align-items:center;gap:8px;}
+tr.t-sep td .sep-icon{font-size:13px;}
+tr.t-sep td .sep-count{
+  font-size:10.5px;font-weight:700;color:var(--ink-4);background:var(--white);
+  padding:1px 7px;border-radius:8px;border:1px solid var(--line);
 }
-.btn-tasks .task-badge.zero { display: none; }
-.btn-tasks .task-badge.urgent { background: #c62828; animation: pulse-badge 1.5s infinite; }
-@keyframes pulse-badge { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+tr.t-sep.aujourdhui td{background:#fff8e1;color:#7c2d12;border-color:#fbbf24;border-bottom:1px solid #fbbf24;border-top:1px solid #fbbf24;}
+tr.t-sep.aujourdhui .sep-count{background:#fef3c7;border-color:#fbbf24;color:#92400e;}
+tr.t-sep.realises{cursor:pointer;user-select:none;}
+tr.t-sep.realises:hover td{background:#f0f1f3;}
+tr.t-sep .sep-toggle{margin-left:auto;font-size:10px;color:var(--ink-4);transition:transform 0.2s;}
+tr.t-sep.collapsed .sep-toggle{transform:rotate(-90deg);}
 
-.btn-facturation {
-  position: relative;
-  padding: 10px 18px;
-  background: linear-gradient(135deg,#1565c0,#1976d2); color: white; border: none;
-  border-radius: 10px; font-size: 14px; font-weight: 500;
-  cursor: pointer; transition: background 0.2s;
-  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+tbody td{
+  padding:12px 14px;border-bottom:1px solid var(--line-2);font-size:13px;color:var(--ink-2);
+  vertical-align:middle;
 }
-.btn-facturation:hover { background: linear-gradient(135deg,#0d47a1,#1565c0); }
+tbody td:first-child{padding-left:18px;}
+tbody td:last-child{padding-right:18px;}
+tbody tr.t-row{transition:background 0.12s;cursor:pointer;}
+tbody tr.t-row:hover{background:var(--bg);}
+tbody tr.is-hidden{display:none;}
+tbody tr.row-aujourdhui{background:#fffbeb;}
+tbody tr.row-aujourdhui:hover{background:#fef3c7;}
+tbody tr.row-passe{opacity:0.7;}
 
-.btn-finance {
-  background: linear-gradient(135deg,#e65100,#bf360c);
-  color: white; padding: 8px 16px; border-radius: 8px;
-  font-size: 13px; font-weight: 600; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 6px;
-  transition: all 0.15s; border: none; cursor: pointer;
-}
-.btn-finance:hover { background: linear-gradient(135deg,#bf360c,#e65100); transform: translateY(-1px); }
+.cell-date{font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap;}
+.cell-date .date-main{font-size:12.5px;font-weight:500;color:var(--ink);}
+.cell-date .date-time{font-size:11px;color:var(--ink-4);margin-top:1px;}
+.cell-client{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;}
+.cell-client .phone{display:block;font-size:11px;color:var(--ink-4);margin-top:1px;font-weight:400;font-variant-numeric:tabular-nums;}
+.cell-addr{font-size:12.5px;color:var(--ink-3);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cell-actions{text-align:right;}
 
-.btn-ma-finance {
-  background: linear-gradient(135deg,#1565c0,#0d47a1);
-  color: white; padding: 10px 18px; border-radius: 10px;
-  font-size: 14px; font-weight: 500; text-decoration: none;
-  display: inline-flex; align-items: center; gap: 6px;
-  transition: background 0.2s; border: none; cursor: pointer;
-}
-.btn-ma-finance:hover { background: linear-gradient(135deg,#0d47a1,#1565c0); }
-.btn-facturation .fact-badge {
-  background: #ffc107; color: #1a1a2e;
-  font-size: 11px; font-weight: 700;
-  padding: 2px 7px; border-radius: 10px;
-  min-width: 18px; text-align: center;
-}
-.btn-facturation .fact-badge.zero { display: none; }
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;}
+.badge.logica{background:var(--logica-soft);color:var(--logica);}
+.badge.geq{background:var(--geq-soft);color:var(--geq);}
 
-.table-wrap { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); overflow: hidden; }
-.t-header {
-  display: grid; padding: 11px 20px;
-  background: #f8f9fa; border-bottom: 1px solid #e5e7eb;
-  font-size: 11px; font-weight: 600; color: #999;
-  text-transform: uppercase; letter-spacing: 0.4px;
-}
-.t-row {
-  display: grid; padding: 14px 20px;
-  border-bottom: 1px solid #f3f3f3;
-  cursor: pointer; transition: background 0.15s; align-items: center;
-}
-.t-row:last-child { border-bottom: none; }
-.t-row:hover { background: #f8f9fa; }
-.t-row.row-assigne { background: #fff8e1; }
-.t-row.row-assigne:hover { background: #fff3c4; }
-.t-row.row-pool { background: #e3f0ff; }
-/* ===== SEPARATEURS DE SECTIONS (Aujourd'hui / A venir / Realises) ===== */
-.t-sep {
-  display:flex; align-items:center; gap:10px;
-  padding:14px 20px 10px 20px;
-  background:#fafbfc;
-  border-bottom:1px solid #f0f0f0;
-  font-size:11.5px; font-weight:700;
-  text-transform:uppercase; letter-spacing:0.6px;
-  user-select:none;
-}
-.t-sep .sep-icon { font-size:14px; }
-.t-sep .sep-count {
-  margin-left:auto;
-  background:rgba(0,0,0,0.06); padding:2px 9px; border-radius:10px;
-  font-size:10.5px; font-weight:600;
-}
-.t-sep-aujourdhui { background:#fff8e1; color:#e65100; border-left:4px solid #f57c00; }
-.t-sep-avenir { background:#f0f7ff; color:#1565c0; border-left:4px solid #1976d2; }
-.t-sep-sansdate { background:#f5f5f5; color:#666; border-left:4px solid #9e9e9e; }
-.t-sep-realises {
-  background:#f5f5f5; color:#666; border-left:4px solid #bdbdbd;
-  cursor:pointer;
-}
-.t-sep-realises:hover { background:#eeeeee; }
-.t-sep-realises .sep-toggle {
-  font-size:10px; opacity:0.7; transition:transform 0.2s;
-}
-.t-sep-realises.collapsed .sep-toggle { transform:rotate(-90deg); }
-.t-row.row-passe { opacity:0.6; }
-.t-row.row-passe:hover { opacity:1; }
-.t-row.row-aujourdhui { background:#fffde7; }
-.t-row.row-aujourdhui:hover { background:#fff9c4; }
-.t-row.is-hidden { display:none; }
-
-/* Largeurs des colonnes - utilisent CSS variables pour permettre le drag-resize.
-   Valeurs par defaut alignees sur l'ancien systeme. Le JS peut les overrider via localStorage. */
-.cols-gest { 
-  grid-template-columns: 
-    var(--col-date, 92px)
-    var(--col-client, 1fr)
-    var(--col-adresse, 140px)
-    var(--col-compagnie, 70px)
-    var(--col-type, 120px)
-    var(--col-tech, 110px)
-    var(--col-assign, 110px)
-    var(--col-suivi, 130px)
-    var(--col-total, 90px);
-  gap: 8px;
-}
-.cols-tech { 
-  grid-template-columns: 
-    var(--col-date, 92px)
-    var(--col-client, 1fr)
-    var(--col-adresse, 140px)
-    var(--col-compagnie, 70px)
-    var(--col-type, 120px)
-    var(--col-tech, 110px)
-    var(--col-assign, 110px)
-    var(--col-suivi, 130px);
-  gap: 8px;
+.type-pill{
+  display:inline-block;padding:3px 9px;border-radius:6px;
+  background:var(--bg-2);color:var(--ink-2);
+  font-size:11px;font-weight:500;white-space:nowrap;
 }
 
-/* ===== Poignees de redimensionnement de colonnes ===== */
-.t-header { position: relative; }
-.col-resizer {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 8px;
-  margin-left: -4px;  /* Centre la poignee sur la bordure */
-  cursor: col-resize;
-  z-index: 10;
-  background: transparent;
-  transition: background 0.15s;
+.tech-chip-cell{display:inline-flex;align-items:center;gap:8px;}
+.tech-av{
+  width:24px;height:24px;border-radius:50%;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-weight:700;letter-spacing:0.02em;flex-shrink:0;
 }
-.col-resizer:hover,
-.col-resizer.resizing {
-  background: rgba(21, 101, 192, 0.3);
-}
-.col-resizer.resizing {
-  background: rgba(21, 101, 192, 0.5);
-}
-/* Empeche la selection de texte pendant le resize */
-body.col-resizing { 
-  cursor: col-resize !important; 
-  user-select: none !important; 
-}
-body.col-resizing * { 
-  cursor: col-resize !important; 
-  user-select: none !important; 
-}
+.tech-name{font-weight:500;color:var(--ink);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tech-pool{color:var(--info);font-style:italic;font-size:12px;}
 
-/* Bouton reset colonnes */
-.btn-reset-cols {
-  background: #fafbfc;
-  border: 1.5px solid #cfd8dc;
-  color: #455a64;
-  padding: 7px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.15s;
+.assign-badge{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;
+  font-size:11px;font-weight:600;white-space:nowrap;
 }
-.btn-reset-cols:hover {
-  background: #e3f0ff;
-  border-color: #1565c0;
-  color: #1565c0;
-}
+.assign-non_assigne{background:var(--bg-2);color:var(--ink-3);}
+.assign-assigne{background:#f0f9ff;color:#0369a1;}
+.assign-reclame{background:var(--warn-soft);color:var(--warn);}
+.assign-pool{background:var(--info-soft);color:var(--info);}
+.timer-text{font-size:10.5px;color:var(--ink-4);margin-top:3px;font-weight:500;font-variant-numeric:tabular-nums;}
+.timer-text.expired{color:var(--danger);font-weight:600;}
 
-.badge {
-  display: inline-block; padding: 3px 10px;
-  border-radius: 20px; font-size: 11px; font-weight: 600;
+.suivi-badge{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;
+  font-size:11px;font-weight:600;white-space:nowrap;
 }
-.badge-logica { background: #e3f0ff; color: #1565c0; }
-.badge-geq    { background: #fdecea; color: #b71c1c; }
-.badge-soumission { display:inline-block; background:#fff3e0; color:#e65100; font-size:10px; font-weight:600; padding:2px 8px; border-radius:6px; margin-left:6px; vertical-align:middle; letter-spacing:0.3px; }
+.suivi-badge.pas_contacte{background:var(--danger-soft);color:var(--danger);}
+.suivi-badge.message_laisse{background:var(--info-soft);color:var(--info);}
+.suivi-badge.en_attente{background:var(--warn-soft);color:var(--warn);}
+.suivi-badge.soumission_envoyee{background:var(--logica-soft);color:var(--logica);}
+.suivi-badge.confirme{background:var(--good-soft);color:var(--good);}
+.suivi-badge.refuse{background:var(--bg-2);color:var(--ink-3);}
+.rappel-warn{font-size:10px;color:var(--danger);margin-left:4px;font-weight:600;}
 
-/* Type de mandat - pilule */
-.type-pill {
-  display: inline-block;
-  padding: 3px 9px;
-  background: #f3e9ff;
-  color: #6a1b9a;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.4;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-}
+.cell-money{font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap;}
 
-/* Statut de contact - badge */
-.suivi-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.4;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.icon-btn{
+  width:28px;height:28px;border-radius:7px;border:1px solid transparent;background:transparent;
+  color:var(--ink-3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s;
 }
-.suivi-badge.pas_contacte    { background:#f5f5f5; color:#666; }
-.suivi-badge.message_laisse  { background:#fff3e0; color:#bf360c; }
-.suivi-badge.en_attente      { background:#fff9c4; color:#827717; }
-.suivi-badge.soumission_envoyee { background:#f3e5f5; color:#6a1b9a; }
-.suivi-badge.confirme        { background:#e8f5e9; color:#2e7d32; }
-.suivi-badge.refuse          { background:#fee2e2; color:#c62828; }
+.icon-btn:hover{background:var(--bg-2);color:var(--ink);}
 
-/* Indicateur de rappel en retard sur la ligne */
-.rappel-warn {
-  display: inline-block;
-  margin-left: 4px;
-  font-size: 11px;
-  color: #c62828;
-  font-weight: 600;
-  background: #fee2e2;
-  padding: 1px 6px;
-  border-radius: 8px;
-  vertical-align: middle;
-}
+.loading,.empty{padding:60px 20px;text-align:center;color:var(--ink-4);font-size:13px;}
+.empty .empty-title{font-family:'Instrument Serif',serif;font-size:20px;color:var(--ink-3);margin-bottom:4px;}
 
-/* Banniere de rappels en haut du dashboard */
-.rappels-banner {
-  background: linear-gradient(to right, #fff3e0, #ffe0b2);
-  border-left: 4px solid #e65100;
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  display: none;
-  align-items: center;
-  gap: 14px;
+/* ===== Filters Right ===== */
+.filters{background:var(--white);border-left:1px solid var(--line);padding:24px 20px;overflow-y:auto;}
+.filters-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.filters-title{font-family:'Instrument Serif',serif;font-size:22px;font-weight:400;letter-spacing:-0.01em;}
+.filters-reset{background:none;border:none;color:var(--ink-3);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;}
+.filters-reset:hover{color:var(--primary);}
+.field{margin-bottom:14px;}
+.field-label{display:block;font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.input,.select{
+  width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;
+  font-size:13px;font-family:inherit;color:var(--ink);background:var(--white);
+  transition:border 0.15s,box-shadow 0.15s;
 }
-.rappels-banner.show { display: flex; }
-.rappels-banner-icon { font-size: 26px; }
-.rappels-banner-content { flex: 1; min-width: 0; }
-.rappels-banner-title { font-weight: 700; color: #bf360c; font-size: 14px; margin-bottom: 2px; }
-.rappels-banner-sub { font-size: 12px; color: #6d4c00; }
-.rappels-banner-btn {
-  background: #e65100; color: white; border: none;
-  padding: 8px 16px; border-radius: 8px;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  white-space: nowrap;
+.input:focus,.select:focus{
+  outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(183,28,28,0.08);
 }
-.rappels-banner-btn:hover { background: #bf360c; }
-.tab-count { display:inline-block; background:rgba(255,255,255,0.25); color:inherit; font-size:11px; font-weight:600; padding:1px 8px; border-radius:10px; margin-left:4px; min-width:18px; text-align:center; }
-.tab:not(.active) .tab-count { background:#e5e7eb; color:#666; }
-.tab-count:empty { display:none; }
+.input::placeholder{color:var(--ink-4);}
+.search-wrap{position:relative;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-4);pointer-events:none;}
+.search-wrap input{padding-left:32px;}
 
-.assign-badge {
-  display: inline-block; padding: 3px 10px;
-  border-radius: 20px; font-size: 11px; font-weight: 600;
+.tech-filter{display:flex;flex-direction:column;gap:3px;max-height:340px;overflow-y:auto;}
+.tech-pill{
+  display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;
+  cursor:pointer;transition:all 0.15s;
 }
-.assign-non_assigne { background: #f3f4f6; color: #6b7280; }
-.assign-assigne    { background: #ff9800; color: white; }
-.assign-reclame    { background: #e8f5e9; color: #2e7d32; }
-.assign-pool       { background: #1565c0; color: white; }
+.tech-pill:hover{background:var(--bg-2);}
+.tech-pill.on{background:var(--primary);}
+.tech-pill.on .tech-pill-name{color:#fff;}
+.tech-pill.on .tech-pill-count{color:rgba(255,255,255,0.6);}
+.tech-pill .tech-av{width:22px;height:22px;font-size:9px;}
+.tech-pill-name{flex:1;font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tech-pill-count{font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums;}
 
-.timer-text {
-  font-size: 11px; color: #e65100; margin-top: 4px; font-weight: 600;
+/* ===== Modals ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,20,25,0.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{
+  background:var(--white);border-radius:16px;padding:24px;width:100%;max-width:480px;
+  max-height:80vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,0.18);
 }
-.timer-text.expired { color: #c62828; }
+.modal-box h2{font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);margin-bottom:4px;}
+.modal-box .modal-sub{font-size:12.5px;color:var(--ink-3);margin-bottom:18px;}
+.modal-btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.modal-comp-btn{
+  padding:18px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--white);
+  cursor:pointer;text-align:center;transition:all 0.2s;font-family:inherit;
+}
+.modal-comp-btn.logica:hover{border-color:var(--logica);background:var(--logica-soft);}
+.modal-comp-btn.geq:hover{border-color:var(--geq);background:var(--geq-soft);}
+.modal-comp-title{font-size:15px;font-weight:700;margin-bottom:2px;}
+.modal-comp-btn.logica .modal-comp-title{color:var(--logica);}
+.modal-comp-btn.geq .modal-comp-title{color:var(--geq);}
+.modal-comp-sub{font-size:11.5px;color:var(--ink-3);}
+.modal-cancel{width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;background:none;color:var(--ink-3);font-size:13px;cursor:pointer;font-family:inherit;}
+.modal-cancel:hover{background:var(--bg-2);}
 
-.statuts { display: flex; gap: 8px; }
-.s-dot { display: flex; align-items: center; gap: 3px; font-size: 11px; color: #999; }
-.dot { width: 7px; height: 7px; border-radius: 50%; }
-.dot-green  { background: #4caf50; }
-.dot-orange { background: #ff9800; }
-.dot-gray   { background: #ddd; }
+.profile-row{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;
+  border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;
+}
+.profile-row:hover{background:var(--bg-2);border-color:var(--ink-4);}
+.profile-avatar{
+  width:34px;height:34px;border-radius:50%;background:var(--navy);color:white;
+  display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0;
+}
+.profile-info{flex:1;min-width:0;}
+.profile-name{font-weight:600;color:var(--ink);font-size:13px;}
+.profile-meta{font-size:11.5px;color:var(--ink-3);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.role-badge{
+  font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.03em;
+}
+.role-gestionnaire{background:#fef3c7;color:#92400e;}
+.role-technicien{background:var(--logica-soft);color:var(--logica);}
+.role-secretaire{background:#e9d5ff;color:#6b21a8;}
+.role-autre{background:var(--bg-2);color:var(--ink-3);}
 
-.empty { text-align: center; padding: 56px 20px; color: #bbb; }
-.empty div { font-size: 40px; margin-bottom: 12px; }
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#9ca3af;}
 
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  display: flex; align-items: center; justify-content: center; z-index: 1000;
+/* ===== Responsive ===== */
+@media(max-width:1200px){
+  .app{grid-template-columns:220px 1fr 270px;}
 }
-.modal {
-  background: white; border-radius: 16px; padding: 36px;
-  width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+@media(max-width:1024px){
+  .app{grid-template-columns:200px 1fr;}
+  .filters{display:none;}
+  .tiles{grid-template-columns:repeat(3,1fr);}
 }
-.modal h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 8px; }
-.modal p { font-size: 14px; color: #888; margin-bottom: 24px; }
-.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.btn-logica {
-  padding: 16px; border: 2px solid #e3f0ff; border-radius: 12px;
-  background: #f0f7ff; cursor: pointer; text-align: center; transition: all 0.2s;
-}
-.btn-logica:hover { border-color: #1565c0; background: #e3f0ff; }
-.btn-geq {
-  padding: 16px; border: 2px solid #fdecea; border-radius: 12px;
-  background: #fff5f5; cursor: pointer; text-align: center; transition: all 0.2s;
-}
-.btn-geq:hover { border-color: #b71c1c; background: #fdecea; }
-.modal-comp-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-.modal-comp-sub { font-size: 12px; color: #888; }
-.btn-cancel-modal {
-  margin-top: 16px; width: 100%; padding: 10px;
-  border: 1px solid #e5e7eb; border-radius: 10px;
-  background: none; color: #888; font-size: 14px; cursor: pointer;
-}
-
-@media (max-width: 900px) {
-  .pipeline-tiles { grid-template-columns: repeat(2, 1fr); }
-  .ministats { font-size: 11px; gap: 10px; padding: 8px 12px; }
-  .ministats b { font-size: 13px; }
-  .cols-gest, .cols-tech { grid-template-columns: 1fr; }
-  .t-header { display: none; }
-}
-@media (max-width: 600px) {
-  .pipeline-tiles { grid-template-columns: 1fr; }
-  .ptile-num { font-size: 32px; }
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .tiles{grid-template-columns:repeat(2,1fr);}
+  .main{padding:16px;}
 }
 </style>
 </head>
 <body>
 
-<div class="test-banner" id="test-banner" style="display:none">
+<div class="test-banner" id="test-banner">
   <div class="test-banner-left">
     <span class="badge-test">MODE TEST</span>
     <span>Tu vois l'app comme <strong id="test-as-name">...</strong> <span id="test-as-role" style="color:#888;font-size:12px"></span></span>
@@ -598,163 +436,246 @@ body.col-resizing * {
   <button class="btn-exit-test" onclick="exitTestMode()">Sortir du mode test</button>
 </div>
 
-<div class="header">
-  <div class="header-left">
-    <img src="https://mosgioiumzsewbzsydeh.supabase.co/storage/v1/object/public/photos/logo-web.jpg" alt="GEQ">
-    <div class="header-divider"></div>
-    <span class="header-title">Portail Mandats</span>
-  </div>
-  <div class="header-right">
-    <button class="btn-view-as" id="btn-view-as" style="display:none" onclick="openViewAsModal()">&#128373;&#65039; Voir comme...</button>
-    <div class="user-info">
+<div class="app">
+
+  <!-- ============ LEFT SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div>
+        <div class="brand-name">Portail Mandats</div>
+        <div class="brand-sub">Logica &middot; GEQ</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">Pilotage</div>
+    <nav class="nav">
+      <a class="nav-item active" href="#" onclick="event.preventDefault();exitArchivesIfActive();">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M8 4v4M16 4v4"/></svg></span>
+        Mandats
+        <span class="nav-badge" id="nav-mandats-count">&mdash;</span>
+      </a>
+      <a class="nav-item" href="taches.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        T&acirc;ches
+        <span class="nav-badge" id="task-badge">0</span>
+      </a>
+      <a class="nav-item" id="nav-facturation" href="ma-facturation.html" style="display:none">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 14h6M9 18h6"/></svg></span>
+        Ma facturation
+        <span class="nav-badge" id="fact-badge">0</span>
+      </a>
+      <a class="nav-item" id="nav-finance" href="#" style="display:none">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+        Finance
+      </a>
+      <a class="nav-item" id="nav-fdp" href="#" style="display:none" onclick="event.preventDefault();goToFDP();">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 7l-5 5-3-3-4 4"/></svg></span>
+        Fonds de pr&eacute;voyance
+        <span class="nav-ext">&#8599;</span>
+      </a>
+    </nav>
+
+    <div class="nav-section-label">Historique</div>
+    <nav class="nav">
+      <a class="nav-item" id="nav-archives" href="#" onclick="event.preventDefault();toggleArchives();">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8M10 12h4"/></svg></span>
+        Archives
+        <span class="nav-badge" id="nav-archives-count">&mdash;</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="user-card">
       <div class="user-avatar" id="user-avatar">?</div>
-      <span id="user-name">...</span>
+      <div class="user-card-info">
+        <div class="user-name" id="user-name">...</div>
+        <div class="user-role" id="user-role">...</div>
+      </div>
     </div>
-    <button class="btn-logout" onclick="logout()">D&eacute;connexion</button>
-  </div>
+    <div class="user-actions">
+      <button class="user-action-link warn" id="btn-view-as" style="display:none" onclick="openViewAsModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Voir comme...
+      </button>
+      <button class="user-action-link" onclick="logout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        D&eacute;connexion
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <div class="archive-banner">
+      <span>&#128193;</span>
+      <span><strong>Mode Archives</strong> &mdash; Affichage des dossiers finalis&eacute;s seulement.</span>
+      <button class="btn-exit-archives" onclick="toggleArchives()">Revenir aux dossiers actifs</button>
+    </div>
+
+    <div class="rappels-banner" id="rappels-banner">
+      <span class="rappels-banner-icon">&#128276;</span>
+      <div class="rappels-banner-content">
+        <div class="rappels-banner-title" id="rappels-banner-title">Mandats n&eacute;cessitant un suivi</div>
+        <div class="rappels-banner-sub" id="rappels-banner-sub">&nbsp;</div>
+      </div>
+      <button class="rappels-banner-btn" onclick="showRappels()">Voir les rappels</button>
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title" id="page-title">Mandats<span class="accent">.</span></h1>
+        <div class="page-sub" id="page-sub">&nbsp;</div>
+        <div class="stats-line" id="stats-line" style="display:none"></div>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-ghost" id="btn-export" style="display:none" onclick="exportToExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Exporter
+        </button>
+        <button class="btn btn-primary" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Nouveau mandat
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== STAT TILES ===== -->
+    <div class="tiles">
+      <div class="tile tile-all active" data-filter="tous" onclick="setFilter('tous')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Tous</span></div>
+        <div class="tile-value" id="tile-tous">&mdash;</div>
+        <div class="tile-meta" id="tile-tous-meta">dossiers actifs</div>
+      </div>
+      <div class="tile tile-pool" data-filter="pool" onclick="setFilter('pool')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Pool</span></div>
+        <div class="tile-value" id="tile-pool">&mdash;</div>
+        <div class="tile-meta">non assign&eacute;s</div>
+      </div>
+      <div class="tile tile-soum" data-filter="soumission_envoyee" onclick="setFilter('soumission_envoyee')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Soumission envoy&eacute;e</span></div>
+        <div class="tile-value" id="tile-soum">&mdash;</div>
+        <div class="tile-meta">en attente client</div>
+      </div>
+      <div class="tile tile-aucun" data-filter="pas_contacte" onclick="setFilter('pas_contacte')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Pas contact&eacute;</span></div>
+        <div class="tile-value" id="tile-aucun">&mdash;</div>
+        <div class="tile-meta">&agrave; rappeler</div>
+      </div>
+      <div class="tile tile-msg" data-filter="message_laisse" onclick="setFilter('message_laisse')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Message laiss&eacute;</span></div>
+        <div class="tile-value" id="tile-msg">&mdash;</div>
+        <div class="tile-meta">en suivi</div>
+      </div>
+    </div>
+
+    <!-- ===== TABLE CARD ===== -->
+    <div class="table-card">
+      <div class="table-head-row">
+        <div class="table-title">
+          <span id="table-title-label">Tous les mandats</span>
+          <span class="count-pill" id="table-count">0</span>
+        </div>
+      </div>
+      <div class="table-scroll" id="table-wrap">
+        <div class="loading">
+          <div style="font-size:24px;margin-bottom:8px;">&#9203;</div>
+          <p>Chargement des mandats&hellip;</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============ FILTERS RIGHT ============ -->
+  <aside class="filters">
+    <div class="filters-head">
+      <h2 class="filters-title">Filtres</h2>
+      <button class="filters-reset" onclick="resetAllFilters()">R&eacute;initialiser</button>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Recherche</label>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" class="input" placeholder="Client, adresse, t&eacute;l&eacute;phone&hellip;" id="search" oninput="filterMandats()">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Compagnie</label>
+      <select class="select" id="f-compagnie" onchange="filterMandats()">
+        <option value="">Toutes</option>
+        <option value="logica">Logica</option>
+        <option value="geq">GEQ</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Statut paiement / rapport</label>
+      <select class="select" id="f-statut" onchange="filterMandats()">
+        <option value="">Tous les statuts</option>
+        <option value="nonpaye">Non pay&eacute;</option>
+        <option value="paye">Pay&eacute;</option>
+        <option value="rapport_pending">Rapport &agrave; envoyer</option>
+        <option value="confirmation_pending">Confirmation &agrave; envoyer</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Suivi client</label>
+      <select class="select" id="f-suivi" onchange="filterMandats()">
+        <option value="">Tous les suivis</option>
+        <option value="pas_contacte">&#128222; Pas contact&eacute;</option>
+        <option value="message_laisse">&#128172; Message laiss&eacute;</option>
+        <option value="en_attente">&#9203; En attente client</option>
+        <option value="soumission_envoyee">&#128221; Soumission envoy&eacute;e</option>
+        <option value="confirme">&#9989; Confirm&eacute;</option>
+        <option value="refuse">&#10060; Refus&eacute;</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Assignation</label>
+      <select class="select" id="f-assign" onchange="filterMandats()">
+        <option value="">Toutes</option>
+        <option value="non_assigne">Non assign&eacute;</option>
+        <option value="assigne">Assign&eacute; (timer)</option>
+        <option value="reclame">R&eacute;clam&eacute;</option>
+        <option value="pool">Dans le pool</option>
+      </select>
+    </div>
+
+    <div class="field" id="tech-filter-field" style="display:none">
+      <label class="field-label">Technicien</label>
+      <select id="f-tech" style="display:none" onchange="filterMandats()">
+        <option value="">Tous les techniciens</option>
+      </select>
+      <div class="tech-filter" id="tech-filter"></div>
+    </div>
+
+  </aside>
+
 </div>
 
-<div class="main">
-  <!-- Banniere de rappels client (affichee si mandats necessitent suivi) -->
-  <div class="rappels-banner" id="rappels-banner">
-    <div class="rappels-banner-icon">&#128276;</div>
-    <div class="rappels-banner-content">
-      <div class="rappels-banner-title" id="rappels-banner-title">Mandats n&eacute;cessitant un suivi</div>
-      <div class="rappels-banner-sub" id="rappels-banner-sub">&nbsp;</div>
-    </div>
-    <button class="rappels-banner-btn" onclick="showRappels()">Voir les rappels</button>
-  </div>
-
-  <div class="pipeline-tiles">
-    <div class="ptile ptile-tous active" data-tab="tous" onclick="setTab('tous')">
-      <div class="ptile-label">&#128203; TOUS</div>
-      <div class="ptile-num" id="ptile-tous">&mdash;</div>
-      <div class="ptile-sub">dossiers actifs</div>
-    </div>
-    <div class="ptile ptile-pool" data-tab="pool" id="ptile-pool-card" style="display:none" onclick="setTab('pool')">
-      <div class="ptile-label">&#127919; POOL</div>
-      <div class="ptile-num" id="ptile-pool">&mdash;</div>
-      <div class="ptile-sub">&agrave; r&eacute;clamer</div>
-    </div>
-    <div class="ptile ptile-mandats" data-tab="mandats" onclick="setTab('mandats')">
-      <div class="ptile-label">&#128197; MANDATS</div>
-      <div class="ptile-num" id="ptile-mandats">&mdash;</div>
-      <div class="ptile-sub">book&eacute;s avec date</div>
-    </div>
-    <div class="ptile ptile-soumissions" data-tab="soumissions" onclick="setTab('soumissions')">
-      <div class="ptile-label">&#128221; SOUMISSIONS ENVOY&Eacute;ES</div>
-      <div class="ptile-num" id="ptile-soumissions">&mdash;</div>
-      <div class="ptile-sub">en attente client</div>
-    </div>
-  </div>
-
-  <div class="ministats" id="ministats-gest" style="display:none">
-    <span class="ms-label">&#128202; Stats du mois</span>
-    <span><b id="s-mois">&mdash;</b> mandats ce mois</span>
-    <span class="ms-sep"></span>
-    <span><b id="s-rapports">&mdash;</b> rapports en attente</span>
-    <span class="ms-sep"></span>
-    <span><b id="s-nonpaye">&mdash;</b> non pay&eacute;s</span>
-    <span class="ms-sep"></span>
-    <span><b id="s-revenus">&mdash;</b> revenus</span>
-    <span style="display:none" id="s-total">&mdash; au total</span>
-  </div>
-
-  <div class="ministats" id="ministats-tech" style="display:none">
-    <span class="ms-label">&#128202; Mes stats</span>
-    <span><b id="t-annee">&mdash;</b> cette ann&eacute;e</span>
-    <span class="ms-sep"></span>
-    <span><b id="t-logica">&mdash;</b> Logica</span>
-    <span class="ms-sep"></span>
-    <span><b id="t-geq">&mdash;</b> GEQ</span>
-    <span class="ms-sep"></span>
-    <span><b id="t-comm">&mdash;</b> commissions</span>
-    <span style="display:none" id="t-mois-sub">&mdash; ce mois</span>
-  </div>
-
-  <div class="toolbar">
-    <input type="text" class="search-input" id="search" placeholder="&#128269;  Rechercher client, adresse..." oninput="filterMandats()">
-    <select class="filter" id="f-compagnie" onchange="filterMandats()">
-      <option value="">Toutes compagnies</option>
-      <option value="logica">&#127968; Logica</option>
-      <option value="geq">&#127970; GEQ</option>
-    </select>
-    <select class="filter" id="f-statut" onchange="filterMandats()">
-      <option value="">Tous les statuts</option>
-      <option value="nonpaye">Non pay&eacute;</option>
-      <option value="paye">Pay&eacute;</option>
-      <option value="rapport_pending">Rapport &agrave; envoyer</option>
-      <option value="confirmation_pending">Confirmation &agrave; envoyer</option>
-    </select>
-    <select class="filter" id="f-assign" onchange="filterMandats()">
-      <option value="">Toutes les assignations</option>
-      <option value="non_assigne">Non assign&eacute;</option>
-      <option value="assigne">Assign&eacute; (timer actif)</option>
-      <option value="reclame">R&eacute;clam&eacute;</option>
-      <option value="pool">Dans le pool</option>
-    </select>
-    <select class="filter" id="f-suivi" onchange="filterMandats()">
-      <option value="">Tous les suivis</option>
-      <option value="pas_contacte">&#128222; Pas contact&eacute;</option>
-      <option value="message_laisse">&#128172; Message laiss&eacute;</option>
-      <option value="en_attente">&#9203; En attente client</option>
-      <option value="soumission_envoyee">&#128221; Soumission envoy&eacute;e</option>
-      <option value="confirme">&#9989; Confirm&eacute;</option>
-      <option value="refuse">&#10060; Refus&eacute;</option>
-    </select>
-    <select class="filter" id="f-tech" style="display:none" onchange="filterMandats()">
-      <option value="">Tous les techniciens</option>
-    </select>
-    <button class="btn-fdp" id="btn-fdp" style="display:none" onclick="goToFDP()">&#128202; Fonds de pr&eacute;voyance</button>
-    <button class="btn-archives" id="btn-archives" onclick="toggleArchives()">&#128193; Archives</button>
-    <a class="btn-tasks" href="taches.html" title="Mes t&acirc;ches">
-      &#128203; T&acirc;ches <span class="task-badge zero" id="task-badge">0</span>
-    </a>
-    <a class="btn-facturation" href="ma-facturation.html" title="Ma facturation de commission">
-      &#128184; Ma facturation <span class="fact-badge zero" id="fact-badge">0</span>
-    </a>
-    <a class="btn-ma-finance" id="btn-ma-finance" href="ma-finance.html" title="Tableau de bord de mes commissions" style="display:none">
-      &#128181; Finance
-    </a>
-    <button class="btn-export" id="btn-export-excel" onclick="exportToExcel()">&#128202; Exporter Excel</button>
-    <a class="btn-finance" id="btn-finance" href="finance.html" style="display:none">&#128181; Finances</a>
-    <button class="btn-reset-cols" onclick="resetColWidthsAndRender()" title="R&eacute;initialiser la largeur des colonnes du tableau">&#128260; R&eacute;init. colonnes</button>
-    <button class="btn-new" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
-      + Nouveau mandat
-    </button>
-  </div>
-
-  <!-- Barre de chips Techniciens (gestionnaire uniquement) -->
-  <div class="tech-chips-bar" id="tech-chips-bar">
-    <span class="tech-chips-label">&#128104;&#8205;&#128187; Filtrer par technicien</span>
-    <div class="tech-chip active" data-tech-id="" onclick="selectTechChip(this)">Tous</div>
-  </div>
-
-  <div class="archive-banner" id="archive-banner" style="display:none">
-    <span>&#128193; <strong>Mode Archives</strong> &mdash; Affichage des dossiers finalis&eacute;s seulement.</span>
-    <button onclick="toggleArchives()" style="margin-left:auto;background:transparent;border:1px solid #f57c00;color:#e65100;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;">Revenir aux dossiers actifs</button>
-  </div>
-
-  <div class="table-wrap" id="table-wrap">
-    <div class="empty"><div>&#9203;</div><p>Chargement des mandats...</p></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-new" style="display:none" onclick="hideModal(event)">
-  <div class="modal">
+<!-- ============ MODALS ============ -->
+<div class="modal-overlay" id="modal-new" onclick="hideModalNew(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
     <h2>Nouveau mandat</h2>
-    <p>Pour quelle compagnie ?</p>
-    <div class="modal-btns">
-      <div class="btn-logica" onclick="goNewMandat('logica')">
-        <div class="modal-comp-title" style="color:#1565c0">&#127968; Logica</div>
+    <div class="modal-sub">Pour quelle compagnie ?</div>
+    <div class="modal-btn-row">
+      <button class="modal-comp-btn logica" onclick="goNewMandat('logica')">
+        <div class="modal-comp-title">&#127968; Logica</div>
         <div class="modal-comp-sub">Inspection pr&eacute;-achat</div>
-      </div>
-      <div class="btn-geq" onclick="goNewMandat('geq')">
-        <div class="modal-comp-title" style="color:#b71c1c">&#127970; GEQ</div>
+      </button>
+      <button class="modal-comp-btn geq" onclick="goNewMandat('geq')">
+        <div class="modal-comp-title">&#127970; GEQ</div>
         <div class="modal-comp-sub">Expertise &amp; services</div>
-      </div>
+      </button>
     </div>
-    <button class="btn-cancel-modal" onclick="document.getElementById('modal-new').style.display='none'">Annuler</button>
+    <button class="modal-cancel" onclick="document.getElementById('modal-new').classList.remove('show')">Annuler</button>
   </div>
 </div>
 
@@ -768,12 +689,17 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const BASS_UID = '72fed940-9f61-471d-ad81-378af125146e';
 const VIEW_AS_KEY = 'view_as_user_id';
+const FILTERS_KEY = 'dashboard_filters_v2';
+
+const TECH_COLORS = ['#1565c0','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#0d9488','#7c2d12'];
 
 let realProfile = null;
 let profile = null;
 let allMandats = [];
-let currentTab = 'tous';
+let currentFilter = 'tous';
+let viewArchives = false;
 let timerInterval = null;
+let techList = [];
 
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
@@ -801,51 +727,69 @@ let timerInterval = null;
     profile.role === 'gestionnaire' ||
     profile.role === 'secretaire' ||
     (profile.role === 'technicien' && profile.dashboard_access === true);
-
   if (!hasAccess && !localStorage.getItem(VIEW_AS_KEY)) {
     window.location.href = 'index.html';
     return;
   }
 
+  /* User card */
   const initiales = ((profile.prenom||'')[0] + (profile.nom||'')[0]).toUpperCase();
   document.getElementById('user-avatar').textContent = initiales;
   document.getElementById('user-name').textContent = `${profile.prenom} ${profile.nom}`;
+  document.getElementById('user-role').textContent = profile.role || '';
 
+  /* Date affichee dans le sub-title */
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('fr-CA', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  document.getElementById('page-sub').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+  /* Visibilite Bass-only */
   if (session.user.id === BASS_UID) {
-    document.getElementById('btn-view-as').style.display = 'inline-block';
+    document.getElementById('btn-view-as').style.display = 'flex';
   }
-
-  if (profile.role === 'gestionnaire' || profile.role === 'technicien') {
-    document.getElementById('btn-fdp').style.display = 'inline-block';
-    document.getElementById('ptile-pool-card').style.display = 'block';
-  }
-
-  if (profile.role === 'gestionnaire' || profile.role === 'secretaire' || profile.role === 'technicien') {
-    document.getElementById('btn-new').style.display = 'flex';
-  }
-
-  if (profile.role === 'gestionnaire') {
-    document.getElementById('ministats-gest').style.display = 'flex';
-    document.getElementById('tech-chips-bar').classList.add('show');
-    await loadTechs();
-  } else if (profile.role === 'technicien') {
-    document.getElementById('ministats-tech').style.display = 'flex';
-    document.getElementById('btn-ma-finance').style.display = 'inline-flex';
-  }
-
-  /* Show export button + Finance only quand on est r&eacute;ellement Bass (PAS en mode test) */
-  /* En mode test, profile devient l&apos;utilisateur impersonn&eacute; donc profile.id !== BASS_UID */
   if (profile.id === BASS_UID) {
-    document.getElementById('btn-export-excel').style.display = 'inline-block';
-    document.getElementById('btn-finance').style.display = 'inline-flex';
+    document.getElementById('btn-export').style.display = 'inline-flex';
+  }
+
+  /* Nav: Fonds de prevoyance pour gest + technicien */
+  if (profile.role === 'gestionnaire' || profile.role === 'technicien') {
+    document.getElementById('nav-fdp').style.display = 'flex';
+  }
+
+  /* Bouton Nouveau mandat */
+  if (profile.role === 'gestionnaire' || profile.role === 'secretaire' || profile.role === 'technicien') {
+    document.getElementById('btn-new').style.display = 'inline-flex';
+  }
+
+  /* Nav Finance et Ma facturation */
+  if (profile.id === BASS_UID) {
+    /* Bass voit Finance (page finance.html gestionnaire) */
+    const navFin = document.getElementById('nav-finance');
+    navFin.href = 'finance.html';
+    navFin.style.display = 'flex';
+  } else if (profile.role === 'technicien') {
+    /* Tech voit Ma facturation + Finance (ma-finance.html) */
+    document.getElementById('nav-facturation').style.display = 'flex';
+    const navFin = document.getElementById('nav-finance');
+    navFin.href = 'ma-finance.html';
+    navFin.style.display = 'flex';
+  }
+
+  /* Filtre technicien (chips) - visible pour gestionnaire seulement */
+  if (profile.role === 'gestionnaire') {
+    document.getElementById('tech-filter-field').style.display = 'block';
+    await loadTechs();
   }
 
   await loadMandats();
 
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(updateTimers, 60000);
+
+  updateTaskBadge();
 })();
 
+/* ===== TEST MODE ===== */
 function enableTestMode(impersonatedProfile) {
   document.body.classList.add('test-mode');
   const banner = document.getElementById('test-banner');
@@ -853,31 +797,20 @@ function enableTestMode(impersonatedProfile) {
   document.getElementById('test-as-name').textContent = `${impersonatedProfile.prenom} ${impersonatedProfile.nom}`;
   document.getElementById('test-as-role').textContent = `(${impersonatedProfile.role})`;
 }
-
 function exitTestMode() {
   localStorage.removeItem(VIEW_AS_KEY);
   window.location.reload();
 }
 
 async function openViewAsModal() {
-  const { data: profiles } = await sb
-    .from('profiles')
-    .select('id, nom, prenom, email, role, dashboard_access')
-    .order('role')
-    .order('nom');
-
+  const { data: profiles } = await sb.from('profiles').select('id, nom, prenom, email, role, dashboard_access').order('role').order('nom');
   const list = (profiles || []).filter(p => p.id !== BASS_UID);
-
   const roleClass = r => `role-${['gestionnaire','technicien','secretaire'].includes(r) ? r : 'autre'}`;
-  const roleLabel = r => ({
-    'gestionnaire': 'Gestionnaire',
-    'technicien': 'Technicien',
-    'secretaire': 'Secr\u00e9taire'
-  }[r] || r || 'Autre');
+  const roleLabel = r => ({'gestionnaire':'Gestionnaire','technicien':'Technicien','secretaire':'Secr\u00e9taire'}[r] || r || 'Autre');
 
   let rowsHtml = list.map(p => {
     const init = ((p.prenom||'')[0] + (p.nom||'')[0]).toUpperCase();
-    const access = p.dashboard_access === false ? ' <span style="color:#dc2626;font-size:11px">(pas d\'acc\u00e8s dashboard)</span>' : '';
+    const access = p.dashboard_access === false ? ' <span style="color:#dc2626;font-size:11px">(pas d\'acc\u00e8s)</span>' : '';
     return `<div class="profile-row" onclick="selectViewAs('${p.id}')">
       <div class="profile-avatar">${init || '?'}</div>
       <div class="profile-info">
@@ -889,76 +822,84 @@ async function openViewAsModal() {
       </div>
     </div>`;
   }).join('');
-
   if (!rowsHtml) rowsHtml = '<div class="empty"><p>Aucun autre profil</p></div>';
 
-  const html = `<div class="modal-viewas" onclick="closeViewAsModal(event)">
-    <div class="modal-viewas-box" onclick="event.stopPropagation()">
-      <h2>&#128373;&#65039; Voir comme...</h2>
-      <p>Choisis un profil pour voir l'app comme cette personne. Tu pourras sortir du mode test \u00e0 tout moment.</p>
+  const html = `<div class="modal-overlay show" onclick="closeViewAsModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <h2>Voir comme...</h2>
+      <div class="modal-sub">Choisis un profil pour voir l'app comme cette personne. Tu pourras sortir du mode test \u00e0 tout moment.</div>
       ${rowsHtml}
-      <button class="btn-cancel-modal" onclick="closeViewAsModal()">Annuler</button>
+      <button class="modal-cancel" onclick="closeViewAsModal()">Annuler</button>
     </div>
   </div>`;
-
   document.getElementById('modal-viewas-container').innerHTML = html;
 }
-
 function closeViewAsModal(e) {
-  if (!e || e.target.classList.contains('modal-viewas')) {
+  if (!e || e.target.classList.contains('modal-overlay')) {
     document.getElementById('modal-viewas-container').innerHTML = '';
   }
 }
-
 function selectViewAs(userId) {
   localStorage.setItem(VIEW_AS_KEY, userId);
   window.location.reload();
 }
 
+/* ===== LOAD TECHS ===== */
 async function loadTechs() {
-  const { data } = await sb
-    .from('profiles')
+  const { data } = await sb.from('profiles')
     .select('id, nom, prenom')
     .in('role', ['technicien', 'gestionnaire'])
     .eq('dashboard_access', true)
     .order('nom');
   const sel = document.getElementById('f-tech');
-  const chipsBar = document.getElementById('tech-chips-bar');
-  /* Exclure Michael Gauthier: gestionnaire avec acces GEQ Suivi mais pas Portail Mandats */
-  const filtered = (data || []).filter(t => !(t.prenom === 'Michael' && t.nom === 'Gauthier'));
-  filtered.forEach(t => {
-    /* 1. Remplir le select cache (utilise par getFilteredMandats) */
+  /* Exclure Michael Gauthier */
+  techList = (data || []).filter(t => !(t.prenom === 'Michael' && t.nom === 'Gauthier'));
+  techList.forEach((t, i) => {
+    t.color = TECH_COLORS[i % TECH_COLORS.length];
+    t.initials = ((t.prenom||'')[0] + (t.nom||'')[0]).toUpperCase();
     const o = document.createElement('option');
-    o.value = t.id;
-    o.textContent = `${t.prenom} ${t.nom}`;
+    o.value = t.id; o.textContent = `${t.prenom} ${t.nom}`;
     sel.appendChild(o);
-    /* 2. Generer une chip cliquable */
-    const chip = document.createElement('div');
-    chip.className = 'tech-chip';
-    chip.dataset.techId = t.id;
-    chip.textContent = `${t.prenom} ${t.nom}`;
-    chip.onclick = function() { selectTechChip(this); };
-    chipsBar.appendChild(chip);
   });
+  renderTechPills();
 }
 
-/* Selection d'une chip technicien -> met a jour le select cache + filtre */
-function selectTechChip(el) {
-  document.querySelectorAll('.tech-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('f-tech').value = el.dataset.techId || '';
+function renderTechPills() {
+  const currentTech = document.getElementById('f-tech').value;
+  const wrap = document.getElementById('tech-filter');
+  const counts = {};
+  allMandats.forEach(m => { if(m.technicien_id) counts[m.technicien_id] = (counts[m.technicien_id]||0)+1; });
+  wrap.innerHTML = `
+    <div class="tech-pill ${currentTech===''?'on':''}" onclick="selectTech('')">
+      <div class="tech-av" style="background:#374151">&middot;&middot;</div>
+      <span class="tech-pill-name">Tous les techniciens</span>
+      <span class="tech-pill-count">${allMandats.filter(m=>m.technicien_id).length}</span>
+    </div>
+    ${techList.map(t => `
+      <div class="tech-pill ${currentTech===t.id?'on':''}" onclick="selectTech('${t.id}')">
+        <div class="tech-av" style="background:${t.color}">${t.initials}</div>
+        <span class="tech-pill-name">${t.prenom} ${t.nom}</span>
+        <span class="tech-pill-count">${counts[t.id]||0}</span>
+      </div>
+    `).join('')}
+  `;
+}
+function selectTech(id) {
+  document.getElementById('f-tech').value = id;
+  renderTechPills();
   filterMandats();
 }
 
+/* ===== LOAD MANDATS ===== */
 async function loadMandats() {
-  document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9203;</div><p>Chargement...</p></div>';
+  document.getElementById('table-wrap').innerHTML = '<div class="loading"><div style="font-size:24px;margin-bottom:8px;">&#9203;</div><p>Chargement des mandats&hellip;</p></div>';
   const { data, error } = await sb
     .from('mandats')
     .select('*, technicien:profiles!mandats_technicien_id_fkey(id, nom, prenom)')
     .order('date_mandat', { ascending: false, nullsFirst: false });
 
   if (error) {
-    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#9888;&#65039;</div><p>Erreur de chargement</p></div>';
+    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div class="empty-title">Erreur de chargement</div><p>'+error.message+'</p></div>';
     return;
   }
 
@@ -972,159 +913,109 @@ async function loadMandats() {
   }
   allMandats = mandats;
 
+  updateTileCounts();
   updateStats();
-  updateTabCounters();
-  /* Restaurer les filtres sauvegardes (onglet, archives, tech, compagnie, statut, recherche)
-     avant le 1er render. La session storage est conservee tant que l'onglet est ouvert. */
+  updateFactBadge();
+  if (profile.role === 'gestionnaire') renderTechPills();
+
   restoreFilters();
   filterMandats();
-  updateTaskBadge();
 }
 
-/* Compteur de taches dans le header - actives uniquement (non completes) */
-async function updateTaskBadge(){
-  const badge = document.getElementById('task-badge');
-  if(!badge) return;
-  const {data, error} = await sb.from('taches')
-    .select('id, priorite, date_echeance, complete')
-    .eq('assignee_id', profile.id)
-    .eq('complete', false);
-  if(error){console.error(error);return;}
-  const total = (data||[]).length;
-  const hasUrgent = (data||[]).some(t => {
-    if(t.priorite === 'urgente') return true;
-    if(t.date_echeance && new Date(t.date_echeance) < new Date(new Date().toDateString())) return true;
-    return false;
-  });
-  badge.textContent = total;
-  badge.className = 'task-badge' + (total===0?' zero':'') + (hasUrgent?' urgent':'');
-  /* Met aussi a jour le badge facturation */
-  updateFactBadge();
-}
+/* ===== UPDATE COUNTS (sidebar nav + 5 tiles) ===== */
+function isComplete(m) { return m.est_complete === true || m.statut_final === true; }
 
-/* Compteur de mandats dans la facture draft active (Phase 6) */
-async function updateFactBadge(){
-  const badge = document.getElementById('fact-badge');
-  if(!badge) return;
-  /* Seulement pour les techniciens (Bass voit pas son propre badge) */
-  if(profile.role !== 'technicien'){
-    badge.className = 'fact-badge zero';
-    return;
-  }
-  /* Compter les lignes dans les factures draft du tech */
-  const {data:drafts, error} = await sb.from('factures_tech')
-    .select('id')
-    .eq('technicien_id', profile.id)
-    .eq('statut', 'draft');
-  if(error){console.error(error);return;}
-  const draftIds = (drafts||[]).map(d=>d.id);
-  if(!draftIds.length){
-    badge.textContent='0';
-    badge.className='fact-badge zero';
-    return;
-  }
-  const {data:lignes} = await sb.from('factures_tech_lignes')
-    .select('id')
-    .in('facture_id', draftIds);
-  const total = (lignes||[]).length;
-  badge.textContent = total;
-  badge.className = 'fact-badge' + (total===0?' zero':'');
-}
-
-function updateTabCounters() {
-  /* Filtre de base selon mode (actifs vs archives)
-     Phase 5 - utilise est_complete (nouveau), avec fallback statut_final (legacy) */
-  const isComplete = (m) => m.est_complete === true || m.statut_final === true;
+function updateTileCounts() {
   const baseFilter = viewArchives ? isComplete : (m => !isComplete(m));
-  /* Met a jour les compteurs des 4 grosses tuiles */
   const c = (filterFn) => allMandats.filter(m => baseFilter(m) && filterFn(m)).length;
-  const set = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val;
-  };
-  set('ptile-tous', c(() => true));
-  set('ptile-pool', c(m => m.statut_assignation === 'pool'));
-  set('ptile-mandats', c(m => !!m.date_mandat));
-  set('ptile-soumissions', c(m => m.statut_contact === 'soumission_envoyee' && !m.date_mandat));}
+  document.getElementById('tile-tous').textContent = c(() => true);
+  document.getElementById('tile-pool').textContent = c(m => m.statut_assignation === 'pool');
+  document.getElementById('tile-soum').textContent = c(m => m.statut_contact === 'soumission_envoyee');
+  document.getElementById('tile-aucun').textContent = c(m => m.statut_contact === 'pas_contacte' || !m.statut_contact);
+  document.getElementById('tile-msg').textContent = c(m => m.statut_contact === 'message_laisse');
 
+  /* Sidebar nav counts */
+  document.getElementById('nav-mandats-count').textContent = allMandats.filter(m => !isComplete(m)).length;
+  document.getElementById('nav-archives-count').textContent = allMandats.filter(isComplete).length;
+}
+
+/* ===== STATS (mini-bar) ===== */
 function updateStats() {
+  const line = document.getElementById('stats-line');
   const now = new Date();
   const annee = now.getFullYear();
   const moisN = now.getMonth();
 
-  if (profile.role === 'gestionnaire') {
+  if (profile.role === 'gestionnaire' || profile.role === 'secretaire') {
     const mois = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getMonth() === moisN && new Date(m.date_mandat).getFullYear() === annee);
-    document.getElementById('s-mois').textContent = mois.length;
-    document.getElementById('s-total').textContent = `${allMandats.length} au total`;
-    document.getElementById('s-rapports').textContent = allMandats.filter(m => !m.statut_rapport_envoye).length;
-    document.getElementById('s-nonpaye').textContent = allMandats.filter(m => !m.statut_paye).length;
+    const rapports = allMandats.filter(m => !m.statut_rapport_envoye && !isComplete(m)).length;
+    const nonpaye = allMandats.filter(m => !m.statut_paye && !isComplete(m)).length;
     const rev = mois.reduce((s, m) => s + (parseFloat(m.total_ttc) || 0), 0);
-    document.getElementById('s-revenus').textContent = money(rev);
+    line.style.display = 'flex';
+    line.innerHTML = `
+      <span class="stat-label">&#128202; Stats du mois</span>
+      <span class="stat-dot"></span>
+      <span><span class="stat-num">${mois.length}</span> mandats ce mois</span>
+      <span class="stat-dot"></span>
+      <span><span class="stat-num">${rapports}</span> rapports en attente</span>
+      <span class="stat-dot"></span>
+      <span><span class="stat-num">${nonpaye}</span> non pay&eacute;s</span>
+      ${profile.id===BASS_UID ? `<span class="stat-dot"></span><span><span class="stat-num">${money(rev)}</span> revenus</span>` : ''}
+    `;
   } else if (profile.role === 'technicien') {
     const ann = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getFullYear() === annee);
     const mois = ann.filter(m => new Date(m.date_mandat).getMonth() === moisN);
-    document.getElementById('t-annee').textContent = ann.length;
-    document.getElementById('t-mois-sub').textContent = `${mois.length} ce mois`;
-    document.getElementById('t-logica').textContent = ann.filter(m => m.compagnie === 'logica').length;
-    document.getElementById('t-geq').textContent = ann.filter(m => m.compagnie === 'geq').length;
+    const logica = ann.filter(m => m.compagnie === 'logica').length;
+    const geq = ann.filter(m => m.compagnie === 'geq').length;
     const comm = ann.reduce((s, m) => s + (parseFloat(m.commission_totale) || 0), 0);
-    document.getElementById('t-comm').textContent = money(comm);
+    line.style.display = 'flex';
+    line.innerHTML = `
+      <span class="stat-label">&#128202; Mes stats</span>
+      <span class="stat-dot"></span>
+      <span><span class="stat-num">${ann.length}</span> cette ann&eacute;e</span>
+      <span class="stat-dot"></span>
+      <span><span class="stat-num">${mois.length}</span> ce mois</span>
+      <span class="stat-dot"></span>
+      <span><span class="stat-num">${logica}</span> Logica</span>
+      <span class="stat-dot"></span>
+      <span><span class="stat-num">${geq}</span> GEQ</span>
+      <span class="stat-dot"></span>
+      <span><span class="stat-num">${money(comm)}</span> commissions</span>
+    `;
   }
 }
 
-function setTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.ptile').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  filterMandats();
-}
-
-/* ===== MODE ARCHIVES =====
-   Par defaut: on affiche les dossiers actifs (statut_final=false ou null).
-   Mode Archives: on affiche les dossiers finalises (statut_final=true).
-   La separation se fait via le bouton FINAL deja existant sur chaque mandat. */
-let viewArchives = false;
-
-function toggleArchives() {
-  viewArchives = !viewArchives;
-  const btn = document.getElementById('btn-archives');
-  btn.classList.toggle('on', viewArchives);
-  btn.innerHTML = viewArchives ? '\u{1F3E0} Dossiers actifs' : '\u{1F4C1} Archives';
-  document.getElementById('archive-banner').style.display = viewArchives ? 'flex' : 'none';
-  document.body.classList.toggle('archives-mode', viewArchives);
-  updateTabCounters();
-  updateStats();
+/* ===== FILTERS ===== */
+function setFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.tile').forEach(t => t.classList.toggle('active', t.dataset.filter === filter));
   filterMandats();
 }
 
 function getFilteredMandats() {
-  const s = document.getElementById('search').value.toLowerCase();
+  const s = (document.getElementById('search').value||'').toLowerCase();
   const st = document.getElementById('f-statut').value;
   const assign = document.getElementById('f-assign').value;
   const tech = document.getElementById('f-tech').value;
   const compagnie = document.getElementById('f-compagnie').value;
+  const suivi = document.getElementById('f-suivi').value;
 
   let list = allMandats;
-  /* Filtre archives en premier (actifs vs completes)
-     Phase 5 - utilise est_complete (nouveau), avec fallback statut_final (legacy) */
-  const isComplete = (m) => m.est_complete === true || m.statut_final === true;
-  list = viewArchives
-    ? list.filter(isComplete)
-    : list.filter(m => !isComplete(m));
+  /* Filtre archives en premier */
+  list = viewArchives ? list.filter(isComplete) : list.filter(m => !isComplete(m));
 
-  /* Onglet pipeline (tuile cliquee) */
-  if (currentTab === 'soumissions') {
-    list = list.filter(m => m.statut_contact === 'soumission_envoyee' && !m.date_mandat);
-  } else if (currentTab === 'mandats') {
-    list = list.filter(m => !!m.date_mandat);
-  } else if (currentTab === 'pool') {
-    list = list.filter(m => m.statut_assignation === 'pool');
-  } else if (currentTab === 'rappels') {
-    /* Filtre special: mandats necessitant un suivi */
+  /* Filtre par tile selectionnee */
+  if (currentFilter === 'pool') list = list.filter(m => m.statut_assignation === 'pool');
+  else if (currentFilter === 'soumission_envoyee') list = list.filter(m => m.statut_contact === 'soumission_envoyee');
+  else if (currentFilter === 'pas_contacte') list = list.filter(m => m.statut_contact === 'pas_contacte' || !m.statut_contact);
+  else if (currentFilter === 'message_laisse') list = list.filter(m => m.statut_contact === 'message_laisse');
+  else if (currentFilter === 'rappels') {
     const isGest = profile.role === 'gestionnaire';
     const baseList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
     list = getMandatsNecessitantSuivi(baseList);
   }
-  /* Filtre compagnie (select separe) - applique en plus de l'onglet */
+
+  /* Filtres droite */
   if (compagnie) list = list.filter(m => m.compagnie === compagnie);
   if (s) list = list.filter(m =>
     (m.client_nom||'').toLowerCase().includes(s) ||
@@ -1138,7 +1029,6 @@ function getFilteredMandats() {
   if (st === 'confirmation_pending') list = list.filter(m => !m.statut_confirmation_envoyee);
   if (assign) list = list.filter(m => (m.statut_assignation || 'non_assigne') === assign);
   if (tech) list = list.filter(m => m.technicien_id === tech);
-  const suivi = document.getElementById('f-suivi')?.value;
   if (suivi) list = list.filter(m => m.statut_contact === suivi);
 
   return list;
@@ -1147,23 +1037,25 @@ function getFilteredMandats() {
 function filterMandats() {
   renderTable(getFilteredMandats());
   updateRappelsBanner(allMandats);
-  /* Sauvegarde les filtres actuels pour les restaurer au prochain chargement de la page */
   saveFilters();
 }
 
-/* ===========================================================
-   PERSISTANCE DES FILTRES (sessionStorage)
-   Permet de revenir sur le dashboard avec les memes filtres apres
-   avoir clique sur un mandat (qui ouvre mandat.html et revient).
-   sessionStorage = persistant pour la session de navigateur, mais
-   reset si on ferme l'onglet (vs localStorage qui survit a tout).
-   =========================================================== */
-const FILTERS_KEY = 'dashboard_filters_v1';
+function resetAllFilters() {
+  document.getElementById('search').value = '';
+  document.getElementById('f-compagnie').value = '';
+  document.getElementById('f-statut').value = '';
+  document.getElementById('f-assign').value = '';
+  document.getElementById('f-suivi').value = '';
+  document.getElementById('f-tech').value = '';
+  setFilter('tous');
+  if (profile.role === 'gestionnaire') renderTechPills();
+}
 
+/* ===== FILTERS PERSISTENCE ===== */
 function saveFilters(){
   try{
     const state = {
-      tab: currentTab,
+      filter: currentFilter,
       archives: viewArchives,
       search: document.getElementById('search')?.value || '',
       statut: document.getElementById('f-statut')?.value || '',
@@ -1181,102 +1073,82 @@ function restoreFilters(){
   try{ state = JSON.parse(sessionStorage.getItem(FILTERS_KEY) || 'null'); }catch(e){}
   if(!state) return;
 
-  /* Onglet de pipeline (tous / pool / mandats / soumissions) */
-  if(state.tab && state.tab !== 'tous'){
-    currentTab = state.tab;
-    document.querySelectorAll('.ptile').forEach(t => 
-      t.classList.toggle('active', t.dataset.tab === currentTab)
-    );
-  }
-  /* Mode Archives */
   if(state.archives === true){
     viewArchives = true;
-    const btn = document.getElementById('btn-archives');
-    if(btn){
-      btn.classList.add('on');
-      btn.innerHTML = '\u{1F3E0} Dossiers actifs';
-    }
-    const banner = document.getElementById('archive-banner');
-    if(banner) banner.style.display = 'flex';
     document.body.classList.add('archives-mode');
+    document.getElementById('nav-archives').classList.add('active');
+    document.querySelector('.nav-item').classList.remove('active');
   }
-  /* Recharger les compteurs car le mode archives change ce qui est compte */
-  updateTabCounters();
-
-  /* Champs de recherche / select simples */
+  if(state.filter && state.filter !== 'tous'){
+    currentFilter = state.filter;
+    document.querySelectorAll('.tile').forEach(t => t.classList.toggle('active', t.dataset.filter === currentFilter));
+  }
   const fields = ['search','f-statut','f-assign','f-tech','f-compagnie','f-suivi'];
   const stateKeys = ['search','statut','assign','tech','compagnie','suivi'];
   fields.forEach((id, i) => {
     const el = document.getElementById(id);
     if(el && state[stateKeys[i]]) el.value = state[stateKeys[i]];
   });
-
-  /* Tech chip active : refleter le f-tech dans les chips si le tech est selectionne */
-  if(state.tech){
-    document.querySelectorAll('.tech-chip').forEach(c => {
-      c.classList.toggle('active', c.dataset.techId === state.tech);
-    });
-  }
+  if (profile.role === 'gestionnaire') renderTechPills();
+  updateTileCounts();
 }
 
-/* Alias pour showRappels() (qui doit declencher un render apres avoir change currentTab) */
-function render() {
+/* ===== ARCHIVES TOGGLE ===== */
+function exitArchivesIfActive() {
+  if (viewArchives) toggleArchives();
+}
+
+function toggleArchives() {
+  viewArchives = !viewArchives;
+  document.body.classList.toggle('archives-mode', viewArchives);
+  /* Active visuel sidebar */
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (viewArchives) {
+    document.getElementById('nav-archives').classList.add('active');
+  } else {
+    document.querySelector('.nav-item').classList.add('active'); /* Mandats */
+  }
+  updateTileCounts();
   filterMandats();
 }
 
+/* ===== STATUTS / BADGES ===== */
 function getAssignBadge(m) {
   const s = m.statut_assignation || 'non_assigne';
-  const regionLabels = {
-    'estrie': 'Estrie',
-    'monteregie': 'Mont\u00e9r\u00e9gie',
-    'quebec': 'Qu\u00e9bec'
-  };
+  const regionLabels = {'estrie':'Estrie','monteregie':'Mont\u00e9r\u00e9gie','quebec':'Qu\u00e9bec'};
   const labels = {
-    'non_assigne': 'Non assign\u00e9',
-    'assigne': 'Assign\u00e9',
-    'reclame': 'R\u00e9clam\u00e9',
-    'pool': 'Pool ' + (regionLabels[m.region_mandat] || 'Qu\u00e9bec')
+    'non_assigne':'Non assign\u00e9','assigne':'Assign\u00e9','reclame':'R\u00e9clam\u00e9',
+    'pool':'Pool ' + (regionLabels[m.region_mandat] || 'Qu\u00e9bec')
   };
   return `<span class="assign-badge assign-${s}">${labels[s] || s}</span>`;
 }
 
-/* ===== SUIVI CLIENT - BADGES ET BANNIERE DE RAPPELS ===== */
 const STATUT_CONTACT_LABELS = {
-  'pas_contacte':       {icon:'\uD83D\uDCDE', label:'Pas contact\u00e9'},
-  'message_laisse':     {icon:'\uD83D\uDCAC', label:'Message laiss\u00e9'},
-  'en_attente':         {icon:'\u23F3',       label:'En attente'},
-  'soumission_envoyee': {icon:'\uD83D\uDCDD', label:'Soumission'},
-  'confirme':           {icon:'\u2705',       label:'Confirm\u00e9'},
-  'refuse':             {icon:'\u274C',       label:'Refus\u00e9'},
+  'pas_contacte':{icon:'\uD83D\uDCDE',label:'Pas contact\u00e9'},
+  'message_laisse':{icon:'\uD83D\uDCAC',label:'Message laiss\u00e9'},
+  'en_attente':{icon:'\u23F3',label:'En attente'},
+  'soumission_envoyee':{icon:'\uD83D\uDCDD',label:'Soumission'},
+  'confirme':{icon:'\u2705',label:'Confirm\u00e9'},
+  'refuse':{icon:'\u274C',label:'Refus\u00e9'},
 };
-
 function getSuiviBadge(m) {
   const s = m.statut_contact;
   if (!s) return '<span style="color:#bbb">&mdash;</span>';
   const info = STATUT_CONTACT_LABELS[s] || {icon:'?',label:s};
-  /* Indicateur si rappel en retard */
   let rappelHtml = '';
   if (m.prochain_rappel) {
     const rappelDate = new Date(m.prochain_rappel);
-    if (rappelDate < new Date()) {
-      rappelHtml = '<span class="rappel-warn">&#9888;&#65039; En retard</span>';
-    }
+    if (rappelDate < new Date()) rappelHtml = '<span class="rappel-warn">&#9888;&#65039; En retard</span>';
   }
   return `<span class="suivi-badge ${s}">${info.icon} ${info.label}</span>${rappelHtml}`;
 }
 
-/* Identifie les mandats necessitant un suivi:
-   - prochain_rappel dans le passe
-   - OU statut 'message_laisse' depuis > 24h sans nouvelle entree */
 function getMandatsNecessitantSuivi(list) {
   const now = new Date();
   const yesterday = new Date(now.getTime() - 24*60*60*1000);
   return list.filter(m => {
-    /* Refuse/confirme = ne necessite plus de suivi */
     if (m.statut_contact === 'refuse' || m.statut_contact === 'confirme') return false;
-    /* Rappel echu */
     if (m.prochain_rappel && new Date(m.prochain_rappel) < now) return true;
-    /* Message laisse depuis > 24h (on utilise updated_at comme proxy) */
     if (m.statut_contact === 'message_laisse' && m.updated_at && new Date(m.updated_at) < yesterday) return true;
     return false;
   });
@@ -1285,9 +1157,8 @@ function getMandatsNecessitantSuivi(list) {
 function updateRappelsBanner(list) {
   const banner = document.getElementById('rappels-banner');
   const isGest = profile.role === 'gestionnaire';
-  /* Pour les techs: filtrer sur leurs propres mandats. Pour gestionnaires: tous. */
   const myList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
-  const needFollowUp = getMandatsNecessitantSuivi(myList);
+  const needFollowUp = getMandatsNecessitantSuivi(myList).filter(m => !isComplete(m));
   if (needFollowUp.length === 0) {
     banner.classList.remove('show');
     return;
@@ -1297,135 +1168,82 @@ function updateRappelsBanner(list) {
   document.getElementById('rappels-banner-sub').textContent =
     'Rappels en retard ou messages laiss\u00e9s depuis plus de 24h';
   banner.classList.add('show');
-  /* Stocke les IDs pour le clic "Voir les rappels" */
-  banner.dataset.mandatIds = needFollowUp.map(m=>m.id).join(',');
 }
 
 function showRappels() {
-  /* Bascule sur un filtre special pour montrer uniquement les mandats necessitant suivi */
-  currentTab = 'rappels';
-  /* Desactive les autres pipeline tiles visuellement */
-  document.querySelectorAll('.ptile').forEach(p => p.classList.remove('active'));
-  render();
-  /* Scroll vers la table */
-  document.getElementById('table-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+  currentFilter = 'rappels';
+  document.querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+  filterMandats();
+  document.querySelector('.table-card').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function getTimerHtml(m) {
-  if (m.statut_assignation !== 'assigne' || !m.assigne_le || !m.delai_reclamation_heures) return '';
-  return `<div class="timer-text" data-assigne-le="${m.assigne_le}" data-delai="${m.delai_reclamation_heures}">${formatTimer(m.assigne_le, m.delai_reclamation_heures)}</div>`;
-}
-
-/* ===== HEURES OUVRABLES (Quebec) =====
-   Heures de bureau: 8h-18h lundi-vendredi, hors feries quebecois.
-   Replique la logique des fonctions SQL is_quebec_holiday() et add_business_hours()
-   pour permettre un timer cote frontend qui gele hors heures ouvrables. */
-
+/* ===== BUSINESS HOURS / TIMERS ===== */
 function isQuebecHoliday(date) {
   const yr = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
   const dow = date.getDay();
-
-  /* Feries a date fixe */
-  if (month === 1 && day === 1) return true;     /* Jour de l'An */
-  if (month === 6 && day === 24) return true;    /* Saint-Jean-Baptiste */
-  if (month === 7 && day === 1) return true;     /* Fete du Canada */
+  if (month === 1 && day === 1) return true;
+  if (month === 6 && day === 24) return true;
+  if (month === 7 && day === 1) return true;
   if (month === 12 && (day === 24 || day === 25 || day === 26 || day === 31)) return true;
-
-  /* Paques (algorithme de Gauss) */
-  const a = yr % 19;
-  const b = Math.floor(yr / 100);
-  const c = yr % 100;
-  const dd = Math.floor(b / 4);
-  const ee = b % 4;
-  const ff = Math.floor((b + 8) / 25);
-  const gg = Math.floor((b - ff + 1) / 3);
+  const a = yr % 19, b = Math.floor(yr / 100), c = yr % 100;
+  const dd = Math.floor(b / 4), ee = b % 4;
+  const ff = Math.floor((b + 8) / 25), gg = Math.floor((b - ff + 1) / 3);
   const hg = (19 * a + b - dd - gg + 15) % 30;
-  const ii = Math.floor(c / 4);
-  const kk = c % 4;
+  const ii = Math.floor(c / 4), kk = c % 4;
   const ll = (32 + 2 * ee + 2 * ii - hg - kk) % 7;
   const mm = Math.floor((a + 11 * hg + 22 * ll) / 451);
   const easterMonth = Math.floor((hg + ll - 7 * mm + 114) / 31);
   const easterDay = ((hg + ll - 7 * mm + 114) % 31) + 1;
   const easter = new Date(yr, easterMonth - 1, easterDay);
-
-  /* Vendredi saint = 2 jours avant Paques */
-  const goodFriday = new Date(easter);
-  goodFriday.setDate(easter.getDate() - 2);
+  const goodFriday = new Date(easter); goodFriday.setDate(easter.getDate() - 2);
   if (month === goodFriday.getMonth() + 1 && day === goodFriday.getDate()) return true;
-
-  /* Lundi de Paques = 1 jour apres Paques */
-  const easterMonday = new Date(easter);
-  easterMonday.setDate(easter.getDate() + 1);
+  const easterMonday = new Date(easter); easterMonday.setDate(easter.getDate() + 1);
   if (month === easterMonday.getMonth() + 1 && day === easterMonday.getDate()) return true;
-
-  /* Journee nationale des Patriotes (lundi precedant le 25 mai) */
   if (month === 5 && dow === 1 && day >= 18 && day <= 24) return true;
-
-  /* Fete du Travail (1er lundi de septembre) */
   if (month === 9 && dow === 1 && day <= 7) return true;
-
-  /* Action de graces (2e lundi d'octobre) */
   if (month === 10 && dow === 1 && day >= 8 && day <= 14) return true;
-
   return false;
 }
-
 function isBusinessDay(date) {
   const dow = date.getDay();
   if (dow === 0 || dow === 6) return false;
   return !isQuebecHoliday(date);
 }
-
-/* Calcule le nombre d'heures ouvrables ecoulees entre start et end (Date objects).
-   Heures ouvrables = 8h-18h, lun-ven, hors feries. */
 function businessHoursElapsed(start, end) {
   if (end <= start) return 0;
-
   let elapsed = 0;
   const cursor = new Date(start);
-
   while (cursor < end) {
     if (isBusinessDay(cursor)) {
-      const dayStart = new Date(cursor);
-      dayStart.setHours(8, 0, 0, 0);
-      const dayEnd = new Date(cursor);
-      dayEnd.setHours(18, 0, 0, 0);
-
+      const dayStart = new Date(cursor); dayStart.setHours(8, 0, 0, 0);
+      const dayEnd = new Date(cursor); dayEnd.setHours(18, 0, 0, 0);
       const overlapStart = Math.max(cursor.getTime(), dayStart.getTime());
       const overlapEnd = Math.min(end.getTime(), dayEnd.getTime());
-
-      if (overlapEnd > overlapStart) {
-        elapsed += (overlapEnd - overlapStart) / 3600000;
-      }
+      if (overlapEnd > overlapStart) elapsed += (overlapEnd - overlapStart) / 3600000;
     }
-
-    /* Avancer au debut du jour suivant */
     cursor.setDate(cursor.getDate() + 1);
     cursor.setHours(0, 0, 0, 0);
   }
-
   return elapsed;
 }
-
 function formatTimer(assigneLe, delaiHeures) {
   const start = new Date(assigneLe);
   const now = new Date();
-
   const elapsed = businessHoursElapsed(start, now);
   const remaining = delaiHeures - elapsed;
-
   if (remaining <= 0) return 'Bascule en pool imminente';
-
   const totalMinutes = Math.floor(remaining * 60);
   const h = Math.floor(totalMinutes / 60);
   const m = totalMinutes % 60;
-
   if (h > 0) return `Reste ${h}h ${m}min ouvrables`;
   return `Reste ${m}min ouvrables`;
 }
-
+function getTimerHtml(m) {
+  if (m.statut_assignation !== 'assigne' || !m.assigne_le || !m.delai_reclamation_heures) return '';
+  return `<div class="timer-text" data-assigne-le="${m.assigne_le}" data-delai="${m.delai_reclamation_heures}">${formatTimer(m.assigne_le, m.delai_reclamation_heures)}</div>`;
+}
 function updateTimers() {
   document.querySelectorAll('.timer-text').forEach(el => {
     const assigneLe = el.dataset.assigneLe;
@@ -1437,25 +1255,60 @@ function updateTimers() {
   });
 }
 
+/* ===== TASK / FACT BADGE ===== */
+async function updateTaskBadge() {
+  const badge = document.getElementById('task-badge');
+  if (!badge) return;
+  const { data } = await sb.from('taches')
+    .select('id, priorite, date_echeance, complete')
+    .eq('assignee_id', profile.id)
+    .eq('complete', false);
+  const total = (data || []).length;
+  const hasUrgent = (data || []).some(t => {
+    if (t.priorite === 'urgente') return true;
+    if (t.date_echeance && new Date(t.date_echeance) < new Date(new Date().toDateString())) return true;
+    return false;
+  });
+  badge.textContent = total;
+  badge.className = 'nav-badge' + (hasUrgent ? ' alert' : '');
+}
+
+async function updateFactBadge() {
+  if (profile.role !== 'technicien') return;
+  const badge = document.getElementById('fact-badge');
+  if (!badge) return;
+  const { data: facture } = await sb.from('factures').select('id').eq('technicien_id', profile.id).eq('statut', 'draft').limit(1);
+  if (!facture || !facture.length) { badge.textContent = '0'; return; }
+  const { data: lignes } = await sb.from('factures_lignes').select('id').eq('facture_id', facture[0].id);
+  badge.textContent = (lignes || []).length;
+}
+
+/* ===== RENDER TABLE ===== */
 function renderTable(list) {
   const isGest = profile.role === 'gestionnaire';
-  const cols = isGest ? 'cols-gest' : 'cols-tech';
+  const count = list.length;
+  document.getElementById('table-count').textContent = count;
 
-  if (!list.length) {
-    document.getElementById('table-wrap').innerHTML = '<div class="empty"><div>&#128203;</div><p>Aucun mandat trouv&eacute;</p></div>';
+  const titleMap = {
+    'tous':'Tous les mandats','pool':'Pool ouvert',
+    'soumission_envoyee':'Soumissions envoy\u00e9es','pas_contacte':'\u00c0 rappeler',
+    'message_laisse':'En suivi','rappels':'Rappels en retard',
+  };
+  document.getElementById('table-title-label').textContent = viewArchives ? 'Archives' : (titleMap[currentFilter] || 'Mandats');
+
+  if (!count) {
+    document.getElementById('table-wrap').innerHTML = `
+      <div class="empty">
+        <div class="empty-title">Aucun mandat</div>
+        <p>Essaie un autre filtre ou cr&eacute;e un nouveau mandat.</p>
+      </div>`;
     return;
   }
 
-  /* Ordre des colonnes (correspond aux variables CSS) */
-  const colKeys = isGest 
-    ? ['date','client','adresse','compagnie','type','tech','assign','suivi','total']
-    : ['date','client','adresse','compagnie','type','tech','assign','suivi'];
-
-  /* ===== Date du jour au format YYYY-MM-DD (fuseau local) ===== */
+  /* Date du jour YYYY-MM-DD local */
   const now = new Date();
   const todayStr = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
 
-  /* ===== Groupement par section ===== */
   const groupes = { aujourdhui:[], avenir:[], sansdate:[], realises:[] };
   list.forEach(m => {
     if (!m.date_mandat) groupes.sansdate.push(m);
@@ -1463,296 +1316,105 @@ function renderTable(list) {
     else if (m.date_mandat > todayStr) groupes.avenir.push(m);
     else groupes.realises.push(m);
   });
-  /* A venir = plus proche en haut; Realises = plus recent en haut */
   groupes.avenir.sort((a,b) => a.date_mandat.localeCompare(b.date_mandat));
   groupes.realises.sort((a,b) => b.date_mandat.localeCompare(a.date_mandat));
 
-  /* Etat collapse de "Realises" (localStorage, replie par defaut) */
   const realisesCollapsed = localStorage.getItem('dashboard_realises_collapsed') !== 'false';
 
-  /* Header avec poignees de redimensionnement entre chaque colonne */
-  let html = `<div class="t-header ${cols}">
-    <div>Date</div><div>Client</div><div>Adresse</div>
-    <div>Compagnie</div><div>Type</div><div>Technicien</div><div>Assignation</div>
-    <div>Suivi</div>
-    ${isGest ? '<div>Total TTC</div>' : ''}
-    ${colKeys.slice(0,-1).map((k,i) => 
-      `<div class="col-resizer" data-col="${k}" data-idx="${i}" title="Glisser pour redimensionner (double-clic = reset)"></div>`
-    ).join('')}
-  </div>`;
+  const colCount = isGest ? 8 : 7;
+  let html = `<table class="mandats">
+    <colgroup>
+      <col style="width:120px"><col style="width:18%"><col style="width:20%">
+      <col style="width:78px"><col style="width:150px"><col style="width:150px">
+      <col style="width:130px"><col style="width:130px">
+      ${isGest ? '<col style="width:100px">' : ''}
+    </colgroup>
+    <thead><tr>
+      <th>Date</th><th>Client</th><th>Adresse</th><th>Comp.</th>
+      <th>Type</th><th>Technicien</th><th>Assignation</th><th>Suivi</th>
+      ${isGest ? '<th style="text-align:right">Total</th>' : ''}
+    </tr></thead>
+    <tbody>`;
 
-  /* Fonction utilitaire pour rendre une ligne mandat */
   function renderRow(m, extraClass='') {
-    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA', {day:'numeric', month:'long', year:'numeric'}) : '&mdash;';
+    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA', {day:'numeric', month:'short', year:'numeric'}) : '&mdash;';
     const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
-    const tech = m.technicien ? `${m.technicien.prenom} ${m.technicien.nom}` : (m.statut_assignation === 'pool' ? '<span style="color:#1565c0;font-style:italic">Pool</span>' : '<span style="color:#bbb">&mdash;</span>');
-    const badge = m.compagnie === 'logica'
-      ? '<span class="badge badge-logica">Logica</span>'
-      : '<span class="badge badge-geq">GEQ</span>';
-    const rowClass = m.statut_assignation === 'assigne' ? ' row-assigne'
-                   : m.statut_assignation === 'pool' ? ' row-pool'
-                   : '';
-    return `<div class="t-row ${cols}${rowClass}${extraClass}" onclick="window.location.href='mandat.html?id=${m.id}'">
-      <div>
-        <div style="font-size:13px;font-weight:500;color:#333">${date}</div>
-        ${heure ? `<div style="font-size:11px;color:#999">${heure}</div>` : ''}
-      </div>
-      <div>
-        <div style="font-weight:600;font-size:14px;color:#1a1a2e;margin-bottom:2px">
-          ${m.client_nom}
-          ${m.statut_contact === 'soumission_envoyee' && !m.date_mandat ? '<span class="badge-soumission">&#128221; Soumission</span>' : ''}
-        </div>
-        <div style="font-size:12px;color:#999">${m.client_telephone||''}</div>
-      </div>
-      <div style="font-size:13px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.adresse||'&mdash;'}</div>
-      <div>${badge}</div>
-      <div>${m.type_mandat ? `<span class="type-pill">${m.type_mandat}</span>` : '<span style="color:#bbb">&mdash;</span>'}</div>
-      <div style="font-size:13px;color:#555">${tech}</div>
-      <div>
-        ${getAssignBadge(m)}
-        ${getTimerHtml(m)}
-      </div>
-      <div>${getSuiviBadge(m)}</div>
-      ${isGest ? `<div style="font-weight:600;font-size:14px;color:#1a1a2e">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</div>` : ''}
-    </div>`;
+    let techCell;
+    if (m.technicien) {
+      const tech = techList.find(t => t.id === m.technicien_id);
+      const color = tech ? tech.color : '#374151';
+      const initials = ((m.technicien.prenom||'')[0] + (m.technicien.nom||'')[0]).toUpperCase();
+      techCell = `<div class="tech-chip-cell"><div class="tech-av" style="background:${color}">${initials}</div><span class="tech-name">${m.technicien.prenom} ${m.technicien.nom}</span></div>`;
+    } else if (m.statut_assignation === 'pool') {
+      techCell = '<span class="tech-pool">Pool</span>';
+    } else {
+      techCell = '<span style="color:#bbb">&mdash;</span>';
+    }
+    const badge = m.compagnie === 'logica' ? '<span class="badge logica">Logica</span>' : '<span class="badge geq">GEQ</span>';
+    return `<tr class="t-row${extraClass}" onclick="window.location.href='mandat.html?id=${m.id}'">
+      <td class="cell-date">
+        <div class="date-main">${date}</div>
+        ${heure ? `<div class="date-time">${heure}</div>` : ''}
+      </td>
+      <td class="cell-client">
+        ${escapeHtml(m.client_nom||'')}
+        <span class="phone">${escapeHtml(m.client_telephone||'')}</span>
+      </td>
+      <td class="cell-addr" title="${escapeHtml(m.adresse||'')}">${escapeHtml(m.adresse||'\u2014')}</td>
+      <td>${badge}</td>
+      <td>${m.type_mandat ? `<span class="type-pill">${escapeHtml(m.type_mandat)}</span>` : '<span style="color:#bbb">&mdash;</span>'}</td>
+      <td>${techCell}</td>
+      <td>${getAssignBadge(m)}${getTimerHtml(m)}</td>
+      <td>${getSuiviBadge(m)}</td>
+      ${isGest ? `<td class="cell-money">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</td>` : ''}
+    </tr>`;
   }
 
-  /* ===== Section AUJOURD'HUI ===== */
+  function sepRow(icon, label, cnt, cls='', toggle=false) {
+    return `<tr class="t-sep ${cls}" ${toggle ? 'onclick="toggleRealises(this)"' : ''}>
+      <td colspan="${colCount + (isGest?1:0)}">
+        <div class="sep-content">
+          <span class="sep-icon">${icon}</span>
+          <span>${label}</span>
+          <span class="sep-count">${cnt}</span>
+          ${toggle ? '<span class="sep-toggle">&#9660;</span>' : ''}
+        </div>
+      </td>
+    </tr>`;
+  }
+
   if (groupes.aujourdhui.length) {
-    html += `<div class="t-sep t-sep-aujourdhui">
-      <span class="sep-icon">&#127773;</span>
-      <span>Aujourd'hui</span>
-      <span class="sep-count">${groupes.aujourdhui.length}</span>
-    </div>`;
+    html += sepRow('\u{1F31D}', "Aujourd'hui", groupes.aujourdhui.length, 'aujourdhui');
     groupes.aujourdhui.forEach(m => html += renderRow(m, ' row-aujourdhui'));
   }
-
-  /* ===== Section A VENIR ===== */
   if (groupes.avenir.length) {
-    html += `<div class="t-sep t-sep-avenir">
-      <span class="sep-icon">&#128197;</span>
-      <span>&Agrave; venir</span>
-      <span class="sep-count">${groupes.avenir.length}</span>
-    </div>`;
+    html += sepRow('\u{1F4C5}', '\u00C0 venir', groupes.avenir.length, 'avenir');
     groupes.avenir.forEach(m => html += renderRow(m));
   }
-
-  /* ===== Section SANS DATE PLANIFIEE ===== */
   if (groupes.sansdate.length) {
-    html += `<div class="t-sep t-sep-sansdate">
-      <span class="sep-icon">&#128203;</span>
-      <span>Sans date planifi&eacute;e</span>
-      <span class="sep-count">${groupes.sansdate.length}</span>
-    </div>`;
+    html += sepRow('\u{1F4CB}', 'Sans date planifi\u00e9e', groupes.sansdate.length, 'sansdate');
     groupes.sansdate.forEach(m => html += renderRow(m));
   }
-
-  /* ===== Section REALISES (collapsible) ===== */
   if (groupes.realises.length) {
-    html += `<div class="t-sep t-sep-realises${realisesCollapsed ? ' collapsed' : ''}" onclick="toggleRealises(this)">
-      <span class="sep-icon">&#10003;</span>
-      <span>R&eacute;alis&eacute;s</span>
-      <span class="sep-count">${groupes.realises.length}</span>
-      <span class="sep-toggle">&#9660;</span>
-    </div>`;
+    html += sepRow('\u2713', 'R\u00e9alis\u00e9s', groupes.realises.length, 'realises' + (realisesCollapsed ? ' collapsed' : ''), true);
     groupes.realises.forEach(m => html += renderRow(m, ' row-passe row-realise' + (realisesCollapsed ? ' is-hidden' : '')));
   }
+  html += '</tbody></table>';
 
   document.getElementById('table-wrap').innerHTML = html;
-  /* Active les poignees de redimensionnement apres le render */
-  setupColResizers();
 }
 
-/* Toggle pour la section "Realises" (replie/deplie + memorise dans localStorage) */
 function toggleRealises(sepEl) {
   const isCollapsed = sepEl.classList.toggle('collapsed');
   localStorage.setItem('dashboard_realises_collapsed', isCollapsed ? 'true' : 'false');
-  document.querySelectorAll('.t-row.row-realise').forEach(row => {
-    row.classList.toggle('is-hidden', isCollapsed);
-  });
+  document.querySelectorAll('tr.row-realise').forEach(row => row.classList.toggle('is-hidden', isCollapsed));
 }
-
-/* ===========================================================
-   REDIMENSIONNEMENT DES COLONNES DU TABLEAU
-   - Drag pour ajuster manuellement
-   - Double-clic = reset cette colonne
-   - Persistance dans localStorage
-   =========================================================== */
-
-const COL_WIDTHS_KEY = 'dashboard_col_widths_v1';
-const COL_DEFAULTS = {
-  date: '92px', client: '1fr', adresse: '140px', compagnie: '70px',
-  type: '120px', tech: '110px', assign: '110px', suivi: '130px', total: '90px'
-};
-
-/* Applique les largeurs de colonnes (depuis localStorage) sur le conteneur */
-function applyColWidths(){
-  const wrap = document.getElementById('table-wrap');
-  if(!wrap) return;
-  let saved = {};
-  try{ saved = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'); }catch(e){}
-  Object.keys(COL_DEFAULTS).forEach(k => {
-    if(saved[k]) wrap.style.setProperty('--col-'+k, saved[k]);
-    else wrap.style.removeProperty('--col-'+k);
-  });
-}
-
-/* Sauvegarde la largeur d'une colonne */
-function saveColWidth(key, value){
-  let saved = {};
-  try{ saved = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'); }catch(e){}
-  saved[key] = value;
-  localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(saved));
-}
-
-/* Reset toutes les colonnes a leur largeur par defaut */
-function resetColWidths(){
-  localStorage.removeItem(COL_WIDTHS_KEY);
-  const wrap = document.getElementById('table-wrap');
-  if(wrap){
-    Object.keys(COL_DEFAULTS).forEach(k => wrap.style.removeProperty('--col-'+k));
-  }
-}
-
-/* Active le drag-resize sur les poignees du header courant */
-function setupColResizers(){
-  applyColWidths();
-  const wrap = document.getElementById('table-wrap');
-  if(!wrap) return;
-  const header = wrap.querySelector('.t-header');
-  if(!header) return;
-  
-  const resizers = header.querySelectorAll('.col-resizer');
-  resizers.forEach(resizer => {
-    /* Positionner la poignee au-dessus de la bordure entre les colonnes */
-    /* La poignee a l'index i est placee a la fin de la colonne i (entre col i et col i+1) */
-    const idx = parseInt(resizer.dataset.idx);
-    /* On calcule la position en fonction de la position du <div> de header correspondant */
-    const headerCells = Array.from(header.children).filter(c => !c.classList.contains('col-resizer'));
-    if(headerCells[idx]){
-      /* Update position au render (les cells ont leurs vraies dimensions a ce moment) */
-      requestAnimationFrame(() => {
-        const cell = headerCells[idx];
-        const rect = cell.getBoundingClientRect();
-        const headerRect = header.getBoundingClientRect();
-        resizer.style.left = (rect.right - headerRect.left) + 'px';
-      });
-    }
-    
-    resizer.addEventListener('mousedown', startResize);
-    resizer.addEventListener('dblclick', resetThisCol);
-  });
-}
-
-let currentResize = null;
-
-function startResize(e){
-  e.preventDefault();
-  const resizer = e.currentTarget;
-  const colKey = resizer.dataset.col;
-  const idx = parseInt(resizer.dataset.idx);
-  const wrap = document.getElementById('table-wrap');
-  const header = wrap.querySelector('.t-header');
-  const headerCells = Array.from(header.children).filter(c => !c.classList.contains('col-resizer'));
-  const cell = headerCells[idx];
-  if(!cell) return;
-  
-  const startX = e.clientX;
-  const startWidth = cell.getBoundingClientRect().width;
-  
-  resizer.classList.add('resizing');
-  document.body.classList.add('col-resizing');
-  
-  currentResize = { resizer, colKey, idx, startX, startWidth, wrap };
-  
-  document.addEventListener('mousemove', doResize);
-  document.addEventListener('mouseup', endResize);
-}
-
-function doResize(e){
-  if(!currentResize) return;
-  const { colKey, startX, startWidth, wrap } = currentResize;
-  let newWidth = startWidth + (e.clientX - startX);
-  /* Largeur minimum de 50px pour eviter colonne disparue */
-  if(newWidth < 50) newWidth = 50;
-  /* Largeur maximum de 600px pour eviter overflow */
-  if(newWidth > 600) newWidth = 600;
-  wrap.style.setProperty('--col-'+colKey, newWidth+'px');
-  /* Repositionner toutes les poignees pendant le drag */
-  repositionResizers();
-}
-
-function endResize(e){
-  if(!currentResize) return;
-  const { resizer, colKey, wrap } = currentResize;
-  const finalWidth = getComputedStyle(wrap).getPropertyValue('--col-'+colKey).trim();
-  saveColWidth(colKey, finalWidth);
-  resizer.classList.remove('resizing');
-  document.body.classList.remove('col-resizing');
-  currentResize = null;
-  document.removeEventListener('mousemove', doResize);
-  document.removeEventListener('mouseup', endResize);
-}
-
-function resetThisCol(e){
-  const colKey = e.currentTarget.dataset.col;
-  let saved = {};
-  try{ saved = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'); }catch(e){}
-  delete saved[colKey];
-  localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(saved));
-  const wrap = document.getElementById('table-wrap');
-  if(wrap) wrap.style.removeProperty('--col-'+colKey);
-  /* Repositionner les poignees */
-  requestAnimationFrame(repositionResizers);
-}
-
-/* Wrapper appele par le bouton "Reinit. colonnes" */
-function resetColWidthsAndRender(){
-  resetColWidths();
-  /* Repositionner les poignees apres le reset */
-  requestAnimationFrame(repositionResizers);
-}
-
-/* Repositionne toutes les poignees en fonction des cellules actuelles */
-function repositionResizers(){
-  const wrap = document.getElementById('table-wrap');
-  if(!wrap) return;
-  const header = wrap.querySelector('.t-header');
-  if(!header) return;
-  const resizers = header.querySelectorAll('.col-resizer');
-  const headerCells = Array.from(header.children).filter(c => !c.classList.contains('col-resizer'));
-  const headerRect = header.getBoundingClientRect();
-  resizers.forEach(resizer => {
-    const idx = parseInt(resizer.dataset.idx);
-    if(headerCells[idx]){
-      const rect = headerCells[idx].getBoundingClientRect();
-      resizer.style.left = (rect.right - headerRect.left) + 'px';
-    }
-  });
-}
-
-/* Repositionner aussi sur resize de fenetre */
-window.addEventListener('resize', () => {
-  if(currentResize) return;
-  requestAnimationFrame(repositionResizers);
-});
 
 /* ===== EXCEL EXPORT ===== */
 function exportToExcel() {
   const list = getFilteredMandats();
-
-  if (list.length === 0) {
-    alert('Aucun mandat \u00e0 exporter dans la s\u00e9lection actuelle.');
-    return;
-  }
-
-  const assignLabels = {
-    'non_assigne': 'Non assign\u00e9',
-    'assigne': 'Assign\u00e9',
-    'reclame': 'R\u00e9clam\u00e9',
-    'pool': 'Pool'
-  };
-
+  if (list.length === 0) { alert('Aucun mandat \u00e0 exporter dans la s\u00e9lection actuelle.'); return; }
+  const assignLabels = {'non_assigne':'Non assign\u00e9','assigne':'Assign\u00e9','reclame':'R\u00e9clam\u00e9','pool':'Pool'};
   const rows = list.map(m => ({
     'Date mandat': m.date_mandat || '',
     'Heure': m.heure_mandat ? m.heure_mandat.substring(0,5) : '',
@@ -1795,55 +1457,38 @@ function exportToExcel() {
     'Alerte commission': m.alerte_commission ? 'Oui' : 'Non',
     'Notes': m.notes || ''
   }));
-
   const ws = XLSX.utils.json_to_sheet(rows);
-
-  /* Auto-size columns */
   const headers = Object.keys(rows[0]);
   const colWidths = headers.map(h => {
     let maxLen = h.length;
-    rows.forEach(r => {
-      const val = String(r[h] || '');
-      if (val.length > maxLen) maxLen = val.length;
-    });
+    rows.forEach(r => { const val = String(r[h] || ''); if (val.length > maxLen) maxLen = val.length; });
     return { wch: Math.min(maxLen + 2, 50) };
   });
   ws['!cols'] = colWidths;
-
   const wb = XLSX.utils.book_new();
-  const sheetName = currentTab === 'tous' ? 'Tous les mandats' : (currentTab === 'logica' ? 'Logica' : 'GEQ');
+  const sheetName = currentFilter === 'tous' ? 'Tous les mandats' : currentFilter;
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
-
   const today = new Date();
-  const dateStr = today.getFullYear() + '-'
-    + String(today.getMonth()+1).padStart(2,'0') + '-'
-    + String(today.getDate()).padStart(2,'0');
-  const tabSuffix = currentTab === 'tous' ? '' : '_' + currentTab;
+  const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const tabSuffix = currentFilter === 'tous' ? '' : '_' + currentFilter;
   const filename = `Mandats${tabSuffix}_${dateStr}.xlsx`;
-
   XLSX.writeFile(wb, filename);
 }
 
-function showModalNouveauMandat() {
-  document.getElementById('modal-new').style.display = 'flex';
-}
-function hideModal(e) {
-  if (e.target.id === 'modal-new') document.getElementById('modal-new').style.display = 'none';
-}
-function goNewMandat(comp) {
-  window.location.href = `mandat.html?mode=new&compagnie=${comp}`;
-}
-function goToFDP() {
-  window.location.href = 'https://geq-suivi-app.vercel.app/dashboard.html';
-}
+/* ===== NAVIGATION + MODAL NEW ===== */
+function showModalNouveauMandat() { document.getElementById('modal-new').classList.add('show'); }
+function hideModalNew(e) { if (e.target.id === 'modal-new') document.getElementById('modal-new').classList.remove('show'); }
+function goNewMandat(comp) { window.location.href = `mandat.html?mode=new&compagnie=${comp}`; }
+function goToFDP() { window.location.href = 'https://geq-suivi-app.vercel.app/dashboard.html'; }
 async function logout() {
   localStorage.removeItem(VIEW_AS_KEY);
   await sb.auth.signOut();
   window.location.href = 'index.html';
 }
-function money(n) {
-  return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n||0);
-}
+
+/* ===== HELPERS ===== */
+function money(n) { return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n||0); }
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 </script>
 </body>
 </html>
