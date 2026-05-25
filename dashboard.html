@@ -99,6 +99,13 @@ body.archives-mode .archive-banner{display:flex;}
   cursor:pointer;font-family:inherit;transition:background 0.15s;
 }
 .rappels-banner-btn:hover{background:#d97706;}
+.rappels-banner-dismiss{
+  background:transparent;border:none;color:#a16207;
+  width:26px;height:26px;border-radius:6px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:inherit;transition:all 0.15s;
+}
+.rappels-banner-dismiss:hover{background:rgba(146,64,14,0.1);color:#78350f;}
 
 /* ===== Layout ===== */
 .app{display:grid;grid-template-columns:236px 1fr 296px;flex:1;min-height:0;overflow:hidden;}
@@ -193,7 +200,7 @@ body.archives-mode .archive-banner{display:flex;}
 .btn svg{width:14px;height:14px;}
 
 /* ===== Stat Tiles ===== */
-.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0 20px;}
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:18px 0 20px;}
 .tile{
   background:var(--white);border:1px solid var(--line);border-radius:12px;
   padding:14px 16px 13px;cursor:pointer;transition:all 0.18s ease;position:relative;overflow:hidden;
@@ -211,6 +218,12 @@ body.archives-mode .archive-banner{display:flex;}
 .tile.tile-soum .tile-dot{background:var(--logica);}
 .tile.tile-aucun .tile-dot{background:var(--danger);}
 .tile.tile-msg .tile-dot{background:var(--info);}
+.tile.tile-standby{background:var(--bg-2);border-color:var(--line);}
+.tile.tile-standby .tile-dot{background:var(--ink-4);}
+.tile.tile-standby .tile-value{color:var(--ink-3);}
+.tile.tile-standby .tile-label{color:var(--ink-4);}
+.tile.tile-standby:hover{background:#ececea;}
+.tile.tile-standby.active{background:var(--ink-2);border-color:var(--ink-2);}
 .tile-label{font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.04em;}
 .tile-value{font-family:'Instrument Serif',serif;font-weight:400;font-size:36px;line-height:1;letter-spacing:-0.02em;color:var(--ink);}
 .tile-meta{font-size:11px;color:var(--ink-4);margin-top:5px;font-weight:500;}
@@ -309,9 +322,9 @@ tbody tr.row-passe{opacity:0.7;}
 }
 .suivi-badge.pas_contacte{background:var(--danger-soft);color:var(--danger);}
 .suivi-badge.message_laisse{background:var(--info-soft);color:var(--info);}
-.suivi-badge.en_attente{background:var(--warn-soft);color:var(--warn);}
 .suivi-badge.soumission_envoyee{background:var(--logica-soft);color:var(--logica);}
 .suivi-badge.confirme{background:var(--good-soft);color:var(--good);}
+.suivi-badge.injoignable{background:#eeeeee;color:#525252;}
 .suivi-badge.refuse{background:var(--bg-2);color:var(--ink-3);}
 .rappel-warn{font-size:10px;color:var(--danger);margin-left:4px;font-weight:600;}
 
@@ -412,6 +425,7 @@ tbody tr.row-passe{opacity:0.7;}
 /* ===== Responsive ===== */
 @media(max-width:1200px){
   .app{grid-template-columns:220px 1fr 270px;}
+  .tiles{grid-template-columns:repeat(3,1fr);}
 }
 @media(max-width:1024px){
   .app{grid-template-columns:200px 1fr;}
@@ -478,11 +492,6 @@ tbody tr.row-passe{opacity:0.7;}
         Fonds de pr&eacute;voyance
         <span class="nav-ext">&#8599;</span>
       </a>
-      <a class="nav-item" href="https://rapport-d-expertise-nine.vercel.app/" target="_blank" rel="noopener" title="Application de r&eacute;daction de rapports d'expertise">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></span>
-        Rapports d'expertise
-        <span class="nav-ext">&#8599;</span>
-      </a>
     </nav>
 
     <div class="nav-section-label">Historique</div>
@@ -531,6 +540,9 @@ tbody tr.row-passe{opacity:0.7;}
         <div class="rappels-banner-sub" id="rappels-banner-sub">&nbsp;</div>
       </div>
       <button class="rappels-banner-btn" onclick="showRappels()">Voir les rappels</button>
+      <button class="rappels-banner-dismiss" onclick="dismissRappels()" title="Masquer pour cette session">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
     </div>
 
     <div class="page-head">
@@ -577,6 +589,11 @@ tbody tr.row-passe{opacity:0.7;}
         <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Message laiss&eacute;</span></div>
         <div class="tile-value" id="tile-msg">&mdash;</div>
         <div class="tile-meta">en suivi</div>
+      </div>
+      <div class="tile tile-standby" data-filter="standby" onclick="setFilter('standby')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Stand-by</span></div>
+        <div class="tile-value" id="tile-standby">&mdash;</div>
+        <div class="tile-meta">injoignable ou refus&eacute;</div>
       </div>
     </div>
 
@@ -639,9 +656,9 @@ tbody tr.row-passe{opacity:0.7;}
         <option value="">Tous les suivis</option>
         <option value="pas_contacte">&#128222; Pas contact&eacute;</option>
         <option value="message_laisse">&#128172; Message laiss&eacute;</option>
-        <option value="en_attente">&#9203; En attente client</option>
         <option value="soumission_envoyee">&#128221; Soumission envoy&eacute;e</option>
         <option value="confirme">&#9989; Confirm&eacute;</option>
+        <option value="injoignable">&#128245; Injoignable</option>
         <option value="refuse">&#10060; Refus&eacute;</option>
       </select>
     </div>
@@ -933,15 +950,21 @@ async function loadMandats() {
 
 /* ===== UPDATE COUNTS (sidebar nav + 5 tiles) ===== */
 function isComplete(m) { return m.est_complete === true || m.statut_final === true; }
+function isStandby(m) { return m.statut_contact === 'injoignable' || m.statut_contact === 'refuse'; }
 
 function updateTileCounts() {
-  const baseFilter = viewArchives ? isComplete : (m => !isComplete(m));
+  /* Vue active = pas archive + pas standby. Standby a sa propre tuile. */
+  const baseFilter = viewArchives
+    ? isComplete
+    : (m => !isComplete(m) && !isStandby(m));
   const c = (filterFn) => allMandats.filter(m => baseFilter(m) && filterFn(m)).length;
   document.getElementById('tile-tous').textContent = c(() => true);
   document.getElementById('tile-pool').textContent = c(m => m.statut_assignation === 'pool');
   document.getElementById('tile-soum').textContent = c(m => m.statut_contact === 'soumission_envoyee');
   document.getElementById('tile-aucun').textContent = c(m => m.statut_contact === 'pas_contacte');
   document.getElementById('tile-msg').textContent = c(m => m.statut_contact === 'message_laisse');
+  /* Tuile Stand-by toujours visible (pas affecte par viewArchives) */
+  document.getElementById('tile-standby').textContent = allMandats.filter(m => !isComplete(m) && isStandby(m)).length;
 
   /* Sidebar nav counts */
   document.getElementById('nav-mandats-count').textContent = allMandats.filter(m => !isComplete(m)).length;
@@ -1018,10 +1041,14 @@ function getFilteredMandats() {
   else if (currentFilter === 'soumission_envoyee') list = list.filter(m => m.statut_contact === 'soumission_envoyee');
   else if (currentFilter === 'pas_contacte') list = list.filter(m => m.statut_contact === 'pas_contacte');
   else if (currentFilter === 'message_laisse') list = list.filter(m => m.statut_contact === 'message_laisse');
+  else if (currentFilter === 'standby') list = list.filter(isStandby);
   else if (currentFilter === 'rappels') {
     const isGest = profile.role === 'gestionnaire';
     const baseList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
     list = getMandatsNecessitantSuivi(baseList);
+  } else if (currentFilter === 'tous' && !viewArchives) {
+    /* "Tous" exclut les stand-by pour garder la vue principale claire */
+    list = list.filter(m => !isStandby(m));
   }
 
   /* Filtres droite */
@@ -1135,9 +1162,9 @@ function getAssignBadge(m) {
 const STATUT_CONTACT_LABELS = {
   'pas_contacte':{icon:'\uD83D\uDCDE',label:'Pas contact\u00e9'},
   'message_laisse':{icon:'\uD83D\uDCAC',label:'Message laiss\u00e9'},
-  'en_attente':{icon:'\u23F3',label:'En attente'},
   'soumission_envoyee':{icon:'\uD83D\uDCDD',label:'Soumission'},
   'confirme':{icon:'\u2705',label:'Confirm\u00e9'},
+  'injoignable':{icon:'\uD83D\uDCF5',label:'Injoignable'},
   'refuse':{icon:'\u274C',label:'Refus\u00e9'},
 };
 function getSuiviBadge(m) {
@@ -1156,15 +1183,30 @@ function getMandatsNecessitantSuivi(list) {
   const now = new Date();
   const yesterday = new Date(now.getTime() - 24*60*60*1000);
   return list.filter(m => {
-    if (m.statut_contact === 'refuse' || m.statut_contact === 'confirme') return false;
+    /* Statuts qui n'ont jamais besoin de suivi: confirme, refuse, injoignable */
+    if (m.statut_contact === 'refuse' || m.statut_contact === 'confirme' || m.statut_contact === 'injoignable') return false;
     if (m.prochain_rappel && new Date(m.prochain_rappel) < now) return true;
     if (m.statut_contact === 'message_laisse' && m.updated_at && new Date(m.updated_at) < yesterday) return true;
     return false;
   });
 }
 
+let rappelsDismissed = false;
+
+function dismissRappels() {
+  rappelsDismissed = true;
+  document.getElementById('rappels-banner').classList.remove('show');
+}
+
 function updateRappelsBanner(list) {
   const banner = document.getElementById('rappels-banner');
+  /* Cache la banniere si:
+     - l'utilisateur l'a manuellement fermee pour cette session
+     - le filtre courant est deja 'rappels' (la table affiche les rappels, banniere redondante) */
+  if (rappelsDismissed || currentFilter === 'rappels') {
+    banner.classList.remove('show');
+    return;
+  }
   const isGest = profile.role === 'gestionnaire';
   const myList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
   const needFollowUp = getMandatsNecessitantSuivi(myList).filter(m => !isComplete(m));
@@ -1302,6 +1344,7 @@ function renderTable(list) {
     'tous':'Tous les mandats','pool':'Pool ouvert',
     'soumission_envoyee':'Soumissions envoy\u00e9es','pas_contacte':'\u00c0 rappeler',
     'message_laisse':'En suivi','rappels':'Rappels en retard',
+    'standby':'Stand-by (injoignable ou refus\u00e9)',
   };
   document.getElementById('table-title-label').textContent = viewArchives ? 'Archives' : (titleMap[currentFilter] || 'Mandats');
 
