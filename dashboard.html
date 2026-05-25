@@ -950,7 +950,7 @@ function updateStats() {
     const mois = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getMonth() === moisN && new Date(m.date_mandat).getFullYear() === annee);
     const rapports = allMandats.filter(m => !m.statut_rapport_envoye && !isComplete(m)).length;
     const nonpaye = allMandats.filter(m => !m.statut_paye && !isComplete(m)).length;
-    const rev = mois.reduce((s, m) => s + (parseFloat(m.total_ttc) || 0), 0);
+    const rev = mois.reduce((s, m) => s + (parseFloat(m.sous_total) || 0), 0);
     line.style.display = 'flex';
     line.innerHTML = `
       <span class="stat-label">&#128202; Stats du mois</span>
@@ -1332,7 +1332,7 @@ function renderTable(list) {
     <thead><tr>
       <th>Date</th><th>Client</th><th>Adresse</th><th>Comp.</th>
       <th>Type</th><th>Technicien</th><th>Assignation</th><th>Suivi</th>
-      ${isGest ? '<th style="text-align:right">Total</th>' : ''}
+      ${isGest ? '<th style="text-align:right">Avant taxes</th>' : ''}
     </tr></thead>
     <tbody>`;
 
@@ -1366,7 +1366,7 @@ function renderTable(list) {
       <td>${techCell}</td>
       <td>${getAssignBadge(m)}${getTimerHtml(m)}</td>
       <td>${getSuiviBadge(m)}</td>
-      ${isGest ? `<td class="cell-money">${m.total_ttc ? money(m.total_ttc) : '&mdash;'}</td>` : ''}
+      ${isGest ? `<td class="cell-money">${m.sous_total ? money(m.sous_total) : '&mdash;'}</td>` : ''}
     </tr>`;
   }
 
