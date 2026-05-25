@@ -233,6 +233,13 @@ body.archives-mode .archive-banner{display:flex;}
 .table-head-row{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--line-2);}
 .table-title{font-size:13.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;}
 .count-pill{font-size:11px;font-weight:600;color:var(--ink-3);background:var(--bg-2);padding:2px 8px;border-radius:10px;}
+.btn-reset-cols{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+  background:transparent;border:1px solid var(--line);border-radius:7px;
+  color:var(--ink-3);font-size:11.5px;font-weight:500;cursor:pointer;
+  font-family:inherit;transition:all 0.15s;
+}
+.btn-reset-cols:hover{border-color:var(--ink-4);color:var(--ink);background:var(--bg-2);}
 
 .table-scroll{overflow-x:auto;}
 table.mandats{width:100%;border-collapse:collapse;table-layout:fixed;}
@@ -241,9 +248,24 @@ table.mandats thead th{
   text-align:left;font-size:10.5px;font-weight:600;color:var(--ink-4);
   text-transform:uppercase;letter-spacing:0.06em;padding:10px 14px;
   background:var(--bg-2);border-bottom:1px solid var(--line);white-space:nowrap;
+  position:relative;
 }
 table.mandats thead th:first-child{padding-left:18px;}
 table.mandats thead th:last-child{padding-right:18px;}
+
+/* ===== Column resizers (drag handles entre les colonnes) ===== */
+.col-resizer{
+  position:absolute;top:0;right:-4px;bottom:0;width:8px;
+  cursor:col-resize;z-index:10;background:transparent;
+  transition:background 0.15s;
+}
+.col-resizer:hover,
+.col-resizer.resizing{background:rgba(183,28,28,0.3);}
+body.col-resizing,
+body.col-resizing *{
+  cursor:col-resize !important;
+  user-select:none !important;
+}
 
 /* Section separators (Aujourd'hui / A venir / etc) */
 tr.t-sep td{
@@ -604,6 +626,10 @@ tbody tr.row-passe{opacity:0.7;}
           <span id="table-title-label">Tous les mandats</span>
           <span class="count-pill" id="table-count">0</span>
         </div>
+        <button class="btn-reset-cols" id="btn-reset-cols" onclick="resetAllColWidths()" title="R&eacute;initialiser la largeur des colonnes" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          R&eacute;initialiser colonnes
+        </button>
       </div>
       <div class="table-scroll" id="table-wrap">
         <div class="loading">
@@ -1334,6 +1360,93 @@ async function updateFactBadge() {
   badge.textContent = (lignes || []).length;
 }
 
+/* ===== COLUMN RESIZE ===== */
+const COL_WIDTHS_KEY = 'dashboard_col_widths_v2';
+const DEFAULT_COL_WIDTHS = {
+  gest: ['120px','18%','20%','78px','150px','150px','130px','130px','100px'],
+  tech: ['120px','18%','20%','78px','150px','150px','130px','130px'],
+};
+
+function getStoredColWidths(isGest) {
+  try {
+    const all = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}');
+    const arr = all[isGest ? 'gest' : 'tech'];
+    if (Array.isArray(arr) && arr.length === DEFAULT_COL_WIDTHS[isGest ? 'gest' : 'tech'].length) return arr;
+  } catch(e) {}
+  return null;
+}
+
+function saveColWidths(widths, isGest) {
+  try {
+    const all = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}');
+    all[isGest ? 'gest' : 'tech'] = widths;
+    localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(all));
+  } catch(e) {}
+}
+
+function applyStoredColWidths(isGest) {
+  const cols = document.querySelectorAll('table.mandats colgroup col');
+  if (!cols.length) return;
+  const stored = getStoredColWidths(isGest);
+  if (!stored) return;
+  cols.forEach((col, i) => { if (stored[i]) col.style.width = stored[i]; });
+}
+
+function attachColResizers(isGest) {
+  const headers = document.querySelectorAll('table.mandats thead th');
+  const cols = document.querySelectorAll('table.mandats colgroup col');
+  if (!headers.length || !cols.length) return;
+
+  headers.forEach((th, idx) => {
+    if (idx >= headers.length - 1) return; /* pas de handle sur la derniere colonne */
+    const old = th.querySelector('.col-resizer');
+    if (old) old.remove();
+    const resizer = document.createElement('span');
+    resizer.className = 'col-resizer';
+    resizer.title = 'Glisser pour redimensionner \u00b7 double-clic pour reset';
+    th.appendChild(resizer);
+
+    resizer.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const startX = e.clientX;
+      const startW = cols[idx].offsetWidth;
+      resizer.classList.add('resizing');
+      document.body.classList.add('col-resizing');
+      function onMove(ev) {
+        const newW = Math.max(60, startW + (ev.clientX - startX));
+        cols[idx].style.width = newW + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        resizer.classList.remove('resizing');
+        document.body.classList.remove('col-resizing');
+        const widths = Array.from(cols).map(c => c.offsetWidth + 'px');
+        saveColWidths(widths, isGest);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    resizer.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      const defaults = DEFAULT_COL_WIDTHS[isGest ? 'gest' : 'tech'];
+      cols[idx].style.width = defaults[idx];
+      const widths = Array.from(cols).map(c => c.offsetWidth + 'px');
+      saveColWidths(widths, isGest);
+    });
+  });
+}
+
+function resetAllColWidths() {
+  const isGest = profile.role === 'gestionnaire';
+  try { localStorage.removeItem(COL_WIDTHS_KEY); } catch(e) {}
+  const cols = document.querySelectorAll('table.mandats colgroup col');
+  const defaults = DEFAULT_COL_WIDTHS[isGest ? 'gest' : 'tech'];
+  cols.forEach((col, i) => { if (defaults[i]) col.style.width = defaults[i]; });
+}
+
 /* ===== RENDER TABLE ===== */
 function renderTable(list) {
   const isGest = profile.role === 'gestionnaire';
@@ -1454,6 +1567,10 @@ function renderTable(list) {
   html += '</tbody></table>';
 
   document.getElementById('table-wrap').innerHTML = html;
+  /* Activer le redimensionnement des colonnes */
+  applyStoredColWidths(isGest);
+  attachColResizers(isGest);
+  document.getElementById('btn-reset-cols').style.display = 'inline-flex';
 }
 
 function toggleRealises(sepEl) {
