@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendrier - Portail Mandats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --ink:#0f1419;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --line:#e5e7eb;--line-2:#f3f4f6;--bg:#fafafa;--bg-2:#f5f5f4;--white:#ffffff;
+  --primary:#b71c1c;--primary-hover:#991b1b;--primary-soft:#fef2f2;
+  --navy:#1a1a2e;
+  --logica:#1565c0;--logica-soft:#e3f0ff;
+  --geq:#b71c1c;--geq-soft:#fdecea;
+  --warn:#d97706;--warn-soft:#fef3c7;
+  --good:#059669;--good-soft:#d1fae5;
+  --info:#0891b2;--info-soft:#cffafe;
+  --danger:#dc2626;--danger-soft:#fee2e2;
+  --shadow-xs:0 1px 2px rgba(16,24,40,0.04);
+  --shadow-sm:0 1px 3px rgba(16,24,40,0.06),0 1px 2px rgba(16,24,40,0.04);
+  --shadow-md:0 4px 12px rgba(16,24,40,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:'Inter','-apple-system','BlinkMacSystemFont','Segoe UI',sans-serif;
+  background:var(--bg);color:var(--ink);
+  font-size:13.5px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;letter-spacing:-0.005em;
+  display:flex;flex-direction:column;
+}
+
+/* ===== Test banner ===== */
+body.test-mode .app{outline:3px solid #f59e0b;outline-offset:-3px;}
+.test-banner{
+  background:#fff3cd;border-bottom:2px solid #f59e0b;
+  padding:9px 22px;display:none;align-items:center;justify-content:space-between;
+  font-size:13px;color:#78350f;flex-shrink:0;
+}
+body.test-mode .test-banner{display:flex;}
+.test-banner-left{display:flex;align-items:center;gap:10px;}
+.badge-test{background:#f59e0b;color:white;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0.4px;}
+.btn-exit-test{padding:5px 12px;background:white;border:1px solid #f59e0b;color:#92400e;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;}
+.btn-exit-test:hover{background:#f59e0b;color:white;}
+
+/* ===== Layout ===== */
+.app{display:grid;grid-template-columns:236px 1fr 296px;flex:1;min-height:0;overflow:hidden;}
+
+/* ===== Sidebar Left ===== */
+.sidebar{background:var(--white);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;overflow-y:auto;}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px;border-bottom:1px solid var(--line-2);margin-bottom:16px;}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-1px;}
+.brand-name{font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-0.01em;}
+.brand-sub{font-size:11px;color:var(--ink-3);font-weight:500;margin-top:1px;}
+
+.nav-section-label{font-size:10.5px;font-weight:600;color:var(--ink-4);text-transform:uppercase;letter-spacing:0.08em;padding:0 12px;margin:14px 0 6px;}
+.nav{display:flex;flex-direction:column;gap:1px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--ink-2);cursor:pointer;transition:all 0.15s;text-decoration:none;position:relative;}
+.nav-item:hover{background:var(--bg-2);color:var(--ink);}
+.nav-item.active{background:var(--primary);color:#fff;}
+.nav-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;opacity:0.7;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--bg-2);color:var(--ink-3);font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:10px;min-width:20px;text-align:center;}
+.nav-item.active .nav-badge{background:rgba(255,255,255,0.2);color:#fff;}
+.nav-badge.alert{background:var(--danger);color:#fff;}
+.nav-ext{margin-left:auto;color:var(--ink-4);font-size:11px;}
+
+.sidebar-spacer{flex:1;min-height:14px;}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:10px;border:1px solid var(--line);background:var(--white);}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1a1a2e,#374151);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;}
+.user-name{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.2;}
+.user-role{font-size:11px;color:var(--ink-3);margin-top:2px;text-transform:capitalize;}
+.user-card-info{min-width:0;flex:1;}
+.user-actions{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
+.user-action-link{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:7px;font-size:11.5px;color:var(--ink-3);background:none;border:none;cursor:pointer;font-family:inherit;text-align:left;transition:all 0.15s;text-decoration:none;}
+.user-action-link:hover{background:var(--bg-2);color:var(--ink);}
+.user-action-link.warn{color:#92400e;}
+.user-action-link.warn:hover{background:#fff7e6;color:#7c2d12;}
+
+/* ===== Main ===== */
+.main{overflow-y:auto;padding:22px 30px 36px;display:flex;flex-direction:column;}
+
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:16px;}
+.page-title{font-family:'Instrument Serif',serif;font-size:34px;font-weight:400;line-height:1;letter-spacing:-0.02em;color:var(--ink);}
+.page-title .accent{color:var(--primary);font-style:italic;}
+.page-sub{font-size:12.5px;color:var(--ink-3);margin-top:5px;}
+
+.head-actions{display:flex;gap:8px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;transition:all 0.15s;border:1px solid transparent;font-family:inherit;text-decoration:none;}
+.btn-ghost{background:var(--white);border-color:var(--line);color:var(--ink-2);}
+.btn-ghost:hover{border-color:var(--ink-4);color:var(--ink);}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-hover);}
+.btn svg{width:14px;height:14px;}
+
+.connected-pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-3);
+  background:var(--good-soft);color:var(--good);
+  padding:4px 10px;border-radius:12px;font-weight:500;
+}
+.connected-pill .pulse{width:6px;height:6px;border-radius:50%;background:var(--good);}
+
+/* ===== Calendar nav (mois prev/next/today) ===== */
+.cal-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;background:var(--white);border:1px solid var(--line);
+  border-radius:14px 14px 0 0;border-bottom:none;
+}
+.cal-nav-left{display:flex;align-items:center;gap:8px;}
+.cal-nav-arrow{
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+  background:var(--white);color:var(--ink-2);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s;font-family:inherit;
+}
+.cal-nav-arrow:hover{border-color:var(--ink-4);color:var(--ink);background:var(--bg-2);}
+.cal-month-title{
+  font-family:'Instrument Serif',serif;font-size:24px;font-weight:400;
+  letter-spacing:-0.01em;min-width:200px;padding:0 4px;
+}
+.cal-month-title .year{color:var(--ink-3);margin-left:6px;}
+.btn-today{
+  padding:6px 14px;border:1px solid var(--line);background:var(--white);
+  border-radius:8px;font-size:12.5px;font-weight:500;color:var(--ink-2);cursor:pointer;font-family:inherit;
+}
+.btn-today:hover{border-color:var(--ink-4);color:var(--ink);}
+
+/* ===== Calendar grid ===== */
+.cal-wrap{
+  background:var(--white);border:1px solid var(--line);
+  border-radius:0 0 14px 14px;overflow:hidden;flex:1;display:flex;flex-direction:column;
+}
+table.cal-grid{width:100%;border-collapse:collapse;table-layout:fixed;flex:1;}
+table.cal-grid thead th{
+  text-align:center;font-size:10.5px;font-weight:700;color:var(--ink-4);
+  text-transform:uppercase;letter-spacing:0.08em;
+  padding:9px 6px;background:var(--bg-2);border-bottom:1px solid var(--line);
+}
+table.cal-grid tbody td{
+  border:1px solid var(--line-2);vertical-align:top;padding:6px 6px 8px;
+  height:120px;min-height:120px;position:relative;cursor:pointer;
+  transition:background 0.12s;background:var(--white);
+}
+table.cal-grid tbody td:hover{background:var(--bg);}
+table.cal-grid tbody td.other-month{background:#fafafa;color:var(--ink-4);}
+table.cal-grid tbody td.other-month .cal-daynum{color:var(--ink-4);}
+table.cal-grid tbody td.today{background:#fffbeb;}
+table.cal-grid tbody td.today .cal-daynum{
+  background:var(--primary);color:#fff;width:24px;height:24px;
+  border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-weight:700;
+}
+table.cal-grid tbody td.has-mandat{background:#fef9f9;}
+table.cal-grid tbody td.has-mandat:hover{background:#fdecea;}
+
+.cal-daynum{
+  display:inline-block;font-size:12px;font-weight:600;color:var(--ink-2);
+  margin-bottom:4px;
+}
+
+.cal-event{
+  display:flex;align-items:center;gap:4px;
+  padding:2px 6px;border-radius:4px;font-size:10.5px;font-weight:500;
+  color:#fff;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  cursor:default;
+}
+.cal-event-time{font-weight:700;font-size:10px;opacity:0.95;}
+
+.cal-mandat{
+  display:flex;align-items:center;gap:4px;
+  padding:2px 6px;border-radius:4px;font-size:10.5px;font-weight:600;
+  margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  border-left:3px solid;cursor:pointer;transition:all 0.12s;
+}
+.cal-mandat:hover{transform:translateX(1px);box-shadow:var(--shadow-xs);}
+.cal-mandat.logica{background:var(--logica-soft);color:var(--logica);border-left-color:var(--logica);}
+.cal-mandat.geq{background:var(--geq-soft);color:var(--geq);border-left-color:var(--geq);}
+.cal-mandat-time{font-weight:700;font-size:10px;}
+
+.cal-more{
+  display:block;font-size:10px;color:var(--ink-3);font-weight:600;
+  padding:2px 6px;margin-top:1px;
+}
+
+/* ===== Auth / Loading screens ===== */
+.cal-screen{
+  flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;
+  padding:60px 20px;text-align:center;background:var(--white);
+  border:1px solid var(--line);border-radius:14px;
+}
+.cal-screen-icon{font-size:48px;margin-bottom:14px;}
+.cal-screen-title{font-family:'Instrument Serif',serif;font-size:28px;color:var(--ink);margin-bottom:8px;}
+.cal-screen-text{font-size:14px;color:var(--ink-3);max-width:480px;margin-bottom:24px;line-height:1.55;}
+.btn-connect{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 22px;background:var(--primary);color:#fff;
+  border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;
+  transition:background 0.15s;
+}
+.btn-connect:hover{background:var(--primary-hover);}
+.btn-connect svg{width:18px;height:18px;}
+
+.spinner{
+  display:inline-block;width:32px;height:32px;
+  border:3px solid var(--line);border-top-color:var(--primary);
+  border-radius:50%;animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ===== Filters Right (calendar list) ===== */
+.filters{background:var(--white);border-left:1px solid var(--line);padding:24px 20px;overflow-y:auto;}
+.filters-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.filters-title{font-family:'Instrument Serif',serif;font-size:22px;font-weight:400;letter-spacing:-0.01em;}
+
+.section-label{
+  font-size:10.5px;font-weight:700;color:var(--ink-4);
+  text-transform:uppercase;letter-spacing:0.08em;
+  margin:18px 0 8px;padding:0 2px;
+}
+.section-label:first-child{margin-top:0;}
+
+.cal-filter-list{display:flex;flex-direction:column;gap:2px;}
+.cal-filter-chip{
+  display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;
+  cursor:pointer;transition:all 0.15s;
+}
+.cal-filter-chip:hover{background:var(--bg-2);}
+.cal-filter-chip input[type="checkbox"]{
+  appearance:none;-webkit-appearance:none;
+  width:14px;height:14px;border-radius:3px;border:1.5px solid var(--ink-4);
+  background:var(--white);cursor:pointer;flex-shrink:0;position:relative;transition:all 0.15s;margin:0;
+}
+.cal-filter-chip input[type="checkbox"]:checked{background:var(--primary);border-color:var(--primary);}
+.cal-filter-chip input[type="checkbox"]:checked::after{
+  content:'';position:absolute;left:3px;top:0px;width:5px;height:9px;
+  border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg);
+}
+.cal-chip-color{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.cal-chip-name{flex:1;font-size:12.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.legend-row{
+  display:flex;align-items:center;gap:9px;padding:6px 10px;font-size:12px;color:var(--ink-2);
+}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;border-left:3px solid;}
+.legend-dot.logica{background:var(--logica-soft);border-left-color:var(--logica);}
+.legend-dot.geq{background:var(--geq-soft);border-left-color:var(--geq);}
+.legend-dot.gevent{background:#1a73e8;border-left-color:#1a73e8;}
+
+.field{margin-bottom:12px;}
+.field-label{display:block;font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.select{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--white);}
+.select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(183,28,28,0.08);}
+
+.btn-disconnect{
+  width:100%;margin-top:8px;padding:7px 10px;
+  background:var(--white);border:1px solid var(--line);color:var(--ink-3);
+  border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;
+  transition:all 0.15s;
+}
+.btn-disconnect:hover{border-color:var(--danger);color:var(--danger);}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;
+  font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  z-index:5000;opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+.toast.err{background:var(--danger);}
+.toast.ok{background:var(--good);}
+
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#9ca3af;}
+
+@media(max-width:1200px){.app{grid-template-columns:220px 1fr 270px;}}
+@media(max-width:1024px){
+  .app{grid-template-columns:200px 1fr;}
+  .filters{display:none;}
+  table.cal-grid tbody td{height:100px;}
+}
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .main{padding:14px;}
+  table.cal-grid tbody td{height:80px;font-size:11px;}
+  .cal-event,.cal-mandat{font-size:9px;padding:1px 4px;}
+}
+</style>
+</head>
+<body>
+
+<div class="test-banner" id="test-banner">
+  <div class="test-banner-left">
+    <span class="badge-test">MODE TEST</span>
+    <span>Tu vois l'app comme <strong id="test-as-name">...</strong> <span id="test-as-role" style="color:#888;font-size:12px"></span></span>
+  </div>
+  <button class="btn-exit-test" onclick="exitTestMode()">Sortir du mode test</button>
+</div>
+
+<div class="app">
+
+  <!-- ============ LEFT SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div>
+        <div class="brand-name">Portail Mandats</div>
+        <div class="brand-sub">Logica &middot; GEQ</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">Pilotage</div>
+    <nav class="nav">
+      <a class="nav-item" href="dashboard.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M8 4v4M16 4v4"/></svg></span>
+        Mandats
+      </a>
+      <a class="nav-item active" href="#" onclick="event.preventDefault()">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+        Calendrier
+      </a>
+      <a class="nav-item" href="taches.html">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        T&acirc;ches
+      </a>
+      <a class="nav-item" id="nav-facturation" href="ma-facturation.html" style="display:none">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 14h6M9 18h6"/></svg></span>
+        Ma facturation
+      </a>
+      <a class="nav-item" id="nav-finance" href="#" style="display:none">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+        Finance
+      </a>
+      <a class="nav-item" id="nav-fdp" href="https://geq-suivi-app.vercel.app/dashboard.html" style="display:none">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 7l-5 5-3-3-4 4"/></svg></span>
+        Fonds de pr&eacute;voyance
+        <span class="nav-ext">&#8599;</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="user-card">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div class="user-card-info">
+        <div class="user-name" id="user-name">...</div>
+        <div class="user-role" id="user-role">...</div>
+      </div>
+    </div>
+    <div class="user-actions">
+      <a class="user-action-link" onclick="logout()" style="cursor:pointer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        D&eacute;connexion
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">Calendrier<span class="accent">.</span></h1>
+        <div class="page-sub" id="page-sub">&nbsp;</div>
+      </div>
+      <div class="head-actions">
+        <span class="connected-pill" id="connected-pill" style="display:none">
+          <span class="pulse"></span>
+          <span id="connected-email">...</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Auth screen (connect Google Calendar) -->
+    <div class="cal-screen" id="auth-screen" style="display:none">
+      <div class="cal-screen-icon">&#128197;</div>
+      <div class="cal-screen-title">Connecte ton Google Calendar</div>
+      <div class="cal-screen-text">
+        Pour voir ton calendrier ici, tu dois autoriser le portail &agrave; lire tes calendriers Google.
+        Tu peux te connecter avec n'importe quel compte Google (par exemple <code>logica.inspection@gmail.com</code> pour voir le calendrier partag&eacute; de l'&eacute;quipe).
+      </div>
+      <button class="btn-connect" onclick="connectGoogle()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+        Connecter Google Calendar
+      </button>
+    </div>
+
+    <!-- Loading screen -->
+    <div class="cal-screen" id="loading-screen" style="display:flex">
+      <div class="spinner"></div>
+      <div style="margin-top:14px;color:var(--ink-3);font-size:13px">Chargement&hellip;</div>
+    </div>
+
+    <!-- Calendar grid + nav -->
+    <div id="calendar-area" style="display:none;flex:1;display:flex;flex-direction:column;min-height:0;">
+      <div class="cal-nav">
+        <div class="cal-nav-left">
+          <button class="cal-nav-arrow" onclick="prevMonth()" title="Mois pr&eacute;c&eacute;dent">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="cal-nav-arrow" onclick="nextMonth()" title="Mois suivant">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+          <button class="btn-today" onclick="goToday()">Aujourd'hui</button>
+          <div class="cal-month-title" id="cal-month-title">&nbsp;</div>
+        </div>
+        <div style="font-size:12px;color:var(--ink-3);" id="cal-stats">&nbsp;</div>
+      </div>
+      <div class="cal-wrap">
+        <table class="cal-grid">
+          <thead>
+            <tr>
+              <th>Dim</th><th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th>
+            </tr>
+          </thead>
+          <tbody id="cal-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============ FILTERS RIGHT ============ -->
+  <aside class="filters">
+    <div class="filters-head">
+      <h2 class="filters-title">Affichage</h2>
+    </div>
+
+    <div class="section-label">L&eacute;gende</div>
+    <div class="legend-row"><span class="legend-dot logica"></span>Mandat Logica</div>
+    <div class="legend-row"><span class="legend-dot geq"></span>Mandat GEQ</div>
+    <div class="legend-row"><span class="legend-dot gevent"></span>&Eacute;v&eacute;nement Google</div>
+
+    <div id="tech-filter-section" style="display:none">
+      <div class="section-label">Filtrer par technicien</div>
+      <div class="field">
+        <select class="select" id="f-tech" onchange="renderCalendar()">
+          <option value="">Tous les techniciens</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="cal-list-section" style="display:none">
+      <div class="section-label">Calendriers Google</div>
+      <div class="cal-filter-list" id="cal-filter-list"></div>
+      <button class="btn-disconnect" onclick="disconnectGoogle()">D&eacute;connecter Google</button>
+    </div>
+
+  </aside>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://mosgioiumzsewbzsydeh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2dpb2l1bXpzZXdienN5ZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzOTQyMjQsImV4cCI6MjA5MDk3MDIyNH0.2MjvabJetdj1b73FcPglFrzfTnaqdCGjg0Gu5Qe_aEI';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const BASS_UID = '72fed940-9f61-471d-ad81-378af125146e';
+const VIEW_AS_KEY = 'view_as_user_id';
+
+/* Google OAuth (m&ecirc;me client_id que mandat.html) */
+const GC_ID = '706969065285-u6arf7jjof2t2sso4am0i8uaj6t167bk.apps.googleusercontent.com';
+const GCAL_FILTER_KEY = 'gcal_visible_calendars_v1';
+const TOKEN_KEY = 'portail_gmail_token';
+const EXPIRY_KEY = 'portail_gmail_expiry';
+const EMAIL_KEY = 'portail_gmail_email';
+
+const MONTH_NAMES = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin','Juillet','Ao\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
+const DAY_NAMES = ['DIM','LUN','MAR','MER','JEU','VEN','SAM'];
+const EVENT_COLORS = {
+  '1':'#7986cb','2':'#33b679','3':'#8e24aa','4':'#e67c73',
+  '5':'#f6c026','6':'#f5511d','7':'#039be5','8':'#616161',
+  '9':'#3f51b5','10':'#0b8043','11':'#d60000',
+};
+
+let realProfile = null;
+let profile = null;
+let currentMonth = new Date();
+currentMonth.setDate(1);
+let gcalCalendars = [];
+let gcalVisibleCalIds = null;
+let gcalEvents = [];
+let allMandats = [];
+let techList = [];
+
+/* ===== INIT ===== */
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  const { data: pReal } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+  if (!pReal) { window.location.href = 'index.html'; return; }
+  realProfile = pReal;
+
+  const viewAsId = localStorage.getItem(VIEW_AS_KEY);
+  if (viewAsId && session.user.id === BASS_UID && viewAsId !== BASS_UID) {
+    const { data: pImp } = await sb.from('profiles').select('*').eq('id', viewAsId).single();
+    if (pImp) { profile = pImp; enableTestMode(pImp); }
+    else { localStorage.removeItem(VIEW_AS_KEY); profile = realProfile; }
+  } else {
+    profile = realProfile;
+  }
+
+  const hasAccess = profile.role === 'gestionnaire' || profile.role === 'secretaire' ||
+    (profile.role === 'technicien' && profile.dashboard_access === true);
+  if (!hasAccess && !localStorage.getItem(VIEW_AS_KEY)) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  /* User card */
+  const initiales = ((profile.prenom||'')[0] + (profile.nom||'')[0]).toUpperCase();
+  document.getElementById('user-avatar').textContent = initiales;
+  document.getElementById('user-name').textContent = `${profile.prenom} ${profile.nom}`;
+  document.getElementById('user-role').textContent = profile.role || '';
+
+  /* Nav visibility */
+  if (profile.role === 'gestionnaire' || profile.role === 'technicien') {
+    document.getElementById('nav-fdp').style.display = 'flex';
+  }
+  if (profile.id === BASS_UID) {
+    const f = document.getElementById('nav-finance'); f.href = 'finance.html'; f.style.display = 'flex';
+  } else if (profile.role === 'technicien') {
+    document.getElementById('nav-facturation').style.display = 'flex';
+    const f = document.getElementById('nav-finance'); f.href = 'ma-finance.html'; f.style.display = 'flex';
+  }
+
+  /* Tech filter (gestionnaire only) */
+  if (profile.role === 'gestionnaire') {
+    document.getElementById('tech-filter-section').style.display = 'block';
+    await loadTechs();
+  }
+
+  /* Date affichee */
+  const today = new Date();
+  document.getElementById('page-sub').textContent = today.toLocaleDateString('fr-CA', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).replace(/^./, c=>c.toUpperCase());
+
+  await loadMandats();
+
+  /* Verifier si on a deja un token Google valide */
+  const token = localStorage.getItem(TOKEN_KEY);
+  const expiry = parseInt(localStorage.getItem(EXPIRY_KEY) || '0');
+  document.getElementById('loading-screen').style.display = 'none';
+  if (token && Date.now() < expiry) {
+    showConnectedEmail();
+    await initCalendar();
+  } else {
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+})();
+
+function enableTestMode(p) {
+  document.body.classList.add('test-mode');
+  document.getElementById('test-banner').style.display = 'flex';
+  document.getElementById('test-as-name').textContent = `${p.prenom} ${p.nom}`;
+  document.getElementById('test-as-role').textContent = `(${p.role})`;
+}
+function exitTestMode() { localStorage.removeItem(VIEW_AS_KEY); window.location.reload(); }
+
+async function logout() {
+  localStorage.removeItem(VIEW_AS_KEY);
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+}
+
+/* ===== Load techs + mandats ===== */
+async function loadTechs() {
+  const { data } = await sb.from('profiles').select('id, nom, prenom').in('role', ['technicien','gestionnaire']).eq('dashboard_access', true).order('nom');
+  techList = (data || []).filter(t => !(t.prenom === 'Michael' && t.nom === 'Gauthier'));
+  const sel = document.getElementById('f-tech');
+  techList.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.id; o.textContent = `${t.prenom} ${t.nom}`;
+    sel.appendChild(o);
+  });
+}
+
+async function loadMandats() {
+  const { data, error } = await sb.from('mandats')
+    .select('id, client_nom, adresse, compagnie, type_mandat, date_mandat, heure_mandat, technicien_id, statut_assignation, region_mandat, est_complete, statut_final')
+    .not('date_mandat', 'is', null)
+    .order('date_mandat', { ascending: true });
+  if (error) { toast('Erreur chargement mandats: '+error.message, 'err'); return; }
+  let list = data || [];
+  /* Filtrage RLS pour techs */
+  if (profile.role === 'technicien') {
+    list = list.filter(m => m.technicien_id === profile.id ||
+      (m.statut_assignation === 'pool' && m.region_mandat === profile.region));
+  }
+  allMandats = list;
+}
+
+/* ===== Google OAuth ===== */
+function connectGoogle() {
+  if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+    toast('Google API pas encore charg\u00e9e, r\u00e9essaie dans une seconde', 'err');
+    return;
+  }
+  try {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GC_ID,
+      scope: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email',
+      callback: async (resp) => {
+        if (resp.error) { toast('Erreur connexion Google: '+resp.error, 'err'); return; }
+        localStorage.setItem(TOKEN_KEY, resp.access_token);
+        localStorage.setItem(EXPIRY_KEY, Date.now() + 3500*1000);
+        /* Recuperer l'email du compte connecte */
+        try {
+          const userinfo = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { 'Authorization': 'Bearer '+resp.access_token }
+          });
+          if (userinfo.ok) {
+            const u = await userinfo.json();
+            if (u.email) localStorage.setItem(EMAIL_KEY, u.email);
+          }
+        } catch(e) {}
+        document.getElementById('auth-screen').style.display = 'none';
+        showConnectedEmail();
+        await initCalendar();
+      }
+    });
+    client.requestAccessToken();
+  } catch(e) {
+    toast('Erreur ouverture Google: '+(e.message||'inconnue'), 'err');
+  }
+}
+
+function disconnectGoogle() {
+  if (!confirm('D\u00e9connecter Google Calendar de cette session ?')) return;
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(EXPIRY_KEY);
+  localStorage.removeItem(EMAIL_KEY);
+  localStorage.removeItem(GCAL_FILTER_KEY);
+  window.location.reload();
+}
+
+function showConnectedEmail() {
+  const email = localStorage.getItem(EMAIL_KEY);
+  if (email) {
+    document.getElementById('connected-pill').style.display = 'inline-flex';
+    document.getElementById('connected-email').textContent = email;
+  }
+}
+
+/* ===== Init calendar (load calendar list + first render) ===== */
+async function initCalendar() {
+  document.getElementById('loading-screen').style.display = 'flex';
+  const ok = await loadGCalendars();
+  document.getElementById('loading-screen').style.display = 'none';
+  if (!ok) {
+    /* Token invalide ou scope manquant - reset */
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(EXPIRY_KEY);
+    document.getElementById('auth-screen').style.display = 'flex';
+    toast('Reconnexion requise (scope manquant ou token expir\u00e9)', 'err');
+    return;
+  }
+  renderCalFilters();
+  document.getElementById('cal-list-section').style.display = 'block';
+  document.getElementById('calendar-area').style.display = 'flex';
+  await renderCalendar();
+}
+
+async function loadGCalendars() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  try {
+    const resp = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader', {
+      headers: { 'Authorization': 'Bearer '+token }
+    });
+    if (resp.status === 401 || resp.status === 403) return false;
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    gcalCalendars = (data.items || []).map(c => ({
+      id: c.id, name: c.summaryOverride || c.summary,
+      color: c.backgroundColor || '#1a73e8', primary: !!c.primary,
+    }));
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(GCAL_FILTER_KEY) || 'null'); } catch(e) {}
+    if (saved && Array.isArray(saved)) {
+      gcalVisibleCalIds = new Set(saved);
+      gcalVisibleCalIds = new Set([...gcalVisibleCalIds].filter(id => gcalCalendars.find(c => c.id === id)));
+      /* Si rien ne match (ex: changement de compte), tout afficher */
+      if (gcalVisibleCalIds.size === 0) gcalVisibleCalIds = new Set(gcalCalendars.map(c => c.id));
+    } else {
+      gcalVisibleCalIds = new Set(gcalCalendars.map(c => c.id));
+    }
+    return true;
+  } catch(e) {
+    console.error(e);
+    return false;
+  }
+}
+
+function renderCalFilters() {
+  const wrap = document.getElementById('cal-filter-list');
+  wrap.innerHTML = '';
+  const sorted = [...gcalCalendars].sort((a,b) => {
+    if (a.primary && !b.primary) return -1;
+    if (b.primary && !a.primary) return 1;
+    return (a.name||'').localeCompare(b.name||'');
+  });
+  sorted.forEach(c => {
+    const isOn = gcalVisibleCalIds.has(c.id);
+    let displayName = c.name || '';
+    if (displayName.includes('@')) {
+      const local = displayName.split('@')[0];
+      displayName = local.replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    const chip = document.createElement('label');
+    chip.className = 'cal-filter-chip';
+    chip.title = c.name;
+    chip.innerHTML =
+      '<input type="checkbox" '+(isOn?'checked':'')+'>'+
+      '<span class="cal-chip-color" style="background:'+c.color+'"></span>'+
+      '<span class="cal-chip-name">'+escapeHtml(displayName)+'</span>';
+    const cb = chip.querySelector('input');
+    cb.addEventListener('change', () => {
+      if (cb.checked) gcalVisibleCalIds.add(c.id);
+      else gcalVisibleCalIds.delete(c.id);
+      localStorage.setItem(GCAL_FILTER_KEY, JSON.stringify([...gcalVisibleCalIds]));
+      renderCalendar();
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+/* ===== Render calendar grid ===== */
+async function renderCalendar() {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  document.getElementById('cal-month-title').innerHTML = MONTH_NAMES[month]+'<span class="year">'+year+'</span>';
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month+1, 0);
+  const gridStart = new Date(firstDay);
+  gridStart.setDate(firstDay.getDate() - firstDay.getDay());
+  const gridEnd = new Date(lastDay);
+  gridEnd.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+  gridEnd.setHours(23,59,59,999);
+
+  await loadEvents(gridStart, gridEnd);
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const techFilter = document.getElementById('f-tech') ? document.getElementById('f-tech').value : '';
+
+  /* Filtre par technicien si selectionne (gestionnaire) */
+  const mandatsForMonth = allMandats.filter(m => {
+    if (techFilter && m.technicien_id !== techFilter) return false;
+    return true;
+  });
+
+  let html = '';
+  let cursor = new Date(gridStart);
+  let mandatCount = 0;
+  let eventCount = 0;
+
+  while (cursor <= gridEnd) {
+    html += '<tr>';
+    for (let i = 0; i < 7; i++) {
+      const dStr = formatDateISO(cursor);
+      const cursorMid = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+      const isOtherMonth = cursor.getMonth() !== month;
+      const isToday = cursorMid.getTime() === today.getTime();
+      const dayMandats = mandatsForMonth.filter(m => m.date_mandat === dStr);
+      const dayEvents = eventsForDay(cursor).filter(e => gcalVisibleCalIds.has(e.calendarId));
+      const hasMandat = dayMandats.length > 0;
+      if (!isOtherMonth) {
+        mandatCount += dayMandats.length;
+        eventCount += dayEvents.length;
+      }
+
+      const classes = [
+        isOtherMonth ? 'other-month' : '',
+        isToday ? 'today' : '',
+        hasMandat ? 'has-mandat' : '',
+      ].filter(Boolean).join(' ');
+
+      html += '<td class="'+classes+'" data-date="'+dStr+'">';
+      html += '<span class="cal-daynum">'+cursor.getDate()+'</span>';
+
+      /* Mandats d'abord (plus important) */
+      const maxDisplay = 4;
+      const totalItems = dayMandats.length + dayEvents.length;
+      let displayed = 0;
+
+      for (const m of dayMandats) {
+        if (displayed >= maxDisplay) break;
+        html += buildMandatPill(m);
+        displayed++;
+      }
+      for (const ev of dayEvents) {
+        if (displayed >= maxDisplay) break;
+        html += buildEventPill(ev);
+        displayed++;
+      }
+      if (totalItems > maxDisplay) {
+        html += '<span class="cal-more">+'+(totalItems - maxDisplay)+' autre(s)</span>';
+      }
+      html += '</td>';
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    html += '</tr>';
+  }
+
+  document.getElementById('cal-tbody').innerHTML = html;
+  document.getElementById('cal-stats').textContent =
+    mandatCount + ' mandat'+(mandatCount>1?'s':'') + ' \u00b7 ' +
+    eventCount + ' \u00e9v\u00e9nement'+(eventCount>1?'s':'') + ' Google';
+}
+
+function buildMandatPill(m) {
+  const cls = m.compagnie === 'logica' ? 'logica' : 'geq';
+  const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
+  const title = escapeHtml(m.client_nom || '(sans nom)');
+  const tooltip = (heure || 'sans heure') + ' \u00b7 ' + title + (m.type_mandat ? ' \u00b7 '+m.type_mandat : '');
+  return '<a class="cal-mandat '+cls+'" href="mandat.html?id='+m.id+'" title="'+escapeHtml(tooltip)+'" onclick="event.stopPropagation()">'+
+    (heure ? '<span class="cal-mandat-time">'+heure+'</span>' : '') +
+    title +
+  '</a>';
+}
+
+function buildEventPill(ev) {
+  const cal = gcalCalendars.find(c => c.id === ev.calendarId);
+  const color = ev.color || (cal ? cal.color : '#1a73e8');
+  const isAllDay = !!ev.allDay;
+  let timeStr = '';
+  if (!isAllDay && ev.start) {
+    const h = ev.start.getHours();
+    const m = ev.start.getMinutes();
+    if (m === 0) timeStr = (h < 12 ? h+'am' : (h === 12 ? '12pm' : (h-12)+'pm'));
+    else timeStr = h+':'+String(m).padStart(2,'0');
+  }
+  const title = escapeHtml(ev.summary || '(sans titre)');
+  const tooltip = (isAllDay ? 'Toute la journ\u00e9e' : timeStr) + ' \u00b7 ' + title;
+  return '<span class="cal-event" style="background:'+color+'" title="'+escapeHtml(tooltip)+'">'+
+    (timeStr ? '<span class="cal-event-time">'+timeStr+'</span>' : '') +
+    title +
+  '</span>';
+}
+
+async function loadEvents(start, end) {
+  gcalEvents = [];
+  if (!gcalCalendars.length) return;
+  const token = localStorage.getItem(TOKEN_KEY);
+  const timeMin = start.toISOString();
+  const timeMax = end.toISOString();
+  const cals = gcalCalendars.filter(c => gcalVisibleCalIds.has(c.id));
+  const promises = cals.map(async cal => {
+    try {
+      const url = 'https://www.googleapis.com/calendar/v3/calendars/'+encodeURIComponent(cal.id)+
+        '/events?timeMin='+encodeURIComponent(timeMin)+
+        '&timeMax='+encodeURIComponent(timeMax)+
+        '&singleEvents=true&orderBy=startTime&maxResults=250';
+      const resp = await fetch(url, { headers: { 'Authorization': 'Bearer '+token } });
+      if (!resp.ok) return [];
+      const data = await resp.json();
+      return (data.items||[]).map(it => {
+        const allDay = !!it.start.date;
+        const startDt = allDay ? new Date(it.start.date+'T00:00:00') : new Date(it.start.dateTime);
+        const endDt = allDay ? new Date(it.end.date+'T00:00:00') : new Date(it.end.dateTime);
+        return {
+          id: it.id, calendarId: cal.id, summary: it.summary,
+          start: startDt, end: endDt, allDay: allDay,
+          color: it.colorId ? EVENT_COLORS[it.colorId] : null,
+        };
+      });
+    } catch(e) { return []; }
+  });
+  const results = await Promise.all(promises);
+  results.forEach(arr => gcalEvents.push(...arr));
+}
+
+function eventsForDay(day) {
+  const dayStart = new Date(day); dayStart.setHours(0,0,0,0);
+  const dayEnd = new Date(day); dayEnd.setHours(23,59,59,999);
+  return gcalEvents.filter(e => e.start <= dayEnd && e.end > dayStart).sort((a,b) => {
+    if (a.allDay && !b.allDay) return -1;
+    if (b.allDay && !a.allDay) return 1;
+    return a.start - b.start;
+  });
+}
+
+/* ===== Navigation ===== */
+function prevMonth() {
+  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()-1, 1);
+  renderCalendar();
+}
+function nextMonth() {
+  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 1);
+  renderCalendar();
+}
+function goToday() {
+  const now = new Date();
+  currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  renderCalendar();
+}
+
+/* ===== Helpers ===== */
+function formatDateISO(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' '+type : '');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
