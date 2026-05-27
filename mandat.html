@@ -943,7 +943,12 @@ input[type=file]{display:none;}
       <div class="fg s2"><label>Nom du client *</label><input id="f-client-nom" type="text" placeholder="Prenom Nom"></div>
       <div class="fg"><label>Telephone</label><input id="f-client-tel" type="tel" placeholder="418-000-0000"></div>
       <div class="fg"><label>Courriel</label><input id="f-client-email" type="email" placeholder="client@email.com"></div>
-      <div class="fg s2"><label>Adresse du mandat</label><input id="f-adresse" type="text" placeholder="123 rue Exemple, Ville, QC"></div>
+      <div class="fg s2"><label>Adresse du mandat</label>
+        <div style="display:flex;gap:6px;align-items:stretch;">
+          <input id="f-adresse" type="text" placeholder="123 rue Exemple, Ville, QC" style="flex:1;min-width:0;">
+          <button type="button" onclick="openInMaps()" title="Ouvrir dans Google Maps" style="padding:0 14px;border-radius:8px;border:1px solid #d0d7de;background:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;" onmouseover="this.style.background='#eaf3ff';this.style.borderColor='#1565c0';" onmouseout="this.style.background='#fff';this.style.borderColor='#d0d7de';">&#128205;</button>
+        </div>
+      </div>
       <div class="fg"><label>R&eacute;gion du mandat</label>
         <select id="f-region" onchange="markDirty()">
           <option value="quebec">Qu&eacute;bec</option>
@@ -2743,6 +2748,17 @@ function lockAssignControls(locked){
   document.getElementById('f-tech').disabled=locked;
   document.getElementById('f-delai').disabled=locked;
   document.getElementById('f-region-pool').disabled=locked;
+}
+
+/* Ouvre l'adresse du mandat dans Google Maps (nouvel onglet) */
+function openInMaps(){
+  const adresse=(document.getElementById('f-adresse').value||'').trim();
+  if(!adresse){
+    toast('Aucune adresse a ouvrir','err');
+    return;
+  }
+  const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(adresse);
+  window.open(url,'_blank','noopener,noreferrer');
 }
 
 /* Helper: applique l'UI Planification apres une reclamation
