@@ -1785,10 +1785,10 @@ if(m.type_mandat){
   } else {
     setAssignMode('direct');
   }
-  /* Verrouillage si statut='reclame' et user n'est pas gestionnaire */
-  const isReclame=m.statut_assignation==='reclame';
-  const isGest=profile.role==='gestionnaire';
-  lockAssignControls(isReclame && !isGest);
+  /* Plus de verrouillage UI : tous les techs peuvent reassigner un mandat,
+     meme s'il est deja reclame. La RLS Supabase (mandats_update_v2) controle
+     qui a le droit de sauvegarder cote serveur. */
+  lockAssignControls(false);
   updateAssignInfo();
 
   setStBtn('st-soum',m.statut_soumission_envoyee);
@@ -2710,12 +2710,20 @@ function updateAssignInfo(){
     const delaiSel=document.getElementById('f-delai');
     const techId=techSel?techSel.value:'';
     const delaiH=delaiSel?delaiSel.value:'8';
+    /* Detecter si on est en train de reassigner un mandat deja reclame */
+    const wasReclame=mandat && mandat.statut_assignation==='reclame';
+    const oldTechId=mandat?mandat.technicien_id:null;
+    const isTransferToOther=wasReclame && techId && techId!==oldTechId;
+
     if(!techId){
       info.className='assign-info';
       info.textContent='Aucun tech selectionne : le mandat sera enregistre comme "Non assigne". Tu pourras l\u0027assigner plus tard.';
     } else if(profile && techId===profile.id){
       info.className='assign-info';
       info.textContent='Tu te l\u0027assignes a toi-meme : le mandat sera directement marque comme "Reclame" (pas de timer).';
+    } else if(isTransferToOther){
+      info.className='assign-info';
+      info.textContent='Transfert vers un autre tech : le mandat actuellement reclame va etre reassigne. Le nouveau tech aura '+delaiH+'h ouvrables pour le reclamer.';
     } else {
       info.className='assign-info';
       info.textContent='Le tech aura '+delaiH+'h ouvrables pour reclamer le mandat. S\u0027il ne reclame pas a temps, ca bascule automatiquement dans le pool ouvert.';
@@ -2740,17 +2748,16 @@ function lockAssignControls(locked){
 /* Helper: applique l'UI Planification apres une reclamation
    - Force le mode "Assigner a un tech" (direct)
    - Met le selecteur tech sur le tech qui a reclame
-   - Verrouille les controles d'assignation pour les non-gestionnaires
-     (puisque le statut devient 'reclame') */
+   - Ne verrouille plus l'UI : tous les techs peuvent reassigner si besoin */
 function applyReclameUI(techId){
-  /* Force unlock temporaire pour pouvoir modifier l'UI */
+  /* Force unlock pour pouvoir modifier l'UI */
   assignLocked=false;
   setAssignMode('direct');
   const tsel=document.getElementById('f-tech');
   if(tsel) tsel.value=techId;
   updateAssignInfo();
-  /* Verrouille pour les non-gestionnaires */
-  if(profile.role!=='gestionnaire') lockAssignControls(true);
+  /* Pas de verrouillage : on laisse l'UI deverrouillee meme apres reclamation,
+     la RLS Supabase controle qui peut sauvegarder reellement. */
 }
 
 /* ===== ETAPE 4 - BOUTON RECLAMER =====
