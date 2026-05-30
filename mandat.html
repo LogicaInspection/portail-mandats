@@ -38,23 +38,23 @@ body.test-mode .content { padding-top: 18px; }
 /* ===================================== */
 
 /* ===== HEADER simple (1 ligne) ===== */
-.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.15);}
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:78px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.15);}
 .btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;}
 .btn-back:hover{background:rgba(255,255,255,0.2);}
-.hcenter{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;}
-.htop{display:flex;align-items:center;gap:10px;}
-.hmeta{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,0.7);line-height:1;}
-.hmeta-label{opacity:0.65;}
-.hmeta-val{font-weight:600;color:rgba(255,255,255,0.95);}
+.hcenter{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;}
+.htop{display:flex;align-items:center;gap:12px;}
+.hmeta{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.85);line-height:1;background:rgba(255,255,255,0.08);padding:6px 14px;border-radius:20px;}
+.hmeta-label{opacity:0.7;font-size:12px;}
+.hmeta-val{font-weight:700;color:#fff;}
 .hmeta-sep{opacity:0.4;}
-#htitle{font-size:16px;font-weight:600;}
-.badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.5px;}
+#htitle{font-size:22px;font-weight:800;letter-spacing:-0.3px;}
+.badge{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:800;letter-spacing:0.5px;}
 .badge-logica{background:#1565c0;color:white;}
-.badge-geq{background:#b71c1c;color:white;}
+.badge-geq{background:#e53935;color:white;}
 .header-type-pill{
-  display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;
-  letter-spacing:0.3px;color:#1f2937;background:#f3f4f6;white-space:nowrap;
-  max-width:280px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;
+  display:inline-block;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;
+  letter-spacing:0.2px;color:#1f2937;background:#fff;white-space:nowrap;
+  max-width:320px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;
 }
 .hright{display:flex;gap:8px;align-items:center;}
 
@@ -839,18 +839,24 @@ input[type=file]{display:none;}
 
 /* ----- Barre d'onglets ----- */
 .tabbar{
-  display:flex;gap:4px;border-bottom:1.5px solid #e8eaed;margin-bottom:14px;
+  display:flex;gap:8px;margin-bottom:16px;padding:6px;
+  background:#eef0f4;border-radius:14px;
   overflow-x:auto;-webkit-overflow-scrolling:touch;
 }
 .tabbtn{
-  display:flex;align-items:center;gap:7px;padding:11px 16px;font-size:14px;
-  border:none;background:none;cursor:pointer;color:#6b7280;font-weight:500;
-  border-bottom:2.5px solid transparent;margin-bottom:-1.5px;white-space:nowrap;
-  font-family:inherit;transition:color .12s;
+  display:flex;align-items:center;gap:8px;padding:11px 18px;font-size:14px;
+  border:1.5px solid transparent;background:transparent;cursor:pointer;color:#5b6370;font-weight:600;
+  border-radius:10px;white-space:nowrap;flex:1;justify-content:center;
+  font-family:inherit;transition:all .14s;
 }
 .tabbtn .tabic{font-size:17px;line-height:1;}
-.tabbtn:hover{color:#1a1a2e;}
-.tabbtn.active{color:#185fa5;border-bottom-color:#185fa5;font-weight:700;}
+.tabbtn:hover{background:#e2e6ec;color:#1a1a2e;}
+.tabbtn.active{
+  background:#185fa5;color:#fff;font-weight:700;
+  box-shadow:0 2px 6px rgba(24,95,165,0.3);
+}
+.tabbtn.active:hover{background:#16538f;color:#fff;}
+@media(max-width:780px){.tabbtn{flex:none;padding:10px 14px;}.tabbtn .tablabel{display:none;}.tabbtn .tabic{font-size:19px;}}
 .tabbtn .tab-alert{
   display:none;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-left:2px;
 }
@@ -961,10 +967,10 @@ input[type=file]{display:none;}
 
   <!-- ===== BARRE D'ONGLETS ===== -->
   <div class="tabbar" id="tabbar">
-    <button type="button" class="tabbtn active" data-tab="apercu" onclick="switchTab('apercu')"><span class="tabic">&#128065;</span> Aper&ccedil;u</button>
-    <button type="button" class="tabbtn" data-tab="suivi" onclick="switchTab('suivi')"><span class="tabic">&#128197;</span> Suivi &amp; RDV</button>
-    <button type="button" class="tabbtn" data-tab="comm" onclick="switchTab('comm')"><span class="tabic">&#9993;</span> Courriels &amp; Documents</button>
-    <button type="button" class="tabbtn" data-tab="fin" onclick="switchTab('fin')"><span class="tabic">&#128176;</span> Finances</button>
+    <button type="button" class="tabbtn active" data-tab="apercu" onclick="switchTab('apercu')"><span class="tabic">&#128065;</span> <span class="tablabel">Aper&ccedil;u</span></button>
+    <button type="button" class="tabbtn" data-tab="suivi" onclick="switchTab('suivi')"><span class="tabic">&#128197;</span> <span class="tablabel">Suivi &amp; RDV</span></button>
+    <button type="button" class="tabbtn" data-tab="comm" onclick="switchTab('comm')"><span class="tabic">&#9993;</span> <span class="tablabel">Courriels &amp; Documents</span></button>
+    <button type="button" class="tabbtn" data-tab="fin" onclick="switchTab('fin')"><span class="tabic">&#128176;</span> <span class="tablabel">Finances</span></button>
   </div>
 
   <!-- ===== ONGLET APERCU (synthese lecture seule, genere par JS) ===== -->
