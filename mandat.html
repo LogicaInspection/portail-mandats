@@ -6329,10 +6329,28 @@ function valOr(v,emptyTxt){
   return '<span class="ar-val">'+escapeHtml(String(v))+'</span>';
 }
 
+/* Convertit le HTML de l'editeur (Quill) en texte brut en CONSERVANT les sauts de ligne.
+   Les blocs (p, div, li, br, h1-h3) deviennent des retours a la ligne reels.
+   Le resultat est ensuite affiche avec white-space:pre-wrap pour respecter ces sauts. */
+function htmlToPlainMultiline(html){
+  if(!html) return '';
+  let s=String(html);
+  /* Normaliser les fins de bloc et <br> en marqueurs de nouvelle ligne */
+  s=s.replace(/<\s*br\s*\/?\s*>/gi,'\n');
+  s=s.replace(/<\/\s*(p|div|li|h1|h2|h3|h4|tr|blockquote)\s*>/gi,'\n');
+  /* Les <li> en debut de puce : ajouter un petit marqueur visuel */
+  s=s.replace(/<\s*li[^>]*>/gi,'\u2022 ');
+  /* Retirer toutes les autres balises */
+  const tmp=document.createElement('div'); tmp.innerHTML=s;
+  let txt=tmp.textContent||tmp.innerText||'';
+  /* Nettoyer : pas plus de 2 sauts de ligne consecutifs, trim global */
+  txt=txt.replace(/\n{3,}/g,'\n\n').replace(/[ \t]+\n/g,'\n').trim();
+  return txt;
+}
+
 function renderApercu(){
   const wrap=document.getElementById('apercu-wrap');
   if(!wrap) return;
-
   /* Lecture des valeurs courantes dans les champs reels (source unique de verite) */
   const nom=document.getElementById('f-client-nom').value||'';
   const tel=document.getElementById('f-client-tel').value||'';
@@ -6346,9 +6364,10 @@ function renderApercu(){
   const typeSel=document.getElementById('f-type-mandat');
   const typeNom=(comp==='geq'&&typeSel&&typeSel.value)?typeSel.options[typeSel.selectedIndex].text:'';
   const notesHtml=notesEditor?getEditorHTML(notesEditor):'';
-  /* Convertit le HTML des notes en texte simple pour l'apercu */
-  const tmp=document.createElement('div'); tmp.innerHTML=notesHtml||'';
-  const notesTxt=(tmp.textContent||'').trim();
+  /* Convertit le HTML des notes en texte en PRESERVANT les sauts de ligne :
+     on transforme les fins de bloc (</p>, </div>, <br>, </li>) en \n avant d'extraire le texte.
+     Sinon "ligne1<p>ligne2" donnerait "ligne1ligne2" colle ensemble. */
+  const notesTxt=htmlToPlainMultiline(notesHtml);
 
   /* Statut de contact (badge) */
   const stContact=(typeof getStatutContact==='function'&&currentStatutContact)?getStatutContact(currentStatutContact):null;
