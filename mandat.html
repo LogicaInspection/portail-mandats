@@ -894,6 +894,8 @@ input[type=file]{display:none;}
 }
 .apercu-mini-btn:hover{border-color:#185fa5;color:#185fa5;background:#f4f8fd;}
 .apercu-mini-btn.copied{border-color:#2e7d32;color:#2e7d32;background:#edf7ee;}
+.apercu-mini-btn.act{border-color:#c8d9ee;color:#185fa5;background:#f4f8fd;}
+.apercu-mini-btn.act:hover{border-color:#185fa5;background:#e7f0fb;}
 .apercu-gcal-row{padding:8px 0 10px;border-bottom:1px solid #f1f2f4;}
 .apercu-gcal-btn{
   display:inline-flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;font-weight:600;
@@ -6394,12 +6396,20 @@ function renderApercu(){
   const gcalAdded = mandat && mandat.gcal_event_id;
 
   /* ===== COLONNE GAUCHE : infos client ===== */
+  const telClean=tel.replace(/[^0-9+]/g,'');
+  const emailClean=String(email).trim();
   let left='<div class="apercu-card">';
   left+=apRow('&#128100;','Client',nom,'suivi','f-client-nom',true);
   left+=apRowRaw('&#127970;','Compagnie',valHtml(compFull,false),'suivi','f-compagnie');
-  left+=apRowCopy('&#128222;','T&eacute;l&eacute;phone',tel,'suivi','f-client-tel',false);
-  left+=apRowCopy('&#9993;','Courriel',email,'suivi','f-client-email',true);
-  left+=apRowCopy('&#128205;','Adresse',adresse,'suivi','f-adresse',true);
+  /* Telephone : bouton Appeler colle */
+  left+=apRowCopy('&#128222;','T&eacute;l&eacute;phone',tel,'suivi','f-client-tel',true,
+    telClean?{icon:'&#128222;',title:'Appeler',onclick:"window.location.href='tel:"+escapeAttr(telClean)+"'"}:null);
+  /* Courriel : bouton Envoyer un courriel colle */
+  left+=apRowCopy('&#9993;','Courriel',email,'suivi','f-client-email',true,
+    emailClean?{icon:'&#9993;',title:'Envoyer un courriel',onclick:"switchTab('comm')"}:null);
+  /* Adresse : bouton Maps colle */
+  left+=apRowCopy('&#128205;','Adresse',adresse,'suivi','f-adresse',true,
+    adresse?{icon:'&#128205;',title:'Ouvrir dans Google Maps',onclick:"openInMaps()"}:null);
   left+=apRow('&#128197;','Rendez-vous',dateAff,'suivi','f-date',true);
   /* Bouton Google Calendar juste sous le RDV */
   left+='<div class="apercu-gcal-row">'+
@@ -6418,14 +6428,6 @@ function renderApercu(){
     '<div class="apercu-stat"><div class="as-label">Total avant taxes</div><div class="as-val">'+sousTotalTxt+'</div></div>'+
     '<div class="apercu-stat"><div class="as-label">Paiement</div><div class="as-val '+(estPaye?'ok':'warn')+'">'+(estPaye?'\u2713 Re\u00e7u':'\u23f3 En attente')+'</div></div>'+
   '</div>';
-
-  /* Actions rapides */
-  const telClean=tel.replace(/[^0-9+]/g,'');
-  left+='<div class="apercu-actions">';
-  if(telClean) left+='<a class="aa-btn" href="tel:'+escapeAttr(telClean)+'"><span>&#128222;</span> Appeler</a>';
-  if(adresse) left+='<button class="aa-btn" onclick="openInMaps()"><span>&#128205;</span> Maps</button>';
-  left+='<button class="aa-btn" onclick="switchTab(\'comm\')"><span>&#9993;</span> Courriels</button>';
-  left+='</div>';
 
   /* ===== COLONNE DROITE : description / notes en entier ===== */
   let right='<div class="apercu-desc">'+
@@ -6461,10 +6463,15 @@ function apRowRaw(ic,label,valInner,tab,fieldId){
   '</div>';
 }
 
-/* Ligne avec bouton Copier + bouton crayon */
-function apRowCopy(ic,label,val,tab,fieldId,showCopy){
+/* Ligne avec boutons contextuels (action + copier + crayon)
+   action : objet {icon, onclick, title} ou null */
+function apRowCopy(ic,label,val,tab,fieldId,showCopy,action){
   const hasVal = val&&String(val).trim()!=='';
   let btns='';
+  /* Bouton d'action principal (Appeler / Maps / Courriel) colle a la valeur */
+  if(hasVal && action){
+    btns+='<button class="apercu-mini-btn act" title="'+escapeAttr(action.title)+'" onclick="'+action.onclick+'">'+action.icon+'</button>';
+  }
   if(hasVal && showCopy){
     btns+='<button class="apercu-mini-btn" title="Copier" onclick="apercuCopy(this,\''+escapeAttr(String(val))+'\')">&#128203;</button>';
   }
