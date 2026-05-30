@@ -813,6 +813,96 @@ input[type=file]{display:none;}
 /* ===== Bouton statut Soumission envoyee ===== */
 .btn-st.st-soum.on{border-color:#e65100;background:#fff3e0;color:#bf360c;}
 .btn-st.st-soum.on .ck{background:#e65100;border-color:#e65100;color:white;}
+
+/* ============================================================
+   ===== REORGANISATION : Barre de progression + Onglets =====
+   ============================================================ */
+
+/* ----- Barre de progression (pipeline) ----- */
+.pipeline-bar{
+  display:flex;align-items:center;flex-wrap:wrap;gap:2px;
+  background:#fff;border:1px solid #ecedef;border-radius:14px;
+  padding:12px 16px;margin-bottom:6px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.pipeline-step{
+  font-size:12px;padding:5px 11px;border-radius:8px;cursor:pointer;
+  color:#9aa0aa;font-weight:500;white-space:nowrap;transition:background .12s,color .12s;
+  border:none;background:transparent;font-family:inherit;
+}
+.pipeline-step:hover{background:#f2f4f7;}
+.pipeline-step.done{color:#5f6b7a;}
+.pipeline-step.current{background:#e7f0fb;color:#185fa5;font-weight:700;}
+.pipeline-step.current:hover{background:#dbe8f8;}
+.pipeline-sep{color:#cfd4db;font-size:11px;line-height:1;padding:0 1px;}
+.pipeline-hint{font-size:11px;color:#aab0ba;margin:0 0 18px 4px;}
+
+/* ----- Barre d'onglets ----- */
+.tabbar{
+  display:flex;gap:4px;border-bottom:1.5px solid #e8eaed;margin-bottom:20px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.tabbtn{
+  display:flex;align-items:center;gap:7px;padding:11px 16px;font-size:14px;
+  border:none;background:none;cursor:pointer;color:#6b7280;font-weight:500;
+  border-bottom:2.5px solid transparent;margin-bottom:-1.5px;white-space:nowrap;
+  font-family:inherit;transition:color .12s;
+}
+.tabbtn .tabic{font-size:17px;line-height:1;}
+.tabbtn:hover{color:#1a1a2e;}
+.tabbtn.active{color:#185fa5;border-bottom-color:#185fa5;font-weight:700;}
+.tabbtn .tab-alert{
+  display:none;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-left:2px;
+}
+.tabbtn.has-alert .tab-alert{display:inline-block;}
+
+/* ----- Panneaux d'onglets ----- */
+.tabpanel{display:none;}
+.tabpanel.active{display:block;}
+/* Dans un onglet, les sections s'empilent verticalement, pleine largeur */
+.tabpanel .col{display:flex;flex-direction:column;gap:20px;min-width:0;width:100%;}
+/* Sur grand ecran, Suivi&RDV garde 2 colonnes pour ne pas etirer */
+@media(min-width:1000px){
+  #panel-suivi .panel-2col{display:grid;grid-template-columns:minmax(360px,1fr) minmax(360px,1fr);gap:20px;align-items:start;}
+}
+
+/* ----- Onglet Apercu (synthese lecture seule) ----- */
+.apercu-wrap{display:flex;flex-direction:column;gap:16px;}
+.apercu-desc{
+  background:#fff;border:1px solid #ecedef;border-left:4px solid #185fa5;border-radius:12px;
+  padding:16px 20px;
+}
+.apercu-desc-label{font-size:12px;color:#9aa0aa;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.apercu-desc-body{font-size:14px;line-height:1.6;color:#222;white-space:pre-wrap;word-break:break-word;}
+.apercu-desc-body:empty::after{content:"Aucune note pour l'instant.";color:#bbb;font-style:italic;}
+.apercu-card{background:#fff;border:1px solid #ecedef;border-radius:12px;padding:6px 20px;}
+.apercu-row{
+  display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f2f4;
+}
+.apercu-row:last-child{border-bottom:none;}
+.apercu-row .ar-ic{width:22px;text-align:center;color:#9aa0aa;font-size:16px;flex-shrink:0;}
+.apercu-row .ar-label{font-size:13px;color:#8b919b;min-width:96px;flex-shrink:0;}
+.apercu-row .ar-val{font-size:14px;color:#1a1a2e;flex:1;min-width:0;word-break:break-word;}
+.apercu-row .ar-val.strong{font-weight:700;}
+.apercu-row .ar-val.empty{color:#bbb;font-style:italic;font-weight:400;}
+.apercu-edit{
+  background:none;border:1px solid #e3e5e9;color:#9aa0aa;border-radius:7px;
+  width:30px;height:30px;cursor:pointer;font-size:13px;flex-shrink:0;transition:all .12s;
+}
+.apercu-edit:hover{border-color:#185fa5;color:#185fa5;background:#f4f8fd;}
+.apercu-stats{display:flex;gap:12px;}
+.apercu-stat{flex:1;background:#f6f7f9;border-radius:10px;padding:13px 16px;}
+.apercu-stat .as-label{font-size:12px;color:#8b919b;margin-bottom:4px;}
+.apercu-stat .as-val{font-size:18px;font-weight:700;color:#1a1a2e;}
+.apercu-stat .as-val.warn{font-size:14px;color:#e65100;}
+.apercu-stat .as-val.ok{font-size:14px;color:#2e7d32;}
+.apercu-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.apercu-actions .aa-btn{
+  display:flex;align-items:center;gap:7px;padding:10px 15px;font-size:13px;font-weight:600;
+  border:1px solid #e3e5e9;background:#fff;border-radius:9px;cursor:pointer;color:#374151;
+  font-family:inherit;transition:all .12s;text-decoration:none;
+}
+.apercu-actions .aa-btn:hover{border-color:#185fa5;color:#185fa5;background:#f4f8fd;}
 </style>
 </head>
 <body>
@@ -850,6 +940,34 @@ input[type=file]{display:none;}
 </div>
 
 <div class="content">
+
+  <!-- ===== BARRE DE PROGRESSION (pipeline) ===== -->
+  <div class="pipeline-bar" id="pipeline-bar"></div>
+  <div class="pipeline-hint">Clique une &eacute;tape pour la d&eacute;finir manuellement.</div>
+
+  <!-- ===== BARRE D'ONGLETS ===== -->
+  <div class="tabbar" id="tabbar">
+    <button type="button" class="tabbtn active" data-tab="apercu" onclick="switchTab('apercu')"><span class="tabic">&#128065;</span> Aper&ccedil;u</button>
+    <button type="button" class="tabbtn" data-tab="suivi" onclick="switchTab('suivi')"><span class="tabic">&#128197;</span> Suivi &amp; RDV</button>
+    <button type="button" class="tabbtn" data-tab="comm" onclick="switchTab('comm')"><span class="tabic">&#9993;</span> Courriels &amp; Documents</button>
+    <button type="button" class="tabbtn" data-tab="fin" onclick="switchTab('fin')"><span class="tabic">&#128176;</span> Finances</button>
+  </div>
+
+  <!-- ===== ONGLET APERCU (synthese lecture seule, genere par JS) ===== -->
+  <div class="tabpanel active" id="panel-apercu">
+    <div class="apercu-wrap" id="apercu-wrap"></div>
+  </div>
+
+  <!-- ===== ONGLET SUIVI & RDV (sections deplacees ici par JS) ===== -->
+  <div class="tabpanel" id="panel-suivi">
+    <div class="panel-2col" id="suivi-2col"></div>
+  </div>
+
+  <!-- ===== ONGLET COURRIELS & DOCUMENTS (sections deplacees ici par JS) ===== -->
+  <div class="tabpanel" id="panel-comm"></div>
+
+  <!-- ===== ONGLET FINANCES (sections deplacees ici par JS) ===== -->
+  <div class="tabpanel" id="panel-fin"></div>
 
   <!-- ===== Section "Suivi du mandat" - 2 blocs cote a cote avec titres pro ===== -->
   <div class="sec suivi-mandat-sec" id="sec-suivi-mandat" style="display:none">
@@ -1610,11 +1728,13 @@ techsFiltered.forEach(t=>{
     const {data:dc}=await sb.from('mandat_documents').select('*').eq('mandat_id',id).order('uploaded_at');
     docs=dc||[];
     echantillonsSupp=m.echantillons_supp||0;
+    etapePipeline=(typeof m.etape_pipeline==='number')?m.etape_pipeline:0;
     fillForm();
     document.getElementById('sec-docs').style.display='block';
     document.getElementById('sec-emails').style.display='block';
     if(profile.role==='gestionnaire') document.getElementById('btn-del').style.display='flex';
   } else {
+    etapePipeline=0;
     isNew=true;
     document.getElementById('f-compagnie').value=comp;
     if(profile.role==='technicien') document.getElementById('f-tech').value=profile.id;
@@ -1684,6 +1804,8 @@ techsFiltered.forEach(t=>{
   updateAssignInfo();
   loadHistorique();
   await loadEmailLogs();
+  /* Construire les onglets + la barre de progression (apres que tout le contenu existe) */
+  initLayout();
   /* Activer la detection des modifications APRES l'init complete
      pour eviter de marquer dirty pendant le chargement initial */
   setTimeout(()=>{formInitialized=true;},400);
@@ -3138,6 +3260,7 @@ async function saveMandat(){
     sous_total:st,tps:tps,tvq:tvq,total_ttc:ttc,
     commission_totale:commTot,profit:profit,
     notes:getEditorHTML(notesEditor)||null,
+    etape_pipeline:etapePipeline,
     statut_assignation:statutAssign,
     assigne_le:assigneLe,
     reclame_le:reclameLe,
@@ -6093,6 +6216,209 @@ function formatDateISO(d){
   const m = String(d.getMonth()+1).padStart(2,'0');
   const day = String(d.getDate()).padStart(2,'0');
   return y+'-'+m+'-'+day;
+}
+
+/* ============================================================
+   ===== SYSTEME D'ONGLETS + BARRE DE PROGRESSION + APERCU =====
+   Ne touche PAS a la logique metier : on deplace simplement les
+   sections existantes (memes IDs, memes onclick) dans des onglets.
+   ============================================================ */
+
+const PIPELINE_STEPS=['Re&ccedil;u','Contact&eacute;','Book&eacute;','R&eacute;alis&eacute;','Rapport','Factur&eacute;','Pay&eacute;','Archiv&eacute;'];
+let etapePipeline=0;
+let tabsBuilt=false;
+
+/* Deplace les sections existantes vers leurs onglets (une seule fois) */
+function buildTabs(){
+  if(tabsBuilt) return;
+  const move=(secId,targetId)=>{
+    const sec=document.getElementById(secId);
+    const target=document.getElementById(targetId);
+    if(sec && target) target.appendChild(sec);
+  };
+  /* Onglet Suivi & RDV : 2 colonnes (client/planif a gauche, suivis a droite) */
+  const s2=document.getElementById('suivi-2col');
+  const colA=document.createElement('div'); colA.className='col';
+  const colB=document.createElement('div'); colB.className='col';
+  s2.appendChild(colA); s2.appendChild(colB);
+  /* Bannieres d'alerte (reclamer / suivi-mandat) en pleine largeur au-dessus des 2 colonnes */
+  const recl=document.getElementById('sec-reclamer');
+  if(recl) document.getElementById('panel-suivi').insertBefore(recl,s2);
+  [['sec-client',colA],['sec-planification',colA],['sec-suivi-client',colB],['sec-suivi-mandat',colB]].forEach(([id,col])=>{
+    const sec=document.getElementById(id); if(sec) col.appendChild(sec);
+  });
+  /* Onglet Courriels & Documents */
+  move('sec-notes','panel-comm');
+  move('sec-emails','panel-comm');
+  move('sec-docs','panel-comm');
+  /* Onglet Finances */
+  move('sec-comm-tech','panel-fin');
+  move('sec-finances','panel-fin');
+  /* Cacher le conteneur grid-3col residuel (desormais vide) */
+  const grid=document.querySelector('.grid-3col');
+  if(grid) grid.style.display='none';
+
+  tabsBuilt=true;
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('panel-'+tab);
+  if(panel) panel.classList.add('active');
+  if(tab==='apercu') renderApercu();
+}
+
+/* Saute a un onglet et met le focus sur un champ (utilise par les crayons de l'apercu) */
+function gotoField(tab,fieldId){
+  switchTab(tab);
+  setTimeout(()=>{
+    const el=document.getElementById(fieldId);
+    if(el){ el.focus(); if(el.scrollIntoView) el.scrollIntoView({block:'center',behavior:'smooth'}); }
+  },60);
+}
+
+/* ----- Barre de progression ----- */
+function renderPipeline(){
+  const bar=document.getElementById('pipeline-bar');
+  if(!bar) return;
+  bar.innerHTML='';
+  PIPELINE_STEPS.forEach((label,i)=>{
+    if(i>0){
+      const sep=document.createElement('span');
+      sep.className='pipeline-sep'; sep.innerHTML='&#9656;';
+      bar.appendChild(sep);
+    }
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='pipeline-step '+(i===etapePipeline?'current':(i<etapePipeline?'done':''));
+    b.innerHTML=label;
+    b.onclick=()=>setEtapePipeline(i);
+    bar.appendChild(b);
+  });
+}
+
+function setEtapePipeline(i){
+  etapePipeline=i;
+  renderPipeline();
+  /* Sauvegarde immediate si le mandat existe deja, sinon partira au prochain saveMandat */
+  if(!isNew && mandat){
+    sb.from('mandats').update({etape_pipeline:i}).eq('id',mandat.id).then(({error})=>{
+      if(!error){ mandat.etape_pipeline=i; }
+    });
+  } else {
+    markDirty();
+  }
+}
+
+/* ----- Onglet Apercu : synthese lecture seule ----- */
+function valOr(v,emptyTxt){
+  if(v===null||v===undefined||String(v).trim()==='') return '<span class="ar-val empty">'+(emptyTxt||'&mdash;')+'</span>';
+  return '<span class="ar-val">'+escapeHtml(String(v))+'</span>';
+}
+
+function renderApercu(){
+  const wrap=document.getElementById('apercu-wrap');
+  if(!wrap) return;
+
+  /* Lecture des valeurs courantes dans les champs reels (source unique de verite) */
+  const nom=document.getElementById('f-client-nom').value||'';
+  const tel=document.getElementById('f-client-tel').value||'';
+  const email=document.getElementById('f-client-email').value||'';
+  const adresse=document.getElementById('f-adresse').value||'';
+  const date=document.getElementById('f-date').value||'';
+  const heure=(document.getElementById('f-heure').value||'').substring(0,5);
+  const techSel=document.getElementById('f-tech');
+  const techNom=techSel && techSel.value ? techSel.options[techSel.selectedIndex].text : '';
+  const comp=document.getElementById('f-compagnie').value;
+  const typeSel=document.getElementById('f-type-mandat');
+  const typeNom=(comp==='geq'&&typeSel&&typeSel.value)?typeSel.options[typeSel.selectedIndex].text:'';
+  const notesHtml=notesEditor?getEditorHTML(notesEditor):'';
+  /* Convertit le HTML des notes en texte simple pour l'apercu */
+  const tmp=document.createElement('div'); tmp.innerHTML=notesHtml||'';
+  const notesTxt=(tmp.textContent||'').trim();
+
+  /* Statut de contact (badge) */
+  const stContact=(typeof getStatutContact==='function'&&currentStatutContact)?getStatutContact(currentStatutContact):null;
+
+  /* Date longue FR si possible */
+  let dateAff='';
+  if(date){
+    try{
+      const d=new Date(date+'T00:00:00');
+      dateAff=d.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
+    }catch(e){ dateAff=date; }
+    if(heure) dateAff+=' &middot; '+heure;
+  }
+
+  /* Synthese finances : total avant taxes + statut paiement */
+  const sousTotalTxt=document.getElementById('sous-total')?document.getElementById('sous-total').textContent:'0,00 $';
+  const estPaye=mandat&&mandat.statut_paye;
+
+  const compLabel = comp==='geq' ? 'GEQ &ndash; B&acirc;timent Conseil' : 'Logica Inspection';
+
+  let html='';
+
+  /* Bloc description (notes) */
+  html+='<div class="apercu-desc">'+
+    '<div class="apercu-desc-label"><span>&#128221;</span> Description / Notes'+
+      '<button class="apercu-edit" style="margin-left:auto" title="Modifier les notes" onclick="gotoField(\'comm\',\'f-notes-editor\')">&#9998;</button>'+
+    '</div>'+
+    '<div class="apercu-desc-body">'+escapeHtml(notesTxt)+'</div>'+
+  '</div>';
+
+  /* Carte infos client + RDV */
+  html+='<div class="apercu-card">';
+  html+=apRow('&#128100;','Client',nom,'suivi','f-client-nom',true);
+  html+=apRow('&#127970;','Compagnie',compLabel+(typeNom?(' &middot; '+typeNom):''),'suivi','f-compagnie');
+  html+=apRow('&#128222;','T&eacute;l&eacute;phone',tel,'suivi','f-client-tel');
+  html+=apRow('&#9993;','Courriel',email,'suivi','f-client-email');
+  html+=apRow('&#128205;','Adresse',adresse,'suivi','f-adresse');
+  html+=apRow('&#128197;','Rendez-vous',dateAff,'suivi','f-date',true);
+  html+=apRow('&#128119;','Technicien',techNom,'suivi','f-tech');
+  if(stContact){
+    html+=apRowRaw('&#128172;','Statut','<span class="ar-val strong" style="color:'+(stContact.couleur||'#374151')+'">'+escapeHtml(stContact.label||'')+'</span>','suivi','suivi-statut-pills');
+  }
+  html+='</div>';
+
+  /* Stats : total avant taxes + paiement */
+  html+='<div class="apercu-stats">'+
+    '<div class="apercu-stat"><div class="as-label">Total avant taxes</div><div class="as-val">'+sousTotalTxt+'</div></div>'+
+    '<div class="apercu-stat"><div class="as-label">Paiement</div><div class="as-val '+(estPaye?'ok':'warn')+'">'+(estPaye?'&#10003; Re&ccedil;u':'&#9203; En attente')+'</div></div>'+
+  '</div>';
+
+  /* Actions rapides */
+  const telClean=tel.replace(/[^0-9+]/g,'');
+  html+='<div class="apercu-actions">';
+  if(telClean) html+='<a class="aa-btn" href="tel:'+escapeAttr(telClean)+'"><span>&#128222;</span> Appeler</a>';
+  if(adresse) html+='<button class="aa-btn" onclick="openInMaps()"><span>&#128205;</span> Google Maps</button>';
+  html+='<button class="aa-btn" onclick="gotoField(\'suivi\',\'f-date\')"><span>&#128197;</span> Modifier le RDV</button>';
+  html+='<button class="aa-btn" onclick="switchTab(\'comm\')"><span>&#9993;</span> Courriels</button>';
+  html+='</div>';
+
+  wrap.innerHTML=html;
+}
+
+function apRow(ic,label,val,tab,fieldId,strong){
+  const valHtml = (val&&String(val).trim()!=='')
+    ? '<span class="ar-val'+(strong?' strong':'')+'">'+escapeHtml(String(val))+'</span>'
+    : '<span class="ar-val empty">Non renseign&eacute;</span>';
+  return apRowRaw(ic,label,valHtml,tab,fieldId);
+}
+function apRowRaw(ic,label,valHtml,tab,fieldId){
+  return '<div class="apercu-row">'+
+    '<span class="ar-ic">'+ic+'</span>'+
+    '<span class="ar-label">'+label+'</span>'+
+    valHtml+
+    '<button class="apercu-edit" title="Modifier" onclick="gotoField(\''+tab+'\',\''+fieldId+'\')">&#9998;</button>'+
+  '</div>';
+}
+
+/* Initialisation du layout (appelee apres le chargement du mandat) */
+function initLayout(){
+  buildTabs();
+  renderPipeline();
+  switchTab('apercu');
 }
 </script>
 </body>
