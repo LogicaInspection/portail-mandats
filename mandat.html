@@ -142,7 +142,7 @@ body.test-mode .content { padding-top: 18px; }
 }
 @keyframes pulse{0%,100%{box-shadow:0 2px 12px rgba(76,175,80,0.5);}50%{box-shadow:0 2px 24px rgba(76,175,80,0.8);}}
 
-.content{max-width:1500px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px;}
+.content{max-width:1500px;margin:0 auto;padding:14px 24px 24px;display:flex;flex-direction:column;gap:0;}
 
 /* ===== Layout 3 colonnes ===== */
 .grid-3col{
@@ -786,7 +786,7 @@ input[type=file]{display:none;}
 .assign-info.pool{background:#e3f0ff;color:#0d47a1;border-left-color:#1565c0;}
 @media(max-width:600px){.assign-mode-group{grid-template-columns:1fr;}}
 
-.sec.histo-sec{border-left:4px solid #6b7280;background:#fafafa;}
+.sec.histo-sec{border-left:4px solid #6b7280;background:#fafafa;margin-top:20px;}
 .histo-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;padding:6px 0;}
 .histo-toggle:hover .histo-arrow{color:#1565c0;}
 .histo-arrow{font-size:14px;color:#999;transition:transform 0.2s;}
@@ -821,12 +821,12 @@ input[type=file]{display:none;}
 /* ----- Barre de progression (pipeline) ----- */
 .pipeline-bar{
   display:flex;align-items:center;flex-wrap:wrap;gap:2px;
-  background:#fff;border:1px solid #ecedef;border-radius:14px;
-  padding:12px 16px;margin-bottom:6px;
+  background:#fff;border:1px solid #ecedef;border-radius:12px;
+  padding:8px 14px;margin-bottom:3px;
   box-shadow:0 1px 3px rgba(0,0,0,0.04);
 }
 .pipeline-step{
-  font-size:12px;padding:5px 11px;border-radius:8px;cursor:pointer;
+  font-size:12px;padding:4px 10px;border-radius:8px;cursor:pointer;
   color:#9aa0aa;font-weight:500;white-space:nowrap;transition:background .12s,color .12s;
   border:none;background:transparent;font-family:inherit;
 }
@@ -835,11 +835,11 @@ input[type=file]{display:none;}
 .pipeline-step.current{background:#e7f0fb;color:#185fa5;font-weight:700;}
 .pipeline-step.current:hover{background:#dbe8f8;}
 .pipeline-sep{color:#cfd4db;font-size:11px;line-height:1;padding:0 1px;}
-.pipeline-hint{font-size:11px;color:#aab0ba;margin:0 0 18px 4px;}
+.pipeline-hint{font-size:11px;color:#aab0ba;margin:0 0 10px 4px;}
 
 /* ----- Barre d'onglets ----- */
 .tabbar{
-  display:flex;gap:4px;border-bottom:1.5px solid #e8eaed;margin-bottom:20px;
+  display:flex;gap:4px;border-bottom:1.5px solid #e8eaed;margin-bottom:14px;
   overflow-x:auto;-webkit-overflow-scrolling:touch;
 }
 .tabbtn{
@@ -866,39 +866,51 @@ input[type=file]{display:none;}
   #panel-suivi .panel-2col{display:grid;grid-template-columns:minmax(360px,1fr) minmax(360px,1fr);gap:20px;align-items:start;}
 }
 
-/* ----- Onglet Apercu (synthese lecture seule) ----- */
-.apercu-wrap{display:flex;flex-direction:column;gap:16px;}
+/* ----- Onglet Apercu (synthese lecture seule, 2 colonnes) ----- */
+.apercu-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start;}
+@media(max-width:899px){.apercu-grid{grid-template-columns:1fr;}}
+.apercu-col{display:flex;flex-direction:column;gap:14px;min-width:0;}
 .apercu-desc{
   background:#fff;border:1px solid #ecedef;border-left:4px solid #185fa5;border-radius:12px;
-  padding:16px 20px;
+  padding:14px 18px;height:100%;
 }
 .apercu-desc-label{font-size:12px;color:#9aa0aa;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
 .apercu-desc-body{font-size:14px;line-height:1.6;color:#222;white-space:pre-wrap;word-break:break-word;}
 .apercu-desc-body:empty::after{content:"Aucune note pour l'instant.";color:#bbb;font-style:italic;}
-.apercu-card{background:#fff;border:1px solid #ecedef;border-radius:12px;padding:6px 20px;}
+.apercu-card{background:#fff;border:1px solid #ecedef;border-radius:12px;padding:2px 16px;}
 .apercu-row{
-  display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f2f4;
+  display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f2f4;
 }
 .apercu-row:last-child{border-bottom:none;}
-.apercu-row .ar-ic{width:22px;text-align:center;color:#9aa0aa;font-size:16px;flex-shrink:0;}
-.apercu-row .ar-label{font-size:13px;color:#8b919b;min-width:96px;flex-shrink:0;}
-.apercu-row .ar-val{font-size:14px;color:#1a1a2e;flex:1;min-width:0;word-break:break-word;}
+.apercu-row .ar-ic{width:18px;text-align:center;color:#9aa0aa;font-size:15px;flex-shrink:0;}
+.apercu-row .ar-label{font-size:12px;color:#8b919b;min-width:78px;flex-shrink:0;}
+.apercu-row .ar-val{font-size:13.5px;color:#1a1a2e;flex:1;min-width:0;word-break:break-word;}
 .apercu-row .ar-val.strong{font-weight:700;}
 .apercu-row .ar-val.empty{color:#bbb;font-style:italic;font-weight:400;}
-.apercu-edit{
-  background:none;border:1px solid #e3e5e9;color:#9aa0aa;border-radius:7px;
-  width:30px;height:30px;cursor:pointer;font-size:13px;flex-shrink:0;transition:all .12s;
+.apercu-mini-btn{
+  background:none;border:1px solid #e3e5e9;color:#9aa0aa;border-radius:6px;
+  width:26px;height:26px;cursor:pointer;font-size:12px;flex-shrink:0;transition:all .12s;
+  display:inline-flex;align-items:center;justify-content:center;padding:0;
 }
-.apercu-edit:hover{border-color:#185fa5;color:#185fa5;background:#f4f8fd;}
-.apercu-stats{display:flex;gap:12px;}
-.apercu-stat{flex:1;background:#f6f7f9;border-radius:10px;padding:13px 16px;}
-.apercu-stat .as-label{font-size:12px;color:#8b919b;margin-bottom:4px;}
-.apercu-stat .as-val{font-size:18px;font-weight:700;color:#1a1a2e;}
-.apercu-stat .as-val.warn{font-size:14px;color:#e65100;}
-.apercu-stat .as-val.ok{font-size:14px;color:#2e7d32;}
+.apercu-mini-btn:hover{border-color:#185fa5;color:#185fa5;background:#f4f8fd;}
+.apercu-mini-btn.copied{border-color:#2e7d32;color:#2e7d32;background:#edf7ee;}
+.apercu-gcal-row{padding:8px 0 10px;border-bottom:1px solid #f1f2f4;}
+.apercu-gcal-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;font-weight:600;
+  border:1px solid #c8d9ee;background:#f4f8fd;border-radius:9px;cursor:pointer;color:#185fa5;
+  font-family:inherit;transition:all .12s;width:100%;justify-content:center;
+}
+.apercu-gcal-btn:hover{background:#e7f0fb;border-color:#185fa5;}
+.apercu-gcal-btn.added{border-color:#bfe3c8;background:#edf7ee;color:#2e7d32;}
+.apercu-stats{display:flex;gap:10px;}
+.apercu-stat{flex:1;background:#f6f7f9;border-radius:10px;padding:11px 14px;}
+.apercu-stat .as-label{font-size:11px;color:#8b919b;margin-bottom:3px;}
+.apercu-stat .as-val{font-size:17px;font-weight:700;color:#1a1a2e;}
+.apercu-stat .as-val.warn{font-size:13.5px;color:#e65100;}
+.apercu-stat .as-val.ok{font-size:13.5px;color:#2e7d32;}
 .apercu-actions{display:flex;gap:8px;flex-wrap:wrap;}
 .apercu-actions .aa-btn{
-  display:flex;align-items:center;gap:7px;padding:10px 15px;font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:7px;padding:9px 14px;font-size:13px;font-weight:600;
   border:1px solid #e3e5e9;background:#fff;border-radius:9px;cursor:pointer;color:#374151;
   font-family:inherit;transition:all .12s;text-decoration:none;
 }
@@ -6341,77 +6353,137 @@ function renderApercu(){
   /* Statut de contact (badge) */
   const stContact=(typeof getStatutContact==='function'&&currentStatutContact)?getStatutContact(currentStatutContact):null;
 
-  /* Date longue FR si possible */
+  /* Date longue FR si possible (caracteres Unicode reels, PAS d'entites HTML car le texte passe par escapeHtml) */
   let dateAff='';
   if(date){
     try{
       const d=new Date(date+'T00:00:00');
       dateAff=d.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
     }catch(e){ dateAff=date; }
-    if(heure) dateAff+=' &middot; '+heure;
+    if(heure) dateAff+=' \u00b7 '+heure;  /* \u00b7 = point median */
   }
 
   /* Synthese finances : total avant taxes + statut paiement */
   const sousTotalTxt=document.getElementById('sous-total')?document.getElementById('sous-total').textContent:'0,00 $';
   const estPaye=mandat&&mandat.statut_paye;
 
-  const compLabel = comp==='geq' ? 'GEQ &ndash; B&acirc;timent Conseil' : 'Logica Inspection';
+  /* Libelle compagnie en caracteres Unicode reels (– et ·), pas d'entites */
+  const compLabel = comp==='geq' ? 'GEQ \u2013 B\u00e2timent Conseil' : 'Logica Inspection';
+  const compFull = compLabel + (typeNom ? (' \u00b7 '+typeNom) : '');
 
-  let html='';
+  /* Etat du bouton Google Calendar (lit l'etat du bouton existant) */
+  const gcalAdded = mandat && mandat.gcal_event_id;
 
-  /* Bloc description (notes) */
-  html+='<div class="apercu-desc">'+
-    '<div class="apercu-desc-label"><span>&#128221;</span> Description / Notes'+
-      '<button class="apercu-edit" style="margin-left:auto" title="Modifier les notes" onclick="gotoField(\'comm\',\'f-notes-editor\')">&#9998;</button>'+
-    '</div>'+
-    '<div class="apercu-desc-body">'+escapeHtml(notesTxt)+'</div>'+
+  /* ===== COLONNE GAUCHE : infos client ===== */
+  let left='<div class="apercu-card">';
+  left+=apRow('&#128100;','Client',nom,'suivi','f-client-nom',true);
+  left+=apRowRaw('&#127970;','Compagnie',valHtml(compFull,false),'suivi','f-compagnie');
+  left+=apRowCopy('&#128222;','T&eacute;l&eacute;phone',tel,'suivi','f-client-tel',false);
+  left+=apRowCopy('&#9993;','Courriel',email,'suivi','f-client-email',true);
+  left+=apRowCopy('&#128205;','Adresse',adresse,'suivi','f-adresse',true);
+  left+=apRow('&#128197;','Rendez-vous',dateAff,'suivi','f-date',true);
+  /* Bouton Google Calendar juste sous le RDV */
+  left+='<div class="apercu-gcal-row">'+
+    '<button class="apercu-gcal-btn'+(gcalAdded?' added':'')+'" onclick="apercuAddGCal()">'+
+      '<span>&#128197;</span> '+(gcalAdded?'\u2713 Ajout\u00e9 au calendrier \u00b7 Mettre \u00e0 jour':'Ajouter au calendrier Google')+
+    '</button>'+
   '</div>';
-
-  /* Carte infos client + RDV */
-  html+='<div class="apercu-card">';
-  html+=apRow('&#128100;','Client',nom,'suivi','f-client-nom',true);
-  html+=apRow('&#127970;','Compagnie',compLabel+(typeNom?(' &middot; '+typeNom):''),'suivi','f-compagnie');
-  html+=apRow('&#128222;','T&eacute;l&eacute;phone',tel,'suivi','f-client-tel');
-  html+=apRow('&#9993;','Courriel',email,'suivi','f-client-email');
-  html+=apRow('&#128205;','Adresse',adresse,'suivi','f-adresse');
-  html+=apRow('&#128197;','Rendez-vous',dateAff,'suivi','f-date',true);
-  html+=apRow('&#128119;','Technicien',techNom,'suivi','f-tech');
+  left+=apRow('&#128119;','Technicien',techNom,'suivi','f-tech');
   if(stContact){
-    html+=apRowRaw('&#128172;','Statut','<span class="ar-val strong" style="color:'+(stContact.couleur||'#374151')+'">'+escapeHtml(stContact.label||'')+'</span>','suivi','suivi-statut-pills');
+    left+=apRowRaw('&#128172;','Statut','<span class="ar-val strong" style="color:'+(stContact.couleur||'#374151')+'">'+escapeHtml(stContact.label||'')+'</span>','suivi','suivi-statut-pills');
   }
-  html+='</div>';
+  left+='</div>';
 
   /* Stats : total avant taxes + paiement */
-  html+='<div class="apercu-stats">'+
+  left+='<div class="apercu-stats">'+
     '<div class="apercu-stat"><div class="as-label">Total avant taxes</div><div class="as-val">'+sousTotalTxt+'</div></div>'+
-    '<div class="apercu-stat"><div class="as-label">Paiement</div><div class="as-val '+(estPaye?'ok':'warn')+'">'+(estPaye?'&#10003; Re&ccedil;u':'&#9203; En attente')+'</div></div>'+
+    '<div class="apercu-stat"><div class="as-label">Paiement</div><div class="as-val '+(estPaye?'ok':'warn')+'">'+(estPaye?'\u2713 Re\u00e7u':'\u23f3 En attente')+'</div></div>'+
   '</div>';
 
   /* Actions rapides */
   const telClean=tel.replace(/[^0-9+]/g,'');
-  html+='<div class="apercu-actions">';
-  if(telClean) html+='<a class="aa-btn" href="tel:'+escapeAttr(telClean)+'"><span>&#128222;</span> Appeler</a>';
-  if(adresse) html+='<button class="aa-btn" onclick="openInMaps()"><span>&#128205;</span> Google Maps</button>';
-  html+='<button class="aa-btn" onclick="gotoField(\'suivi\',\'f-date\')"><span>&#128197;</span> Modifier le RDV</button>';
-  html+='<button class="aa-btn" onclick="switchTab(\'comm\')"><span>&#9993;</span> Courriels</button>';
-  html+='</div>';
+  left+='<div class="apercu-actions">';
+  if(telClean) left+='<a class="aa-btn" href="tel:'+escapeAttr(telClean)+'"><span>&#128222;</span> Appeler</a>';
+  if(adresse) left+='<button class="aa-btn" onclick="openInMaps()"><span>&#128205;</span> Maps</button>';
+  left+='<button class="aa-btn" onclick="switchTab(\'comm\')"><span>&#9993;</span> Courriels</button>';
+  left+='</div>';
 
-  wrap.innerHTML=html;
+  /* ===== COLONNE DROITE : description / notes en entier ===== */
+  let right='<div class="apercu-desc">'+
+    '<div class="apercu-desc-label"><span>&#128221;</span> Description / Notes'+
+      '<button class="apercu-mini-btn" style="margin-left:auto" title="Modifier les notes" onclick="gotoField(\'comm\',\'f-notes-editor\')">&#9998;</button>'+
+    '</div>'+
+    '<div class="apercu-desc-body">'+escapeHtml(notesTxt)+'</div>'+
+  '</div>';
+
+  wrap.innerHTML='<div class="apercu-grid">'+
+    '<div class="apercu-col">'+left+'</div>'+
+    '<div class="apercu-col">'+right+'</div>'+
+  '</div>';
+}
+
+/* Helper : span de valeur (ou "Non renseigne" si vide) */
+function valHtml(val,strong){
+  if(val&&String(val).trim()!=='')
+    return '<span class="ar-val'+(strong?' strong':'')+'">'+escapeHtml(String(val))+'</span>';
+  return '<span class="ar-val empty">Non renseign\u00e9</span>';
 }
 
 function apRow(ic,label,val,tab,fieldId,strong){
-  const valHtml = (val&&String(val).trim()!=='')
-    ? '<span class="ar-val'+(strong?' strong':'')+'">'+escapeHtml(String(val))+'</span>'
-    : '<span class="ar-val empty">Non renseign&eacute;</span>';
-  return apRowRaw(ic,label,valHtml,tab,fieldId);
+  return apRowRaw(ic,label,valHtml(val,strong),tab,fieldId);
 }
-function apRowRaw(ic,label,valHtml,tab,fieldId){
+
+function apRowRaw(ic,label,valInner,tab,fieldId){
   return '<div class="apercu-row">'+
     '<span class="ar-ic">'+ic+'</span>'+
     '<span class="ar-label">'+label+'</span>'+
-    valHtml+
-    '<button class="apercu-edit" title="Modifier" onclick="gotoField(\''+tab+'\',\''+fieldId+'\')">&#9998;</button>'+
+    valInner+
+    '<button class="apercu-mini-btn" title="Modifier" onclick="gotoField(\''+tab+'\',\''+fieldId+'\')">&#9998;</button>'+
   '</div>';
+}
+
+/* Ligne avec bouton Copier + bouton crayon */
+function apRowCopy(ic,label,val,tab,fieldId,showCopy){
+  const hasVal = val&&String(val).trim()!=='';
+  let btns='';
+  if(hasVal && showCopy){
+    btns+='<button class="apercu-mini-btn" title="Copier" onclick="apercuCopy(this,\''+escapeAttr(String(val))+'\')">&#128203;</button>';
+  }
+  btns+='<button class="apercu-mini-btn" title="Modifier" onclick="gotoField(\''+tab+'\',\''+fieldId+'\')">&#9998;</button>';
+  return '<div class="apercu-row">'+
+    '<span class="ar-ic">'+ic+'</span>'+
+    '<span class="ar-label">'+label+'</span>'+
+    valHtml(val,false)+
+    btns+
+  '</div>';
+}
+
+/* Copie dans le presse-papier + feedback visuel */
+function apercuCopy(btn,txt){
+  const done=()=>{
+    btn.classList.add('copied');
+    const old=btn.innerHTML; btn.innerHTML='&#10003;';
+    setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML=old; },1200);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(()=>{ fallbackCopy(txt); done(); });
+  } else { fallbackCopy(txt); done(); }
+}
+function fallbackCopy(txt){
+  const ta=document.createElement('textarea'); ta.value=txt;
+  ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta);
+  ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta);
+}
+
+/* Bouton calendrier de l'apercu -> reutilise la logique existante addToGoogleCalendar */
+function apercuAddGCal(){
+  if(typeof addToGoogleCalendar==='function'){
+    addToGoogleCalendar();
+    /* Re-render apres un court delai pour refleter l'etat (gcal_event_id) */
+    setTimeout(renderApercu,1500);
+  } else {
+    gotoField('suivi','btn-gcal');
+  }
 }
 
 /* Initialisation du layout (appelee apres le chargement du mandat) */
