@@ -640,6 +640,23 @@ textarea{resize:vertical;min-height:70px;line-height:1.5;}
 .btn-rm{padding:4px 8px;border:none;border-radius:6px;background:#ffebee;color:#e53935;cursor:pointer;font-size:14px;}
 .btn-add-extra{margin-top:8px;padding:6px 14px;border:1.5px dashed #ccc;border-radius:7px;background:none;color:#999;font-size:12px;cursor:pointer;width:100%;transition:all 0.2s;}
 .btn-add-extra:hover{border-color:#1a1a2e;color:#1a1a2e;}
+.add-service-menu{
+  margin-top:6px;border:1px solid #e3e5e9;border-radius:10px;background:#fff;
+  box-shadow:0 6px 20px rgba(0,0,0,0.12);overflow:hidden;max-height:340px;overflow-y:auto;
+}
+.add-service-menu .asm-section{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+  color:#aab0ba;padding:9px 14px 4px;
+}
+.add-service-menu .asm-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;
+  font-size:13.5px;color:#1f2937;text-align:left;font-family:inherit;transition:background .1s;
+}
+.add-service-menu .asm-item:hover{background:#f4f8fd;}
+.add-service-menu .asm-item .asm-name{flex:1;min-width:0;}
+.add-service-menu .asm-item .asm-price{font-size:12px;color:#8b919b;font-weight:600;flex-shrink:0;}
+.add-service-menu .asm-custom{border-top:1px solid #f1f2f4;color:#185fa5;font-weight:600;}
 
 .special-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
 .btn-special{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:2px solid #e8eaed;background:white;font-size:13px;font-weight:600;color:#555;cursor:pointer;transition:all 0.2s;}
@@ -1278,7 +1295,7 @@ input[type=file]{display:none;}
     <div style="margin-bottom:6px"><label>Services supplementaires</label></div>
     <div class="extras-wrap">
       <div class="extras-list" id="extras-list"></div>
-      <button class="btn-add-extra geq-only" style="display:none" onclick="addExtra()">+ Ajouter un service</button>
+      <button class="btn-add-extra" style="display:none" onclick="openAddServiceMenu()">+ Ajouter un service</button>
     </div>
 
     <div class="special-btns" id="special-btns" style="display:none">
@@ -1756,7 +1773,7 @@ techsFiltered.forEach(t=>{
     isNew=true;
     document.getElementById('f-compagnie').value=comp;
     if(profile.role==='technicien') document.getElementById('f-tech').value=profile.id;
-    if(comp==='logica') extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
+    /* Liste de services vide au depart (epure) - les services Logica sont proposes via le menu "+ Ajouter" */
     /* Peupler le select Heure avec les options aux 15 min */
     populateHeureSelect('');
     onCompagnieChange();
@@ -2024,10 +2041,7 @@ function onCompagnieChange(){
   document.getElementById('fg-type-geq').style.display=comp==='geq'?'flex':'none';
   const secClient=document.getElementById('sec-client');
   secClient.className='sec '+(comp==='logica'?'logica-sec':'geq-sec');
-  if(comp==='logica'&&extras.length===0){
-    extras=[...LOGICA_EXTRAS_DEFAULT.map(e=>({...e,id:Math.random().toString(36).substr(2,9)}))];
-    renderExtras();
-  }
+  /* Plus de pre-remplissage automatique des services Logica : liste epuree, ajout via menu */
   if(comp==='geq') onTypeMandatChange(true);
   updateBadge();
   renderEmails();
@@ -2172,9 +2186,9 @@ function renderExtras(){
     list.appendChild(row);
   });
 
-  /* Bouton "+ Ajouter un service" cache si verrouille */
+  /* Bouton "+ Ajouter un service" : visible pour Logica ET GEQ, cache si verrouille */
   const btnAdd = document.querySelector('.btn-add-extra');
-  if(document.getElementById('f-compagnie').value==='geq' && !locked){
+  if(!locked){
     if(btnAdd) btnAdd.style.display='block';
   } else if(btnAdd) {
     btnAdd.style.display='none';
@@ -2199,6 +2213,71 @@ function addExtra(){
     const inputs=document.querySelectorAll('.extra-name-input');
     if(inputs.length) inputs[inputs.length-1].focus();
   },50);
+}
+
+/* Catalogue de services predefinis par compagnie (propose dans le menu d'ajout) */
+function getServiceCatalogue(){
+  const comp=document.getElementById('f-compagnie').value;
+  if(comp==='logica') return LOGICA_EXTRAS_DEFAULT;
+  return []; /* GEQ : pas de catalogue, uniquement personnalise */
+}
+
+/* Ouvre un petit menu pour choisir un service predefini ou en creer un personnalise */
+function openAddServiceMenu(){
+  /* Fermer un menu deja ouvert */
+  closeAddServiceMenu();
+  const catalogue=getServiceCatalogue();
+  /* Noms deja presents pour ne pas proposer de doublon */
+  const dejaPresents=extras.map(e=>(e.service_nom||'').trim().toLowerCase());
+
+  const menu=document.createElement('div');
+  menu.className='add-service-menu';
+  menu.id='add-service-menu';
+
+  let html='';
+  const dispo=catalogue.filter(c=>!dejaPresents.includes((c.service_nom||'').trim().toLowerCase()));
+  if(dispo.length){
+    html+='<div class="asm-section">Services pr\u00e9d\u00e9finis</div>';
+    dispo.forEach(c=>{
+      const prixTxt=c.prix?(c.prix+' $'):'';
+      html+='<button type="button" class="asm-item" onclick="addPredefinedService('+escapeAttr(JSON.stringify(c.service_nom))+')">'+
+        '<span class="asm-name">'+escapeHtml(c.service_nom)+'</span>'+
+        (prixTxt?'<span class="asm-price">'+prixTxt+'</span>':'')+
+      '</button>';
+    });
+  }
+  html+='<div class="asm-section">Autre</div>';
+  html+='<button type="button" class="asm-item asm-custom" onclick="addExtra();closeAddServiceMenu();">'+
+    '<span class="asm-name">\u270f\ufe0f Service personnalis\u00e9\u2026</span>'+
+  '</button>';
+
+  menu.innerHTML=html;
+
+  /* Inserer le menu juste sous le bouton */
+  const btn=document.querySelector('.btn-add-extra');
+  btn.parentNode.insertBefore(menu,btn.nextSibling);
+
+  /* Fermer au clic exterieur */
+  setTimeout(()=>{document.addEventListener('click',outsideAddMenu);},10);
+}
+function outsideAddMenu(e){
+  const menu=document.getElementById('add-service-menu');
+  const btn=document.querySelector('.btn-add-extra');
+  if(menu && !menu.contains(e.target) && e.target!==btn){ closeAddServiceMenu(); }
+}
+function closeAddServiceMenu(){
+  const menu=document.getElementById('add-service-menu');
+  if(menu) menu.remove();
+  document.removeEventListener('click',outsideAddMenu);
+}
+/* Ajoute un service predefini depuis le catalogue (prix/commission pre-remplis) */
+function addPredefinedService(nom){
+  const cat=getServiceCatalogue().find(c=>c.service_nom===nom);
+  if(cat){
+    extras.push({id:Math.random().toString(36).substr(2,9),service_nom:cat.service_nom,prix:cat.prix||0,commission:cat.commission||0,actif:true,custom:false});
+    renderExtras();
+  }
+  closeAddServiceMenu();
 }
 /* ===== TYPES DE MANDAT (charges depuis Supabase) ===== */
 let mandatTypesMap = {};  /* cache : { slug: {label, couleur, actif} } */
