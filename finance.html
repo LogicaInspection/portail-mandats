@@ -108,12 +108,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 @media(max-width:640px){
   .stat-tiles{grid-template-columns:1fr;}
 }
+/* ===== Section Stats demandes ===== */
+.stats-demandes-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.stats-demandes-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.stats-demandes-grid{grid-template-columns:1fr;}}
+.sd-tile{background:#fff;border:1.5px solid #eef0f2;border-radius:12px;padding:16px 18px;}
+.sd-tile.highlight{background:linear-gradient(135deg,#e7f0fb 0%,#f4f8fd 100%);border-color:#c8d9ee;}
+.sd-label{font-size:12px;color:#8b919b;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;}
+.sd-value{font-size:30px;font-weight:800;color:#1a1a2e;line-height:1;}
+.sd-value.warn{color:#e65100;}
+.sd-value.ok{color:#2e7d32;}
+.sd-value.pct{color:#185fa5;}
+.sd-sub{font-size:12px;color:#9aa0aa;margin-top:6px;}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <h1>&#128181; Finances</h1>
+  <h1>&#128202; Finance et Stats</h1>
   <div class="topbar-actions">
     <a href="dashboard.html" class="btn-back">&larr; Dashboard</a>
   </div>
@@ -145,6 +157,51 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
   <!-- Contenu principal (cache au depart) -->
   <div id="main-content" style="display:none;">
+
+    <!-- ===== SECTION STATS DEMANDES (total / injoignables / % booke) ===== -->
+    <div class="section stats-demandes" style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+        <h2 style="margin:0;">&#128200; Statistiques des demandes</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select id="stats-compagnie" onchange="renderStatsDemandes()" style="padding:7px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;">
+            <option value="">Toutes les compagnies</option>
+            <option value="geq">GEQ</option>
+            <option value="logica">Logica</option>
+          </select>
+          <select id="stats-region" onchange="renderStatsDemandes()" style="padding:7px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;">
+            <option value="">Toutes les r&eacute;gions</option>
+            <option value="quebec">Qu&eacute;bec</option>
+            <option value="estrie">Estrie</option>
+            <option value="mauricie">Mauricie</option>
+            <option value="monteregie">Mont&eacute;r&eacute;gie</option>
+            <option value="saguenay">Saguenay</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+      </div>
+      <div class="stats-demandes-grid" id="stats-demandes-grid">
+        <div class="sd-tile">
+          <div class="sd-label">Total des demandes</div>
+          <div class="sd-value" id="sd-total">0</div>
+          <div class="sd-sub">tous statuts confondus</div>
+        </div>
+        <div class="sd-tile">
+          <div class="sd-label">Non rejoints</div>
+          <div class="sd-value warn" id="sd-injoignable">0</div>
+          <div class="sd-sub">clients injoignables</div>
+        </div>
+        <div class="sd-tile">
+          <div class="sd-label">Jobs book&eacute;s</div>
+          <div class="sd-value ok" id="sd-booke">0</div>
+          <div class="sd-sub" id="sd-booke-count">0 confirm&eacute;(s)</div>
+        </div>
+        <div class="sd-tile highlight">
+          <div class="sd-label">Taux de conversion</div>
+          <div class="sd-value pct" id="sd-pct">0 %</div>
+          <div class="sd-sub">book&eacute;s / total demandes</div>
+        </div>
+      </div>
+    </div>
 
     <!-- Tuiles de stats -->
     <div class="stat-tiles">
@@ -256,6 +313,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const BASS_UID='72fed940-9f61-471d-ad81-378af125146e';
 
 let allMandats=[];
+let allMandatsStats=[];
 let currentPeriod='month';
 let customStart=null,customEnd=null;
 let typeMandats=[];
@@ -345,6 +403,35 @@ async function loadData(){
   document.getElementById('loading-main').style.display='none';
   document.getElementById('main-content').style.display='block';
   renderAll();
+
+  /* ===== Charger TOUS les mandats (tous statuts) pour les stats de demandes =====
+     Requete separee : ne touche pas allMandats (profit) ci-dessus. */
+  const {data:statsData,error:statsErr}=await sb.from('mandats')
+    .select('id,compagnie,region,statut_contact');
+  if(!statsErr){
+    allMandatsStats=statsData||[];
+    renderStatsDemandes();
+  }
+}
+
+/* ===== STATS DEMANDES : total / injoignables / % booke ===== */
+function renderStatsDemandes(){
+  const comp=document.getElementById('stats-compagnie').value;
+  const region=document.getElementById('stats-region').value;
+  let list=allMandatsStats;
+  if(comp) list=list.filter(m=>m.compagnie===comp);
+  if(region) list=list.filter(m=>m.region===region);
+
+  const total=list.length;
+  const injoignable=list.filter(m=>m.statut_contact==='injoignable').length;
+  const booke=list.filter(m=>m.statut_contact==='confirme').length;
+  const pct=total>0 ? Math.round((booke/total)*1000)/10 : 0;
+
+  document.getElementById('sd-total').textContent=total;
+  document.getElementById('sd-injoignable').textContent=injoignable;
+  document.getElementById('sd-booke').textContent=booke;
+  document.getElementById('sd-booke-count').textContent=booke+' confirm\u00e9'+(booke>1?'s':'');
+  document.getElementById('sd-pct').textContent=(Number.isInteger(pct)?pct:pct.toFixed(1))+' %';
 }
 
 /* ===== PERIODE ===== */
