@@ -60,12 +60,10 @@ body.test-mode .content { padding-top: 18px; }
 
 /* ===== SECTION "Suivi du mandat" - 2 sous-blocs avec titres pro ===== */
 .sec.suivi-mandat-sec{border-left:4px solid #4caf50;margin-bottom:18px;padding:0;overflow:hidden;}
-.suivi-mandat-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
-@media (max-width: 980px){.suivi-mandat-grid{grid-template-columns:1fr;}}
+.suivi-mandat-grid{display:grid;grid-template-columns:1fr;gap:0;}
 
-.suivi-mandat-block{padding:18px 24px;}
-.suivi-mandat-block + .suivi-mandat-block{border-left:1px solid #f0f1f3;}
-@media (max-width: 980px){.suivi-mandat-block + .suivi-mandat-block{border-left:none;border-top:1px solid #f0f1f3;}}
+.suivi-mandat-block{padding:14px 16px;}
+.suivi-mandat-block + .suivi-mandat-block{border-left:none;border-top:1px solid #f0f1f3;}
 
 .suivi-mandat-title{
   display:flex;align-items:center;gap:8px;
@@ -200,7 +198,7 @@ body.test-mode .content { padding-top: 18px; }
   font-size:14px;
 }
 
-.sec{background:white;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid #f0f0f0;}
+.sec{background:white;border-radius:14px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.05);border:1px solid #eef0f2;}
 .sec.logica-sec{border-left:4px solid #1565c0;}
 .sec.geq-sec{border-left:4px solid #b71c1c;}
 .sec.finance-sec{border-left:4px solid #ff9800;}
@@ -209,25 +207,25 @@ body.test-mode .content { padding-top: 18px; }
 .sec.email-sec{border-left:4px solid #00bcd4;}
 .sec.alert-sec{border-left:4px solid #f44336;background:#fff8f8;}
 
-.sec-title{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #f5f5f5;display:flex;align-items:center;gap:8px;}
-.sec-title .ic{font-size:18px;}
+.sec-title{font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid #f3f4f6;display:flex;align-items:center;gap:8px;}
+.sec-title .ic{font-size:17px;}
 
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
-.fg{display:flex;flex-direction:column;gap:6px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
 .fg.s2{grid-column:span 2;}
 .fg.s3{grid-column:span 3;}
 
 label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;}
 
 input,select,textarea{
-  padding:11px 15px;border:1.5px solid #e8eaed;border-radius:10px;
+  padding:9px 13px;border:1.5px solid #e8eaed;border-radius:9px;
   font-size:14px;color:#222;background:white;outline:none;
   transition:all 0.2s;font-family:inherit;width:100%;
 }
 input:focus,select:focus,textarea:focus{border-color:#1a1a2e;box-shadow:0 0 0 3px rgba(26,26,46,0.08);}
 input[readonly]{background:#f8f9fa;color:#999;}
-textarea{resize:vertical;min-height:80px;line-height:1.6;}
+textarea{resize:vertical;min-height:70px;line-height:1.5;}
 
 .link-input{display:flex;gap:8px;}
 .link-input input{flex:1;}
@@ -866,10 +864,10 @@ input[type=file]{display:none;}
 .tabpanel{display:none;}
 .tabpanel.active{display:block;}
 /* Dans un onglet, les sections s'empilent verticalement, pleine largeur */
-.tabpanel .col{display:flex;flex-direction:column;gap:20px;min-width:0;width:100%;}
+.tabpanel .col{display:flex;flex-direction:column;gap:14px;min-width:0;width:100%;}
 /* Sur grand ecran, Suivi&RDV garde 2 colonnes pour ne pas etirer */
 @media(min-width:1000px){
-  #panel-suivi .panel-2col{display:grid;grid-template-columns:minmax(360px,1fr) minmax(360px,1fr);gap:20px;align-items:start;}
+  #panel-suivi .panel-2col{display:grid;grid-template-columns:minmax(340px,1fr) minmax(340px,1fr);gap:14px;align-items:start;}
 }
 
 /* ----- Onglet Apercu (synthese lecture seule, 2 colonnes) ----- */
@@ -6256,15 +6254,17 @@ function buildTabs(){
     const target=document.getElementById(targetId);
     if(sec && target) target.appendChild(sec);
   };
-  /* Onglet Suivi & RDV : 2 colonnes (client/planif a gauche, suivis a droite) */
+  /* Onglet Suivi & RDV : 2 colonnes pensees pour le flux du tech
+     Gauche  : Infos client + Planification (qui/ou/quand)
+     Droite  : Suivi client (statut = action #1) + Historique + Finalisation */
   const s2=document.getElementById('suivi-2col');
   const colA=document.createElement('div'); colA.className='col';
   const colB=document.createElement('div'); colB.className='col';
   s2.appendChild(colA); s2.appendChild(colB);
-  /* Bannieres d'alerte (reclamer / suivi-mandat) en pleine largeur au-dessus des 2 colonnes */
+  /* Bannieres d'alerte (reclamer) en pleine largeur au-dessus des 2 colonnes */
   const recl=document.getElementById('sec-reclamer');
   if(recl) document.getElementById('panel-suivi').insertBefore(recl,s2);
-  [['sec-client',colA],['sec-planification',colA],['sec-suivi-client',colB],['sec-suivi-mandat',colB]].forEach(([id,col])=>{
+  [['sec-client',colA],['sec-planification',colA],['sec-suivi-mandat',colB],['sec-suivi-client',colB]].forEach(([id,col])=>{
     const sec=document.getElementById(id); if(sec) col.appendChild(sec);
   });
   /* Onglet Courriels & Documents */
