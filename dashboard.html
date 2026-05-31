@@ -282,7 +282,8 @@ tr.t-sep td .sep-count{
 }
 tr.t-sep.aujourdhui td{background:#fff8e1;color:#7c2d12;border-color:#fbbf24;border-bottom:1px solid #fbbf24;border-top:1px solid #fbbf24;}
 tr.t-sep.aujourdhui .sep-count{background:#fef3c7;border-color:#fbbf24;color:#92400e;}
-tr.t-sep.realises{cursor:pointer;user-select:none;}
+tr.t-sep{cursor:pointer;user-select:none;}
+tr.t-sep:hover td{filter:brightness(0.97);}
 tr.t-sep.realises:hover td{background:#f0f1f3;}
 tr.t-sep .sep-toggle{margin-left:auto;font-size:10px;color:var(--ink-4);transition:transform 0.2s;}
 tr.t-sep.collapsed .sep-toggle{transform:rotate(-90deg);}
@@ -820,10 +821,12 @@ let techList = [];
 
   /* Nav Finance et Ma facturation */
   if (profile.id === BASS_UID) {
-    /* Bass voit Finance (page finance.html gestionnaire) */
+    /* Bass voit Finance et Stats (page finance.html gestionnaire) */
     const navFin = document.getElementById('nav-finance');
     navFin.href = 'finance.html';
     navFin.style.display = 'flex';
+    /* Renommer le libelle pour Bass (la page contient maintenant les stats) */
+    navFin.childNodes.forEach(n=>{ if(n.nodeType===3 && n.textContent.trim()) n.textContent=' Finance et Stats '; });
   } else if (profile.role === 'technicien') {
     /* Tech voit Ma facturation + Finance (ma-finance.html) */
     document.getElementById('nav-facturation').style.display = 'flex';
@@ -1489,7 +1492,14 @@ function renderTable(list) {
   groupes.avenir.sort((a,b) => a.date_mandat.localeCompare(b.date_mandat));
   groupes.realises.sort((a,b) => b.date_mandat.localeCompare(a.date_mandat));
 
-  const realisesCollapsed = localStorage.getItem('dashboard_realises_collapsed') !== 'false';
+  /* Etat de repli par section. Defaut : Aujourd'hui + A venir OUVERTS, le reste REPLIE.
+     Chaque section memorise son etat dans localStorage (cle dashboard_sec_<nom>_collapsed). */
+  const defaultCollapsed = { aujourdhui:false, avenir:false, sansdate:true, realises:true };
+  function isCollapsed(name){
+    const v = localStorage.getItem('dashboard_sec_'+name+'_collapsed');
+    if(v===null) return defaultCollapsed[name];
+    return v === 'true';
+  }
 
   const colCount = isGest ? 8 : 7;
   let html = `<table class="mandats">
@@ -1540,34 +1550,39 @@ function renderTable(list) {
     </tr>`;
   }
 
-  function sepRow(icon, label, cnt, cls='', toggle=false) {
-    return `<tr class="t-sep ${cls}" ${toggle ? 'onclick="toggleRealises(this)"' : ''}>
+  /* Toutes les sections sont desormais repliables (toggle=true partout) */
+  function sepRow(icon, label, cnt, name, collapsed) {
+    return `<tr class="t-sep ${name}${collapsed ? ' collapsed' : ''}" onclick="toggleSection(this,'${name}')">
       <td colspan="${colCount + (isGest?1:0)}">
         <div class="sep-content">
           <span class="sep-icon">${icon}</span>
           <span>${label}</span>
           <span class="sep-count">${cnt}</span>
-          ${toggle ? '<span class="sep-toggle">&#9660;</span>' : ''}
+          <span class="sep-toggle">&#9660;</span>
         </div>
       </td>
     </tr>`;
   }
 
   if (groupes.aujourdhui.length) {
-    html += sepRow('\u{1F31D}', "Aujourd'hui", groupes.aujourdhui.length, 'aujourdhui');
-    groupes.aujourdhui.forEach(m => html += renderRow(m, ' row-aujourdhui'));
+    const col = isCollapsed('aujourdhui');
+    html += sepRow('\u{1F31D}', "Aujourd'hui", groupes.aujourdhui.length, 'aujourdhui', col);
+    groupes.aujourdhui.forEach(m => html += renderRow(m, ' row-sec row-sec-aujourdhui row-aujourdhui' + (col ? ' is-hidden' : '')));
   }
   if (groupes.avenir.length) {
-    html += sepRow('\u{1F4C5}', '\u00C0 venir', groupes.avenir.length, 'avenir');
-    groupes.avenir.forEach(m => html += renderRow(m));
+    const col = isCollapsed('avenir');
+    html += sepRow('\u{1F4C5}', '\u00C0 venir', groupes.avenir.length, 'avenir', col);
+    groupes.avenir.forEach(m => html += renderRow(m, ' row-sec row-sec-avenir' + (col ? ' is-hidden' : '')));
   }
   if (groupes.sansdate.length) {
-    html += sepRow('\u{1F4CB}', 'Sans date planifi\u00e9e', groupes.sansdate.length, 'sansdate');
-    groupes.sansdate.forEach(m => html += renderRow(m));
+    const col = isCollapsed('sansdate');
+    html += sepRow('\u{1F4CB}', 'Sans date planifi\u00e9e', groupes.sansdate.length, 'sansdate', col);
+    groupes.sansdate.forEach(m => html += renderRow(m, ' row-sec row-sec-sansdate' + (col ? ' is-hidden' : '')));
   }
   if (groupes.realises.length) {
-    html += sepRow('\u2713', 'R\u00e9alis\u00e9s', groupes.realises.length, 'realises' + (realisesCollapsed ? ' collapsed' : ''), true);
-    groupes.realises.forEach(m => html += renderRow(m, ' row-passe row-realise' + (realisesCollapsed ? ' is-hidden' : '')));
+    const col = isCollapsed('realises');
+    html += sepRow('\u2713', 'R\u00e9alis\u00e9s', groupes.realises.length, 'realises', col);
+    groupes.realises.forEach(m => html += renderRow(m, ' row-sec row-sec-realises row-passe row-realise' + (col ? ' is-hidden' : '')));
   }
   html += '</tbody></table>';
 
@@ -1578,10 +1593,10 @@ function renderTable(list) {
   document.getElementById('btn-reset-cols').style.display = 'inline-flex';
 }
 
-function toggleRealises(sepEl) {
+function toggleSection(sepEl, name) {
   const isCollapsed = sepEl.classList.toggle('collapsed');
-  localStorage.setItem('dashboard_realises_collapsed', isCollapsed ? 'true' : 'false');
-  document.querySelectorAll('tr.row-realise').forEach(row => row.classList.toggle('is-hidden', isCollapsed));
+  localStorage.setItem('dashboard_sec_'+name+'_collapsed', isCollapsed ? 'true' : 'false');
+  document.querySelectorAll('tr.row-sec-'+name).forEach(row => row.classList.toggle('is-hidden', isCollapsed));
 }
 
 /* ===== EXCEL EXPORT ===== */
