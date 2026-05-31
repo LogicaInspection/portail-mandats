@@ -265,8 +265,8 @@ textarea{resize:vertical;min-height:70px;line-height:1.5;}
 .paiement-card-title .paid-badge{margin-left:auto;font-size:10px;font-weight:700;color:#1b5e20;background:#c8e6c9;padding:2px 8px;border-radius:10px;display:none;}
 .paiement-card.paid .paiement-card-title .paid-badge{display:inline-block;}
 
-.paiement-modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
-@media (max-width:1300px){.paiement-modes{grid-template-columns:1fr 1fr;}}
+.paiement-modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+@media (max-width:520px){.paiement-modes{grid-template-columns:1fr;}}
 .btn-paiement{
   display:flex;align-items:center;gap:5px;padding:7px 8px;
   border:1.5px solid #e8eaed;background:white;color:#555;
@@ -882,9 +882,12 @@ input[type=file]{display:none;}
 .tabpanel.active{display:block;}
 /* Dans un onglet, les sections s'empilent verticalement, pleine largeur */
 .tabpanel .col{display:flex;flex-direction:column;gap:14px;min-width:0;width:100%;}
-/* Sur grand ecran, Suivi&RDV garde 2 colonnes pour ne pas etirer */
+/* Grilles 2 colonnes : empilees par defaut (petit ecran), cote a cote >=1000px */
+#panel-fin .fin-2col{display:flex;flex-direction:column;gap:14px;}
+/* Sur grand ecran, Suivi&RDV et Finances gardent 2 colonnes pour ne pas etirer */
 @media(min-width:1000px){
   #panel-suivi .panel-2col{display:grid;grid-template-columns:minmax(340px,1fr) minmax(340px,1fr);gap:14px;align-items:start;}
+  #panel-fin .fin-2col{display:grid;grid-template-columns:minmax(380px,1.3fr) minmax(320px,1fr);gap:14px;align-items:start;}
 }
 
 /* ----- Onglet Apercu (synthese lecture seule, 2 colonnes) ----- */
@@ -6354,9 +6357,35 @@ function buildTabs(){
   move('sec-notes','panel-comm');
   move('sec-emails','panel-comm');
   move('sec-docs','panel-comm');
-  /* Onglet Finances */
-  move('sec-comm-tech','panel-fin');
-  move('sec-finances','panel-fin');
+  /* Onglet Finances : 2 colonnes cote a cote (Finances | Paiement recu) */
+  const finGrid=document.createElement('div');
+  finGrid.className='fin-2col';
+  document.getElementById('panel-fin').appendChild(finGrid);
+  const finL=document.createElement('div'); finL.className='col'; finGrid.appendChild(finL);
+  const finR=document.createElement('div'); finR.className='col'; finGrid.appendChild(finR);
+  /* Colonne gauche : la section Finances complete */
+  const secFin=document.getElementById('sec-finances');
+  if(secFin) finL.appendChild(secFin);
+  /* Colonne droite : on extrait le bloc Paiement + bouton Facture de sec-finances
+     et on les place dans une section dediee (memes IDs preserves) */
+  const paie=document.getElementById('paiement-card');
+  const btnFac=document.getElementById('btn-facture');
+  if(paie){
+    const secPaie=document.createElement('div');
+    secPaie.className='sec';
+    secPaie.style.borderLeft='4px solid #2e7d32';
+    secPaie.id='sec-paiement';
+    const t=document.createElement('div');
+    t.className='sec-title';
+    t.innerHTML='<span class="ic">&#128176;</span> Paiement & facturation';
+    secPaie.appendChild(t);
+    secPaie.appendChild(paie);
+    if(btnFac) secPaie.appendChild(btnFac);
+    finR.appendChild(secPaie);
+  }
+  /* Onglet Comm tech (commission) : reste dans Finances a gauche, au-dessus */
+  const secComm=document.getElementById('sec-comm-tech');
+  if(secComm) finL.insertBefore(secComm,secFin);
   /* Cacher le conteneur grid-3col residuel (desormais vide) */
   const grid=document.querySelector('.grid-3col');
   if(grid) grid.style.display='none';
