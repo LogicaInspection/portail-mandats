@@ -2158,6 +2158,10 @@ function renderExtras(){
   const roAttr = locked ? ' readonly' : '';
   const lockedRowCls = locked ? ' locked-row' : '';
   list.innerHTML='';
+  /* Affichage du bouton "+ Ajouter un service" : visible pour Logica ET GEQ, cache si verrouille.
+     Doit etre gere AVANT le return anticipe ci-dessous, sinon il disparait quand la liste est vide. */
+  const btnAddTop = document.querySelector('.btn-add-extra');
+  if(btnAddTop) btnAddTop.style.display = locked ? 'none' : 'block';
   if(!extras.length){
     list.innerHTML='<div style="font-size:13px;color:#bbb;padding:8px 0;text-align:center;">Aucun service supplementaire</div>';
     return;
