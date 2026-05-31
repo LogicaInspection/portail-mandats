@@ -108,20 +108,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 @media(max-width:640px){
   .stat-tiles{grid-template-columns:1fr;}
 }
-/* ===== Section Stats demandes ===== */
-.stats-demandes-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
-@media(max-width:1100px){.stats-demandes-grid{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:700px){.stats-demandes-grid{grid-template-columns:1fr 1fr;}}
-@media(max-width:480px){.stats-demandes-grid{grid-template-columns:1fr;}}
-.sd-tile{background:#fff;border:1.5px solid #eef0f2;border-radius:12px;padding:16px 18px;}
-.sd-tile.highlight{background:linear-gradient(135deg,#e7f0fb 0%,#f4f8fd 100%);border-color:#c8d9ee;}
-.sd-label{font-size:12px;color:#8b919b;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;}
-.sd-value{font-size:30px;font-weight:800;color:#1a1a2e;line-height:1;}
-.sd-value.warn{color:#e65100;}
-.sd-value.ok{color:#2e7d32;}
-.sd-value.pct{color:#185fa5;}
-.sd-value.soum{color:#7b1fa2;}
-.sd-sub{font-size:12px;color:#9aa0aa;margin-top:6px;}
+/* ===== Section Stats demandes : 2 blocs compagnie ===== */
+.stats-comp-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+@media(max-width:900px){.stats-comp-2col{grid-template-columns:1fr;}}
+.comp-block{border:1.5px solid #eef0f2;border-radius:14px;padding:14px 16px;background:#fafbfc;}
+.comp-block.comp-logica{border-left:4px solid #1565c0;}
+.comp-block.comp-geq{border-left:4px solid #e53935;}
+.comp-block-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;min-height:34px;}
+.comp-badge{padding:5px 14px;border-radius:20px;font-size:13px;font-weight:800;letter-spacing:0.5px;color:#fff;}
+.comp-badge.badge-logica{background:#1565c0;}
+.comp-badge.badge-geq{background:#e53935;}
+.comp-region-select{padding:6px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:12px;background:#fff;}
+.sd-list{display:flex;flex-direction:column;gap:8px;}
+.sd-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid #eef0f2;border-radius:9px;padding:10px 14px;}
+.sd-row.highlight{background:linear-gradient(135deg,#e7f0fb 0%,#f4f8fd 100%);border-color:#c8d9ee;}
+.sd-row .sd-label{font-size:12px;color:#6b7280;font-weight:600;margin:0;text-transform:none;letter-spacing:0;}
+.sd-row .sd-value{font-size:22px;font-weight:800;color:#1a1a2e;line-height:1;}
+.sd-row .sd-value.warn{color:#e65100;}
+.sd-row .sd-value.ok{color:#2e7d32;}
+.sd-row .sd-value.pct{color:#185fa5;}
+.sd-row .sd-value.soum{color:#7b1fa2;}
 </style>
 </head>
 <body>
@@ -160,53 +166,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <!-- Contenu principal (cache au depart) -->
   <div id="main-content" style="display:none;">
 
-    <!-- ===== SECTION STATS DEMANDES (total / injoignables / % booke) ===== -->
+    <!-- ===== SECTION STATS DEMANDES : 2 blocs compagnie cote a cote ===== -->
     <div class="section stats-demandes" style="margin-bottom:18px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
-        <h2 style="margin:0;">&#128200; Statistiques des demandes</h2>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <select id="stats-compagnie" onchange="renderStatsDemandes()" style="padding:7px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;">
-            <option value="">Toutes les compagnies</option>
-            <option value="geq">GEQ</option>
-            <option value="logica">Logica</option>
-          </select>
-          <select id="stats-region" onchange="renderStatsDemandes()" style="padding:7px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;">
-            <option value="">Toutes les r&eacute;gions</option>
-            <option value="quebec">Qu&eacute;bec</option>
-            <option value="estrie">Estrie</option>
-            <option value="mauricie">Mauricie</option>
-            <option value="monteregie">Mont&eacute;r&eacute;gie</option>
-            <option value="saguenay">Saguenay</option>
-            <option value="autre">Autre</option>
-          </select>
+      <h2 style="margin:0 0 14px;">&#128200; Statistiques des demandes</h2>
+      <div class="stats-comp-2col">
+
+        <!-- BLOC LOGICA -->
+        <div class="comp-block comp-logica">
+          <div class="comp-block-head">
+            <span class="comp-badge badge-logica">Logica</span>
+          </div>
+          <div class="sd-list" id="sd-list-logica"></div>
         </div>
-      </div>
-      <div class="stats-demandes-grid" id="stats-demandes-grid">
-        <div class="sd-tile">
-          <div class="sd-label">Total des demandes</div>
-          <div class="sd-value" id="sd-total">0</div>
-          <div class="sd-sub">tous statuts confondus</div>
+
+        <!-- BLOC GEQ (avec filtre region) -->
+        <div class="comp-block comp-geq">
+          <div class="comp-block-head">
+            <span class="comp-badge badge-geq">GEQ</span>
+            <select id="stats-region" onchange="renderStatsDemandes()" class="comp-region-select">
+              <option value="">Toutes les r&eacute;gions</option>
+              <option value="quebec">Qu&eacute;bec</option>
+              <option value="estrie">Estrie</option>
+              <option value="mauricie">Mauricie</option>
+              <option value="monteregie">Mont&eacute;r&eacute;gie</option>
+              <option value="saguenay">Saguenay</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+          <div class="sd-list" id="sd-list-geq"></div>
         </div>
-        <div class="sd-tile">
-          <div class="sd-label">Non rejoints</div>
-          <div class="sd-value warn" id="sd-injoignable">0</div>
-          <div class="sd-sub">pas contact&eacute; / message / injoignable</div>
-        </div>
-        <div class="sd-tile">
-          <div class="sd-label">Soumissions envoy&eacute;es</div>
-          <div class="sd-value soum" id="sd-soumission">0</div>
-          <div class="sd-sub">en attente client</div>
-        </div>
-        <div class="sd-tile">
-          <div class="sd-label">Jobs book&eacute;s</div>
-          <div class="sd-value ok" id="sd-booke">0</div>
-          <div class="sd-sub" id="sd-booke-count">0 confirm&eacute;(s)</div>
-        </div>
-        <div class="sd-tile highlight">
-          <div class="sd-label">Taux de conversion</div>
-          <div class="sd-value pct" id="sd-pct">0 %</div>
-          <div class="sd-sub">book&eacute;s / total demandes</div>
-        </div>
+
       </div>
     </div>
 
@@ -421,27 +410,34 @@ async function loadData(){
   }
 }
 
-/* ===== STATS DEMANDES : total / injoignables / % booke ===== */
-function renderStatsDemandes(){
-  const comp=document.getElementById('stats-compagnie').value;
-  const region=document.getElementById('stats-region').value;
-  let list=allMandatsStats;
-  if(comp) list=list.filter(m=>m.compagnie===comp);
-  if(region) list=list.filter(m=>m.region===region);
-
+/* ===== STATS DEMANDES : 2 blocs compagnie (Logica + GEQ) ===== */
+function computeStats(list){
   const total=list.length;
-  /* Non rejoints = pas contacte + message laisse + injoignable */
   const nonRejoints=list.filter(m=>['pas_contacte','message_laisse','injoignable'].includes(m.statut_contact)).length;
   const soumission=list.filter(m=>m.statut_contact==='soumission_envoyee').length;
   const booke=list.filter(m=>m.statut_contact==='confirme').length;
   const pct=total>0 ? Math.round((booke/total)*1000)/10 : 0;
+  return {total,nonRejoints,soumission,booke,pct};
+}
+function statsRowsHtml(s){
+  const pctTxt=(Number.isInteger(s.pct)?s.pct:s.pct.toFixed(1))+' %';
+  return ''+
+    '<div class="sd-row"><span class="sd-label">Total des demandes</span><span class="sd-value">'+s.total+'</span></div>'+
+    '<div class="sd-row"><span class="sd-label">Non rejoints <span style="color:#aab0ba">(pas contact\u00e9 / message / injoignable)</span></span><span class="sd-value warn">'+s.nonRejoints+'</span></div>'+
+    '<div class="sd-row"><span class="sd-label">Soumissions envoy\u00e9es</span><span class="sd-value soum">'+s.soumission+'</span></div>'+
+    '<div class="sd-row"><span class="sd-label">Jobs book\u00e9s</span><span class="sd-value ok">'+s.booke+'</span></div>'+
+    '<div class="sd-row highlight"><span class="sd-label">Taux de conversion</span><span class="sd-value pct">'+pctTxt+'</span></div>';
+}
+function renderStatsDemandes(){
+  /* Logica : tous les mandats logica (pas de filtre region) */
+  const logicaList=allMandatsStats.filter(m=>m.compagnie==='logica');
+  document.getElementById('sd-list-logica').innerHTML=statsRowsHtml(computeStats(logicaList));
 
-  document.getElementById('sd-total').textContent=total;
-  document.getElementById('sd-injoignable').textContent=nonRejoints;
-  document.getElementById('sd-soumission').textContent=soumission;
-  document.getElementById('sd-booke').textContent=booke;
-  document.getElementById('sd-booke-count').textContent=booke+' confirm\u00e9'+(booke>1?'s':'');
-  document.getElementById('sd-pct').textContent=(Number.isInteger(pct)?pct:pct.toFixed(1))+' %';
+  /* GEQ : mandats geq, filtres par region si selectionne */
+  const region=document.getElementById('stats-region').value;
+  let geqList=allMandatsStats.filter(m=>m.compagnie==='geq');
+  if(region) geqList=geqList.filter(m=>m.region===region);
+  document.getElementById('sd-list-geq').innerHTML=statsRowsHtml(computeStats(geqList));
 }
 
 /* ===== PERIODE ===== */
