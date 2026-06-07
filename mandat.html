@@ -1537,6 +1537,22 @@ input[type=file]{display:none;}
 </div>
 
 <!-- ===== MODAL NOTES PLEIN ECRAN ===== -->
+<div class="ov" id="modal-gmail-notif" style="display:none">
+  <div class="modal" style="max-width:440px;padding:26px;text-align:center;">
+    <div style="font-size:38px;margin-bottom:8px;">&#9993;&#65039;</div>
+    <h2 style="margin:0 0 10px;font-size:18px;">Connecter Gmail pour notifier le tech</h2>
+    <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 22px;">
+      Pour que le technicien re&ccedil;oive un courriel l'avisant de son nouveau mandat,
+      tu dois \u00eatre connect&eacute; \u00e0 Gmail. Sinon, le mandat sera quand m&ecirc;me enregistr&eacute;,
+      mais le tech ne recevra pas d'avis.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn-save" style="width:100%;justify-content:center;" onclick="gmailNotifConnect()">&#9993;&#65039; Connecter Gmail et notifier</button>
+      <button class="btn-cancel" style="width:100%;justify-content:center;" onclick="gmailNotifSkip()">Enregistrer sans notifier</button>
+    </div>
+  </div>
+</div>
+
 <div class="ov" id="modal-notes" style="display:none">
   <div class="modal" style="max-width:1100px;width:96%;padding:18px 22px;max-height:94vh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -3521,6 +3537,18 @@ async function saveMandat(){
     assigneLe=null;
   }
 
+  /* ===== RAPPEL CONNEXION GMAIL (secretaire) =====
+     Si une secretaire assigne un mandat a un tech et que Gmail n'est pas connecte,
+     on propose de se connecter pour que le tech recoive sa notification.
+     Non-bloquant : elle peut choisir "Enregistrer sans notifier". */
+  const techVaEtreNotifie = !!techId && techId!==profile.id &&
+    (statutAssign==='assigne' || statutAssign==='reclame');
+  if(profile.role==='secretaire' && techVaEtreNotifie && !hasValidGmailToken()){
+    const choix = await askGmailNotif();
+    /* 'connect' : le token est maintenant en place (ou l'utilisateur a annule la fenetre Google).
+       'skip' : on continue sans notifier. Dans les deux cas on poursuit la sauvegarde. */
+  }
+
   const payload={
     compagnie:comp,type_mandat:typeMand,technicien_id:techId,
     date_mandat:dateMandat,
@@ -3612,7 +3640,7 @@ async function saveMandat(){
        - On notifie si un tech est assign\u00e9, que ce n'est pas soi-m\u00eame, et mode 'assigne'
        Appel "fire and forget" pour ne pas retarder la redirection vers le dashboard. */
     const currentUserId_new = session.user.id;
-    if (techId && techId !== currentUserId_new && statutAssign === 'assigne') {
+    if (techId && techId !== currentUserId_new && (statutAssign === 'assigne' || statutAssign === 'reclame')) {
       notifierTechParGmail(data.id, techId);
     }
 
@@ -3655,7 +3683,7 @@ async function saveMandat(){
     const currentUserId = session.user.id;
     const isNewAssignment = !!techId && techId !== oldTechId;
     const isAssignedToOther = techId !== currentUserId;
-    const isAssigneMode = statutAssign === 'assigne';
+    const isAssigneMode = (statutAssign === 'assigne' || statutAssign === 'reclame');
     if (isNewAssignment && isAssignedToOther && isAssigneMode) {
       notifierTechParGmail(mandat.id, techId);
     }
@@ -4497,6 +4525,37 @@ function getGoogleToken(){
     });
     client.requestAccessToken();
   });
+}
+
+/* ===== POP-UP : rappel de connexion Gmail (secretaire) =====
+   Affiche une modale demandant de connecter Gmail avant d'assigner.
+   Retourne une Promise : 'connect' (a connecte) ou 'skip' (continue sans). */
+let _gmailNotifResolve = null;
+function askGmailNotif(){
+  return new Promise((resolve)=>{
+    _gmailNotifResolve = resolve;
+    document.getElementById('modal-gmail-notif').style.display='flex';
+  });
+}
+async function gmailNotifConnect(){
+  document.getElementById('modal-gmail-notif').style.display='none';
+  try{
+    await getGoogleToken(); /* ouvre la fenetre Google et stocke le token */
+  }catch(e){
+    console.warn('Connexion Gmail annulee/echec:', e);
+  }
+  if(_gmailNotifResolve){ _gmailNotifResolve('connect'); _gmailNotifResolve=null; }
+}
+function gmailNotifSkip(){
+  document.getElementById('modal-gmail-notif').style.display='none';
+  if(_gmailNotifResolve){ _gmailNotifResolve('skip'); _gmailNotifResolve=null; }
+}
+
+/* Verifie si un token Gmail valide est present */
+function hasValidGmailToken(){
+  const token=localStorage.getItem('portail_gmail_token');
+  const expiry=parseInt(localStorage.getItem('portail_gmail_expiry')||'0');
+  return !!token && Date.now()<expiry;
 }
 
 /* ===== NOTIFICATION AU TECH ASSIGNE VIA GMAIL =====
