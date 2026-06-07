@@ -687,6 +687,7 @@ textarea{resize:vertical;min-height:70px;line-height:1.5;}
 #sec-emails .email-list{gap:6px;}
 #sec-emails #email-select{padding:6px 9px;font-size:12.5px;}
 /* Titre Courriels + menu deroulant sur la meme ligne */
+#sec-emails{padding-top:10px !important;padding-bottom:10px !important;}
 #sec-emails .email-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:none;margin-bottom:0;padding-bottom:0;}
 #sec-emails .email-title-row .email-list{flex:0 0 auto;width:200px;max-width:55%;display:flex;flex-direction:column;}
 #sec-emails .email-title-row #email-select{width:100%;text-transform:none;font-weight:400;letter-spacing:normal;color:#333;}
@@ -1324,7 +1325,7 @@ input[type=file]{display:none;}
     <div class="col col-center">
   <div class="sec" id="sec-notes">
     <div class="sec-title"><span class="ic">&#128221;</span> Notes internes
-      <button type="button" onclick="openNotesFullscreen()" title="Agrandir les notes" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;color:#94a3b8;">&#9974;</button>
+      <button type="button" onclick="openNotesFullscreen()" title="Agrandir les notes" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:12px;padding:3px 8px;border-radius:6px;color:#1565c0;display:inline-flex;align-items:center;gap:5px;font-weight:600;text-transform:none;letter-spacing:normal;">&#9974; Plein &eacute;cran</button>
     </div>
     <div id="f-notes-editor"></div>
   </div>
@@ -6627,17 +6628,19 @@ function renderClientReadonly(){
     let actions='';
     if(opts.copy) actions+='<button class="cli-copy" title="Copier" onclick="event.stopPropagation();copyText(\''+escAttr(val).replace(/'/g,"\\'")+'\',this)">'+COPY_SVG+'</button>';
     if(opts.listing) actions+='<button class="cli-action" title="Ouvrir le listing" onclick="event.stopPropagation();openListing()">&#128279;</button>';
-    /* Adresse : toute la valeur cliquable ouvre Google Maps (pratique mobile) */
-    const valClickable = opts.maps;
-    const valAttrs = valClickable ? ' style="cursor:pointer;" title="Ouvrir dans Google Maps" onclick="openInMaps()"' : '';
-    rows.push('<div class="cli-row"><span class="cli-label">'+label+'</span><span class="cli-valwrap"><span class="cli-val'+(opts.link?' link':'')+(valClickable?' link':'')+'"'+valAttrs+'>'+v+'</span>'+actions+'</span></div>');
+    /* Valeur cliquable : adresse->Maps, telephone->appel, courriel->mail */
+    let valAttrs='', valLink=false;
+    if(opts.maps){ valAttrs=' style="cursor:pointer;" title="Ouvrir dans Google Maps" onclick="openInMaps()"'; valLink=true; }
+    else if(opts.tel){ const t=val.replace(/[^0-9+]/g,''); valAttrs=' style="cursor:pointer;" title="Appeler" onclick="window.location.href=\'tel:'+t+'\'"'; valLink=true; }
+    else if(opts.mail){ valAttrs=' style="cursor:pointer;" title="Envoyer un courriel" onclick="window.location.href=\'mailto:'+escAttr(val)+'\'"'; valLink=true; }
+    rows.push('<div class="cli-row"><span class="cli-label">'+label+'</span><span class="cli-valwrap"><span class="cli-val'+(opts.link||valLink?' link':'')+'"'+valAttrs+'>'+v+'</span>'+actions+'</span></div>');
   };
   row('Compagnie', cliSelectLabel('f-compagnie'), {always:true});
   if(isGeq && document.getElementById('fg-type-geq') && document.getElementById('fg-type-geq').style.display!=='none')
     row('Type de mandat', cliSelectLabel('f-type-mandat'));
   row('Client', cliVal('f-client-nom'), {always:true});
-  row('T\u00e9l\u00e9phone', cliVal('f-client-tel'), {copy:true});
-  row('Courriel', cliVal('f-client-email'), {copy:true,link:true});
+  row('T\u00e9l\u00e9phone', cliVal('f-client-tel'), {copy:true,tel:true});
+  row('Courriel', cliVal('f-client-email'), {copy:true,mail:true});
   row('Adresse', cliVal('f-adresse'), {copy:true,maps:true});
   row('R\u00e9gion', cliSelectLabel('f-region'));
   if(!isGeq){
