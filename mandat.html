@@ -878,30 +878,36 @@ input[type=file]{display:none;}
 .tabpanel.active{display:block;}
 /* Dans un onglet, les sections s'empilent verticalement, pleine largeur */
 .tabpanel .col{display:flex;flex-direction:column;gap:14px;min-width:0;width:100%;}
-/* ===== LAYOUT CONDENSE STYLE GEQ SUIVI (theme clair) ===== */
-.mandat-body{display:grid;grid-template-columns:320px 1fr;align-items:start;gap:0;}
-/* --- Sidebar gauche --- */
-.m3-left{background:#fff;border-right:1px solid #e6e9ee;display:flex;flex-direction:column;align-self:stretch;}
-.m3-left .sec{background:transparent;border:none;border-bottom:1px solid #eef0f2;border-radius:0;box-shadow:none;border-left:none !important;padding:14px 16px;margin:0;}
-.m3-left .sec-title{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;padding-bottom:0;border-bottom:none;}
-/* Lignes label/valeur denses dans la sidebar */
-.m3-left .field-row,.m3-left .form-row,.m3-left .frow{font-size:13px;}
-/* --- Zone droite : cartes --- */
-.m3-right{padding:18px;display:flex;flex-direction:column;gap:14px;}
-.m3-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
-.m3-grid > *{min-width:0;}
-.m3-full{grid-column:1 / -1;}
-.m3-right .sec{margin:0;}
-/* Compacter les sections existantes dans le nouveau layout */
-.mandat-body .sec{padding:14px 16px;border-radius:10px;box-shadow:none;border:1px solid #e6e9ee;}
-.mandat-body .sec-title{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f1f3f5;}
+/* ===== NOUVELLE DISPOSITION : barre haut + 3 colonnes + zone basse ===== */
+/* Barre du haut : statut (gauche) + archiver (droite), TOUT sur une ligne */
+.topbar-zone{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:10px 14px;margin:10px 0 14px;}
+#topbar-status{display:flex;flex-wrap:nowrap;gap:5px;flex:1;align-items:center;min-width:0;overflow-x:auto;}
+#topbar-archive{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
+.suivi-mandat-pills{display:flex;flex-wrap:nowrap;gap:5px;}
+/* Pastilles compactes pour tenir sur une ligne */
+#topbar-status .statut-pill{padding:6px 10px;font-size:11.5px;white-space:nowrap;border-radius:8px;}
+#topbar-archive .btn-finaliser-manuel{padding:7px 13px;font-size:12px;white-space:nowrap;}
+/* Ligne principale 3 colonnes */
+.mandat-main3{display:grid;grid-template-columns:300px 1fr 380px;gap:14px;align-items:start;}
+.mandat-main3 .m3-col{min-width:0;display:flex;flex-direction:column;gap:14px;}
+.mandat-main3 .sec{background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:14px 16px;margin:0;box-shadow:none;}
+.mandat-main3 .sec-title{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f1f3f5;}
+/* Zone basse */
+.mandat-bottom{margin-top:14px;}
+.mandat-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+.mandat-bottom-grid .sec{background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:14px 16px;margin:0;}
 #alert-zone:empty{display:none;}
-#alert-zone{margin:10px 18px 0;}
-@media(max-width:899px){
-  .mandat-body{grid-template-columns:1fr;}
-  .m3-left{border-right:none;border-bottom:1px solid #e6e9ee;}
-  .m3-grid{grid-template-columns:1fr;}
-  .m3-right{padding:12px;}
+#alert-zone{margin:10px 0 0;}
+@media(max-width:1100px){
+  .mandat-main3{grid-template-columns:1fr 1fr;}
+  .mandat-main3 .m3-col:last-child{grid-column:1 / -1;}
+}
+@media(max-width:760px){
+  .mandat-main3{grid-template-columns:1fr;}
+  .mandat-main3 .m3-col:last-child{grid-column:auto;}
+  .mandat-bottom-grid{grid-template-columns:1fr;}
+  .topbar-zone{flex-direction:column;}
+  #topbar-archive{align-items:stretch;width:100%;}
 }
 /* Lignes denses infos client (lecture) */
 .cli-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid #f1f3f5;}
@@ -1046,11 +1052,21 @@ input[type=file]{display:none;}
   <!-- ===== BANNIERES D'ALERTE (pleine largeur) ===== -->
   <div id="alert-zone"></div>
 
-  <!-- ===== LAYOUT CONDENSE (sidebar + cartes), sections deplacees par JS ===== -->
-  <div class="mandat-body" id="mandat-body">
-    <div class="m3-left" id="m3-left"></div>
-    <div class="m3-right" id="m3-right"></div>
+  <!-- ===== BARRE DU HAUT : statut de contact + bouton archiver ===== -->
+  <div id="topbar-zone" class="topbar-zone" style="display:none;">
+    <div id="topbar-status"></div>
+    <div id="topbar-archive"></div>
   </div>
+
+  <!-- ===== LIGNE PRINCIPALE : client | notes | finances ===== -->
+  <div class="mandat-main3" id="mandat-main3">
+    <div class="m3-col" id="m3-left"></div>
+    <div class="m3-col" id="m3-center"></div>
+    <div class="m3-col" id="m3-right"></div>
+  </div>
+
+  <!-- ===== ZONE BASSE : planification, courriels, docs, historique ===== -->
+  <div class="mandat-bottom" id="mandat-bottom"></div>
 
   <!-- ===== Section "Suivi du mandat" - 2 blocs cote a cote avec titres pro ===== -->
   <div class="sec suivi-mandat-sec" id="sec-suivi-mandat" style="display:none">
@@ -4815,11 +4831,11 @@ function updateGcalStatus(){
 let contactModalState={type:'appel',resultat:'pas_reponse'};
 
 function renderStatutContactPills(){
-  /* Section "Suivi du mandat" (blanche, sous le header) */
-  const sec=document.getElementById('sec-suivi-mandat');
+  /* Pastilles deplacees dans la barre du haut (topbar-zone) */
+  const sec=document.getElementById('topbar-zone');
   const pillsRow=document.getElementById('suivi-statut-pills');
   if(!pillsRow) return;
-  /* Cache la section si pas de mandat (page d'accueil ou erreur) */
+  /* Cache la barre si pas de mandat (page d'accueil ou erreur) */
   if(!mandat && isNew===false){
     if(sec) sec.style.display='none';
     return;
@@ -6419,31 +6435,41 @@ let tabsBuilt=false;
 function buildTabs(){
   if(tabsBuilt) return;
   const left=document.getElementById('m3-left');
+  const center=document.getElementById('m3-center');
   const right=document.getElementById('m3-right');
-  if(!left||!right) return;
+  const bottom=document.getElementById('mandat-bottom');
+  if(!left||!center||!right||!bottom) return;
   const move=(secId,col)=>{ const sec=document.getElementById(secId); if(sec) col.appendChild(sec); };
+
   /* Bannieres d'alerte (reclamer) en pleine largeur */
   const recl=document.getElementById('sec-reclamer');
   if(recl){ const az=document.getElementById('alert-zone'); if(az) az.appendChild(recl); }
-  /* SIDEBAR GAUCHE : client + planification + statuts */
+
+  /* ===== BARRE DU HAUT : pastilles statut (gauche) + bouton archiver (droite) ===== */
+  const tbStatus=document.getElementById('topbar-status');
+  const tbArchive=document.getElementById('topbar-archive');
+  const pills=document.getElementById('suivi-statut-pills');
+  const statutReq=document.getElementById('statut-required');
+  if(pills && tbStatus){ tbStatus.appendChild(pills); if(statutReq) tbStatus.appendChild(statutReq); }
+  const btnFinal=document.getElementById('btn-finaliser-manuel');
+  const finalStatus=document.getElementById('finaliser-manuel-status');
+  if(btnFinal && tbArchive){
+    tbArchive.appendChild(btnFinal);
+    /* Avertissement en petit sous le bouton */
+    const warn=document.createElement('div');
+    warn.id='archive-warn'; warn.style.cssText='font-size:11px;color:#b45309;margin-top:5px;text-align:right;';
+    if(finalStatus){ finalStatus.style.cssText='font-size:11px;color:#b45309;'; warn.appendChild(finalStatus); }
+    tbArchive.appendChild(warn);
+  }
+  document.getElementById('topbar-zone').style.display='flex';
+
+  /* ===== LIGNE PRINCIPALE : client | notes | finances ===== */
   move('sec-client',left);
-  move('sec-planification',left);
-  move('sec-suivi-client',left);
-  /* ZONE DROITE : grille 2 colonnes pour densite */
-  const grid=document.createElement('div'); grid.className='m3-grid';
-  right.appendChild(grid);
-  const colL=document.createElement('div'); colL.style.cssText='display:flex;flex-direction:column;gap:14px;min-width:0;';
-  const colR=document.createElement('div'); colR.style.cssText='display:flex;flex-direction:column;gap:14px;min-width:0;';
-  grid.appendChild(colL); grid.appendChild(colR);
-  /* Gauche de la zone : Notes + Courriels + Documents */
-  move('sec-notes',colL);
-  move('sec-emails',colL);
-  move('sec-docs',colL);
-  /* Droite de la zone : Suivi mandat + Commission + Finances + Paiement */
-  move('sec-suivi-mandat',colR);
-  move('sec-comm-tech',colR);
-  move('sec-finances',colR);
-  /* Extraire bloc Paiement + bouton Facture dans une section dediee */
+  move('sec-notes',center);
+  move('sec-finances',right);
+  move('sec-comm-tech',right);
+
+  /* Extraire bloc Paiement + bouton Facture dans une section dediee (sous finances) */
   const paie=document.getElementById('paiement-card');
   const btnFac=document.getElementById('btn-facture');
   if(paie){
@@ -6453,11 +6479,22 @@ function buildTabs(){
     t.innerHTML='<span class="ic">&#128176;</span> Paiement & facturation';
     secPaie.appendChild(t); secPaie.appendChild(paie);
     if(btnFac) secPaie.appendChild(btnFac);
-    colR.appendChild(secPaie);
+    right.appendChild(secPaie);
   }
-  /* Cacher le conteneur grid-3col residuel */
+
+  /* ===== ZONE BASSE : planification + courriels + documents + historique ===== */
+  const bgrid=document.createElement('div'); bgrid.className='mandat-bottom-grid';
+  bottom.appendChild(bgrid);
+  move('sec-planification',bgrid);
+  move('sec-emails',bgrid);
+  move('sec-docs',bgrid);
+  move('sec-suivi-client',bgrid);
+
+  /* Cacher les conteneurs residuels */
   const oldgrid=document.querySelector('.grid-3col');
   if(oldgrid) oldgrid.style.display='none';
+  const oldSuiviMandat=document.getElementById('sec-suivi-mandat');
+  if(oldSuiviMandat) oldSuiviMandat.style.display='none';
 
   tabsBuilt=true;
 }
