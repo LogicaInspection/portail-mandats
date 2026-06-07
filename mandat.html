@@ -882,6 +882,18 @@ input[type=file]{display:none;}
 .tabpanel.active{display:block;}
 /* Dans un onglet, les sections s'empilent verticalement, pleine largeur */
 .tabpanel .col{display:flex;flex-direction:column;gap:14px;min-width:0;width:100%;}
+/* ----- Layout 3 colonnes (remplace les onglets) ----- */
+.mandat-3col{display:grid;grid-template-columns:1fr;gap:14px;align-items:start;margin-top:14px;}
+.m3-col{display:flex;flex-direction:column;gap:14px;min-width:0;}
+@media(min-width:1100px){
+  .mandat-3col{grid-template-columns:minmax(300px,0.95fr) minmax(360px,1.25fr) minmax(320px,1fr);}
+}
+@media(min-width:760px) and (max-width:1099px){
+  .mandat-3col{grid-template-columns:1fr 1fr;}
+  .m3-col:last-child{grid-column:1 / -1;}
+}
+#alert-zone:empty{display:none;}
+#alert-zone{margin-top:10px;}
 /* Grilles 2 colonnes : empilees par defaut (petit ecran), cote a cote >=1000px */
 #panel-fin .fin-2col{display:flex;flex-direction:column;gap:14px;}
 /* Sur grand ecran, Suivi&RDV et Finances gardent 2 colonnes pour ne pas etirer */
@@ -983,29 +995,15 @@ input[type=file]{display:none;}
   <div class="pipeline-bar" id="pipeline-bar"></div>
   <div class="pipeline-hint">Clique une &eacute;tape pour la d&eacute;finir manuellement.</div>
 
-  <!-- ===== BARRE D'ONGLETS ===== -->
-  <div class="tabbar" id="tabbar">
-    <button type="button" class="tabbtn active" data-tab="apercu" onclick="switchTab('apercu')"><span class="tabic">&#128065;</span> <span class="tablabel">Aper&ccedil;u</span></button>
-    <button type="button" class="tabbtn" data-tab="suivi" onclick="switchTab('suivi')"><span class="tabic">&#128197;</span> <span class="tablabel">Suivi &amp; RDV</span></button>
-    <button type="button" class="tabbtn" data-tab="comm" onclick="switchTab('comm')"><span class="tabic">&#9993;</span> <span class="tablabel">Courriels &amp; Documents</span></button>
-    <button type="button" class="tabbtn" data-tab="fin" onclick="switchTab('fin')"><span class="tabic">&#128176;</span> <span class="tablabel">Finances</span></button>
+  <!-- ===== BANNIERES D'ALERTE (pleine largeur) ===== -->
+  <div id="alert-zone"></div>
+
+  <!-- ===== LAYOUT 3 COLONNES (sections deplacees ici par JS) ===== -->
+  <div class="mandat-3col" id="mandat-3col">
+    <div class="m3-col" id="m3-left"></div>
+    <div class="m3-col" id="m3-center"></div>
+    <div class="m3-col" id="m3-right"></div>
   </div>
-
-  <!-- ===== ONGLET APERCU (synthese lecture seule, genere par JS) ===== -->
-  <div class="tabpanel active" id="panel-apercu">
-    <div class="apercu-wrap" id="apercu-wrap"></div>
-  </div>
-
-  <!-- ===== ONGLET SUIVI & RDV (sections deplacees ici par JS) ===== -->
-  <div class="tabpanel" id="panel-suivi">
-    <div class="panel-2col" id="suivi-2col"></div>
-  </div>
-
-  <!-- ===== ONGLET COURRIELS & DOCUMENTS (sections deplacees ici par JS) ===== -->
-  <div class="tabpanel" id="panel-comm"></div>
-
-  <!-- ===== ONGLET FINANCES (sections deplacees ici par JS) ===== -->
-  <div class="tabpanel" id="panel-fin"></div>
 
   <!-- ===== Section "Suivi du mandat" - 2 blocs cote a cote avec titres pro ===== -->
   <div class="sec suivi-mandat-sec" id="sec-suivi-mandat" style="display:none">
@@ -6332,42 +6330,33 @@ const PIPELINE_STEPS=['Re&ccedil;u','Contact&eacute;','Book&eacute;','R&eacute;a
 let etapePipeline=0;
 let tabsBuilt=false;
 
-/* Deplace les sections existantes vers leurs onglets (une seule fois) */
+/* Distribue les sections existantes dans les 3 colonnes (une seule fois) */
 function buildTabs(){
   if(tabsBuilt) return;
-  const move=(secId,targetId)=>{
+  const left=document.getElementById('m3-left');
+  const center=document.getElementById('m3-center');
+  const right=document.getElementById('m3-right');
+  if(!left||!center||!right) return;
+  const move=(secId,col)=>{
     const sec=document.getElementById(secId);
-    const target=document.getElementById(targetId);
-    if(sec && target) target.appendChild(sec);
+    if(sec) col.appendChild(sec);
   };
-  /* Onglet Suivi & RDV : 2 colonnes pensees pour le flux du tech
-     Gauche  : Infos client + Planification (qui/ou/quand)
-     Droite  : Suivi client (statut = action #1) + Historique + Finalisation */
-  const s2=document.getElementById('suivi-2col');
-  const colA=document.createElement('div'); colA.className='col';
-  const colB=document.createElement('div'); colB.className='col';
-  s2.appendChild(colA); s2.appendChild(colB);
-  /* Bannieres d'alerte (reclamer) en pleine largeur au-dessus des 2 colonnes */
+  /* Bannieres d'alerte (reclamer) en pleine largeur au-dessus des colonnes */
   const recl=document.getElementById('sec-reclamer');
-  if(recl) document.getElementById('panel-suivi').insertBefore(recl,s2);
-  [['sec-client',colA],['sec-planification',colA],['sec-suivi-mandat',colB],['sec-suivi-client',colB]].forEach(([id,col])=>{
-    const sec=document.getElementById(id); if(sec) col.appendChild(sec);
-  });
-  /* Onglet Courriels & Documents */
-  move('sec-notes','panel-comm');
-  move('sec-emails','panel-comm');
-  move('sec-docs','panel-comm');
-  /* Onglet Finances : 2 colonnes cote a cote (Finances | Paiement recu) */
-  const finGrid=document.createElement('div');
-  finGrid.className='fin-2col';
-  document.getElementById('panel-fin').appendChild(finGrid);
-  const finL=document.createElement('div'); finL.className='col'; finGrid.appendChild(finL);
-  const finR=document.createElement('div'); finR.className='col'; finGrid.appendChild(finR);
-  /* Colonne gauche : la section Finances complete */
-  const secFin=document.getElementById('sec-finances');
-  if(secFin) finL.appendChild(secFin);
-  /* Colonne droite : on extrait le bloc Paiement + bouton Facture de sec-finances
-     et on les place dans une section dediee (memes IDs preserves) */
+  if(recl){ const az=document.getElementById('alert-zone'); if(az) az.appendChild(recl); }
+  /* COLONNE GAUCHE : profil du mandat (client + planification + statuts) */
+  move('sec-client',left);
+  move('sec-planification',left);
+  move('sec-suivi-client',left);
+  /* COLONNE CENTRE : notes + courriels + documents */
+  move('sec-notes',center);
+  move('sec-emails',center);
+  move('sec-docs',center);
+  /* COLONNE DROITE : suivi + commission + finances + paiement */
+  move('sec-suivi-mandat',right);
+  move('sec-comm-tech',right);
+  move('sec-finances',right);
+  /* Extraire le bloc Paiement + bouton Facture de sec-finances dans une section dediee */
   const paie=document.getElementById('paiement-card');
   const btnFac=document.getElementById('btn-facture');
   if(paie){
@@ -6381,11 +6370,8 @@ function buildTabs(){
     secPaie.appendChild(t);
     secPaie.appendChild(paie);
     if(btnFac) secPaie.appendChild(btnFac);
-    finR.appendChild(secPaie);
+    right.appendChild(secPaie);
   }
-  /* Onglet Comm tech (commission) : reste dans Finances a gauche, au-dessus */
-  const secComm=document.getElementById('sec-comm-tech');
-  if(secComm) finL.insertBefore(secComm,secFin);
   /* Cacher le conteneur grid-3col residuel (desormais vide) */
   const grid=document.querySelector('.grid-3col');
   if(grid) grid.style.display='none';
@@ -6394,16 +6380,15 @@ function buildTabs(){
 }
 
 function switchTab(tab){
-  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
-  const panel=document.getElementById('panel-'+tab);
-  if(panel) panel.classList.add('active');
-  if(tab==='apercu') renderApercu();
+  /* Plus d'onglets : layout 3 colonnes, tout est visible. On ne fait que scroller. */
+  if(tab==='apercu') return;
+  var map={suivi:'sec-client',comm:'sec-emails',fin:'sec-finances'};
+  var id=map[tab];
+  if(id){ var el=document.getElementById(id); if(el&&el.scrollIntoView) el.scrollIntoView({block:'start',behavior:'smooth'}); }
 }
 
-/* Saute a un onglet et met le focus sur un champ (utilise par les crayons de l'apercu) */
+/* Scroll + focus sur un champ (utilise par les crayons / actions) */
 function gotoField(tab,fieldId){
-  switchTab(tab);
   setTimeout(()=>{
     const el=document.getElementById(fieldId);
     if(el){ el.focus(); if(el.scrollIntoView) el.scrollIntoView({block:'center',behavior:'smooth'}); }
@@ -6634,7 +6619,6 @@ function apercuAddGCal(){
 function initLayout(){
   buildTabs();
   renderPipeline();
-  switchTab('apercu');
 }
 </script>
 </body>
