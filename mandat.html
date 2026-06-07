@@ -1345,12 +1345,13 @@ input[type=file]{display:none;}
     <!-- ===== COLONNE 3 (droite): Commission tech (si tech) / Finances ===== -->
     <div class="col col-right">
   <div class="sec" id="sec-comm-tech" style="display:none">
-    <div class="sec-title"><span class="ic">&#128188;</span> Ma commission</div>
-    <div class="comm-tech-card">
+    <div class="sec-title"><span class="ic">&#128188;</span> Ma facture de commission</div>
+    <!-- Gros carre "Ma commission" retire (la commission est deja dans le volet Finances) -->
+    <div class="comm-tech-card" style="display:none">
       <div class="comm-tech-val" id="tech-comm-val">&#8212;</div>
       <div class="comm-tech-sub">Commission pour ce mandat</div>
     </div>
-    <!-- Phase 4 - Statut validation pour le tech (read-only) -->
+    <!-- Statut validation retire de la fiche tech -->
     <div class="commission-status-tech pending" id="comm-status-tech" style="display:none">
       <span id="comm-status-tech-icon">&#9203;</span>
       <span id="comm-status-tech-text">En attente de validation par le gestionnaire</span>
