@@ -3895,41 +3895,41 @@ function renderEmails(){
     else autres.push(b);
   });
 
-  function makeButton(b){
-    /* Verifie si CE type d'email precis a ete envoye pour ce mandat
-       (via email_logs - tracking individuel par type, pas par categorie) */
+  /* Menu deroulant : choisir un gabarit ouvre directement le modal d'envoi */
+  const sel = document.createElement('select');
+  sel.id = 'email-select';
+  sel.style.cssText = 'width:100%;padding:8px 10px;font-size:13px;border-radius:8px;';
+  const ph = document.createElement('option');
+  ph.value=''; ph.textContent='\u2014 Choisir un courriel \u00e0 envoyer \u2014';
+  sel.appendChild(ph);
+
+  const addOpt = (b, grp) => {
     const sent = emailLogs.some(l => l.type_email === b.type);
-    const btn = document.createElement('button');
-    btn.className = 'btn-email' + (sent?' sent':'');
-    btn.innerHTML =
-      '<span class="ei">'+b.icon+'</span>'+
-      '<div><div class="et">'+b.title+'</div>'+(b.sub?'<div class="es">'+b.sub+'</div>':'')+'</div>'+
-      (sent?'<span style="margin-left:auto;font-size:12px;color:#4caf50;font-weight:700;">&#10003; Envoy&eacute;</span>':'<span style="margin-left:auto;font-size:20px;color:#ccc;">&#8250;</span>');
-    btn.onclick = ()=>openEmailModal(b.type);
-    return btn;
+    const o = document.createElement('option');
+    o.value = b.type;
+    o.textContent = (sent?'\u2713 ':'')+b.title+(b.sub?' \u2014 '+b.sub:'');
+    grp.appendChild(o);
+  };
+  if(pertinents.length){
+    const g=document.createElement('optgroup'); g.label='Sugg\u00e9r\u00e9s pour ce mandat';
+    pertinents.forEach(b=>addOpt(b,g)); sel.appendChild(g);
   }
+  if(autres.length){
+    const g=document.createElement('optgroup'); g.label='Autres gabarits';
+    autres.forEach(b=>addOpt(b,g)); sel.appendChild(g);
+  }
+  sel.onchange = function(){
+    if(this.value){ openEmailModal(this.value); this.value=''; }
+  };
+  list.appendChild(sel);
 
-  /* Pertinents en haut */
-  pertinents.forEach(b => list.appendChild(makeButton(b)));
-
-  /* Toggle pour les autres */
-  if(autres.length > 0){
-    const toggle = document.createElement('button');
-    toggle.className = 'btn-email-toggle';
-    toggle.textContent = '\u2304 Voir tous les gabarits ('+autres.length+' autres)';
-    let expanded = false;
-    const autresWrap = document.createElement('div');
-    autresWrap.style.display = 'none';
-    autres.forEach(b => autresWrap.appendChild(makeButton(b)));
-    toggle.onclick = ()=>{
-      expanded = !expanded;
-      autresWrap.style.display = expanded ? 'block' : 'none';
-      toggle.textContent = expanded
-        ? '\u2303 Masquer les autres gabarits'
-        : '\u2304 Voir tous les gabarits ('+autres.length+' autres)';
-    };
-    list.appendChild(toggle);
-    list.appendChild(autresWrap);
+  /* Petit recap des courriels deja envoyes */
+  const sentList = allBtns.filter(b=>emailLogs.some(l=>l.type_email===b.type));
+  if(sentList.length){
+    const recap=document.createElement('div');
+    recap.style.cssText='margin-top:8px;font-size:11.5px;color:#4caf50;display:flex;flex-direction:column;gap:2px;';
+    recap.innerHTML=sentList.map(b=>'<span>&#10003; '+b.title+' envoy&eacute;</span>').join('');
+    list.appendChild(recap);
   }
 }
 
@@ -6551,6 +6551,8 @@ function buildTabs(){
     assignRow.appendChild(secAssign);
   }
   move('sec-emails',assignRow);
+  /* Documents au centre, sous la rangee assignation/courriels */
+  move('sec-docs',center);
   move('sec-finances',right);
   move('sec-comm-tech',right);
 
@@ -6561,10 +6563,9 @@ function buildTabs(){
   if(paie) paie.style.display='none';
   if(btnFac) btnFac.style.display='none';
 
-  /* ===== ZONE BASSE : documents + historique ===== */
+  /* ===== ZONE BASSE : historique des contacts ===== */
   const bgrid=document.createElement('div'); bgrid.className='mandat-bottom-grid';
   bottom.appendChild(bgrid);
-  move('sec-docs',bgrid);
   move('sec-suivi-client',bgrid);
 
   /* Cacher les conteneurs residuels */
