@@ -6546,6 +6546,8 @@ function buildTabs(){
   }
   move('sec-finances',right);
   move('sec-comm-tech',right);
+  /* Courriels au centre, sous l'assignation */
+  move('sec-emails',center);
 
   /* Bloc Paiement + bouton Facture : MASQUES (paiement gere par menu "Paye par" dans Finances).
      Conserves dans le DOM (caches) pour reactivation future si besoin. */
@@ -6554,10 +6556,9 @@ function buildTabs(){
   if(paie) paie.style.display='none';
   if(btnFac) btnFac.style.display='none';
 
-  /* ===== ZONE BASSE : courriels + documents + historique ===== */
+  /* ===== ZONE BASSE : documents + historique ===== */
   const bgrid=document.createElement('div'); bgrid.className='mandat-bottom-grid';
   bottom.appendChild(bgrid);
-  move('sec-emails',bgrid);
   move('sec-docs',bgrid);
   move('sec-suivi-client',bgrid);
 
