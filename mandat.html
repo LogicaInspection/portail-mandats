@@ -1915,8 +1915,8 @@ techsFiltered.forEach(t=>{
     populateHeureSelect('');
     onCompagnieChange();
     updateGcalStatus();
-    /* Pour nouveau mandat: aucune valeur par defaut, l'utilisateur DOIT choisir */
-    currentStatutContact=null;
+    /* Statut initial : l'assistante demarre sur "Pas contacte"; sinon l'utilisateur doit choisir */
+    currentStatutContact = (profile.role==='secretaire') ? 'pas_contacte' : null;
     renderStatutContactPills();
     renderContactsLog();
   }
