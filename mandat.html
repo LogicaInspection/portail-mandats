@@ -1415,6 +1415,19 @@ input[type=file]{display:none;}
         <span class="fin-label bold">Total TTC</span>
         <span class="fin-value big" id="total-ttc">0,00 $</span>
       </div>
+      <!-- Payé par : menu deroulant (remplace l'ancienne section paiement) -->
+      <div class="fin-row" id="paye-par-row">
+        <span class="fin-label">&#128176; Pay&eacute; par</span>
+        <select id="sel-mode-paiement" onchange="onSelectModePaiement(this.value)" style="width:auto;min-width:140px;padding:5px 8px;font-size:12px;">
+          <option value="">&#8212; Non pay&eacute; &#8212;</option>
+          <option value="square_credit">Square Cr&eacute;dit</option>
+          <option value="square_debit">Square D&eacute;bit</option>
+          <option value="virement_interac">Virement Interac</option>
+          <option value="depot_direct">D&eacute;p&ocirc;t direct</option>
+          <option value="cheque">Ch&egrave;que</option>
+          <option value="argent_comptant">Argent comptant</option>
+        </select>
+      </div>
       <!-- Commission : total de toutes les commissions + case valider -->
       <div class="fin-row comm" id="comm-totale-row">
         <span class="fin-label comm-color">&#128188; Commission tech</span>
@@ -5020,7 +5033,15 @@ function clearModePaiement(){
   }
 }
 
+function onSelectModePaiement(val){
+  if(!val){ clearModePaiement(); }
+  else { setModePaiement(val); }
+}
+
 function renderModePaiement(){
+  /* Synchronise le menu deroulant "Paye par" dans Finances */
+  const sel=document.getElementById('sel-mode-paiement');
+  if(sel) sel.value=currentModePaiement||'';
   const card=document.getElementById('paiement-card');
   if(!card) return;
   /* Toggle classe "paid" sur la card pour le style vert */
@@ -6490,18 +6511,12 @@ function buildTabs(){
   move('sec-finances',right);
   move('sec-comm-tech',right);
 
-  /* Extraire bloc Paiement + bouton Facture dans une section dediee (sous finances) */
+  /* Bloc Paiement + bouton Facture : MASQUES (paiement gere par menu "Paye par" dans Finances).
+     Conserves dans le DOM (caches) pour reactivation future si besoin. */
   const paie=document.getElementById('paiement-card');
   const btnFac=document.getElementById('btn-facture');
-  if(paie){
-    const secPaie=document.createElement('div');
-    secPaie.className='sec'; secPaie.style.borderLeft='4px solid #2e7d32'; secPaie.id='sec-paiement';
-    const t=document.createElement('div'); t.className='sec-title';
-    t.innerHTML='<span class="ic">&#128176;</span> Paiement & facturation';
-    secPaie.appendChild(t); secPaie.appendChild(paie);
-    if(btnFac) secPaie.appendChild(btnFac);
-    right.appendChild(secPaie);
-  }
+  if(paie) paie.style.display='none';
+  if(btnFac) btnFac.style.display='none';
 
   /* ===== ZONE BASSE : planification + courriels + documents + historique ===== */
   const bgrid=document.createElement('div'); bgrid.className='mandat-bottom-grid';
