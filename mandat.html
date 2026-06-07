@@ -6922,6 +6922,31 @@ function initLayout(){
   buildTabs();
   renderPipeline();
   renderClientReadonly();
+  setupZeroClear();
+}
+
+/* Quand on clique dans un champ tarif/commission a 0, on le vide.
+   Au depart du champ, si vide, on remet 0. Delegation = marche aussi pour les services ajoutes. */
+function setupZeroClear(){
+  const sec=document.getElementById('sec-finances');
+  if(!sec || sec._zeroClear) return;
+  sec._zeroClear=true;
+  sec.addEventListener('focusin',e=>{
+    const el=e.target;
+    if(el.tagName==='INPUT' && el.type==='number' && (el.value==='0' || parseFloat(el.value)===0)){
+      el.dataset.wasZero='1';
+      el.value='';
+    }
+  });
+  sec.addEventListener('focusout',e=>{
+    const el=e.target;
+    if(el.tagName==='INPUT' && el.type==='number' && el.value.trim()===''){
+      el.value='0';
+      if(el.dataset.wasZero){ delete el.dataset.wasZero; }
+      /* Re-declenche le recalcul pour rester coherent */
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+    }
+  });
 }
 </script>
 </body>
