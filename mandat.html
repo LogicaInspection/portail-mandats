@@ -934,6 +934,18 @@ input[type=file]{display:none;}
 #ck-valid-comm{width:22px;height:22px;border:1.5px solid #cfd6dd;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:transparent;font-size:13px;background:#fff;flex-shrink:0;transition:all .15s;}
 #ck-valid-comm:hover{border-color:#4caf50;}
 #ck-valid-comm.validated{background:#4caf50;border-color:#4caf50;color:#fff;}
+/* Encadré coloré par service (style bandeau) */
+.svc-card{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 10px;margin-bottom:6px;}
+.svc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.svc-name{font-size:12.5px;font-weight:600;color:#9a3412;display:flex;align-items:center;gap:6px;min-width:0;}
+.svc-name .extra-name-input{font-size:12.5px;padding:3px 6px;width:100%;}
+.svc-price-tag{font-size:13px;font-weight:700;color:#9a3412;white-space:nowrap;}
+.svc-fields{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.svc-fields .fld{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8;}
+.svc-fields .fin-input{width:74px !important;flex:0 0 74px;padding:4px 7px !important;font-size:12px;}
+.svc-card .extra-check{margin:0;}
+.svc-rm{background:none;border:none;color:#d4a373;cursor:pointer;font-size:13px;padding:0 2px;}
+.svc-rm:hover{color:#dc2626;}
 /* Rapprocher montants des titres : limiter la largeur de la zone valeur */
 #sec-finances .fin-row{justify-content:space-between;}
 #sec-finances .fin-row > .fin-label{flex:1 1 auto;}
@@ -1390,6 +1402,7 @@ input[type=file]{display:none;}
         <span style="display:flex;align-items:center;gap:8px;">
           <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()" style="width:84px;">
           <span class="fin-value comm-val" id="total-comm" title="Commission totale (base + extras + bonus)">0,00 $</span>
+          <span id="ck-valid-label" style="font-size:11px;color:#94a3b8;display:none;">&Agrave; valider</span>
           <span class="ck-valid" id="ck-valid-comm" onclick="toggleCommissionValidation()" title="Valider la commission" style="display:none">&#10003;</span>
         </span>
       </div>
@@ -2109,9 +2122,14 @@ function updateFinTypeDisplay(){
     txt=sel?(sel.options[sel.selectedIndex]?.text||sel.value||''):'';
   }
   if(txt){
-    el.textContent=txt;
+    const prix=parseFloat(document.getElementById('prix-base').value)||0;
+    el.innerHTML='<span>'+txt.replace(/</g,'&lt;')+'</span>'+(prix>0?'<span style="font-weight:700;">'+money(prix)+'</span>':'');
+    el.style.display='flex';
+    el.style.justifyContent='space-between';
+    el.style.alignItems='center';
     el.classList.remove('empty');
   } else {
+    el.textContent='';
     el.classList.add('empty');
   }
 }
@@ -2229,28 +2247,33 @@ function renderExtras(){
   if(!extras.length){
     return;
   }
-  const hdr=document.createElement('div');
-  hdr.style.cssText='display:grid;grid-template-columns:26px 1fr 72px 72px 30px;gap:6px;padding:4px;margin-bottom:4px;';
-  hdr.innerHTML='<div></div><div style="font-size:11px;color:#999;font-weight:700;text-transform:uppercase;">Service</div><div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Prix client</div>'+((isGest||profile.role==='technicien')?'<div style="font-size:11px;color:#999;font-weight:700;text-align:right;">Commission</div>':'<div></div>')+'<div></div>';
-  list.appendChild(hdr);
+  const showComm=(isGest||profile.role==='technicien');
+  const canRemove=(!locked&&(profile.role==='gestionnaire'||profile.role==='secretaire'));
 
   extras.forEach((ex,i)=>{
-    const row=document.createElement('div');
-    row.className='extra-row'+lockedRowCls;
-    /* Nom du service: input editable si service custom, span fige sinon */
+    const inputCls = locked ? 'fin-input small locked-price' : 'fin-input small';
     const nameHtml = ex.custom
       ? '<input class="extra-name-input" type="text" placeholder="Nom du service..." value="'+escapeAttr(ex.service_nom||'')+'" oninput="extraSetNom('+i+',this.value)"'+roAttr+'>'
-      : '<span class="extra-name">'+escapeHtml(ex.service_nom||'')+'</span>';
-    /* Classe locked-price sur les inputs prix/commission si commission validee */
-    const inputCls = locked ? 'fin-input small locked-price' : 'fin-input small';
-    row.innerHTML=
-      '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)"'+disAttr+'>'+
-      nameHtml+
-      '<input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value)"'+roAttr+'>'+
-      /* Commission editable pour gestionnaire ET technicien (le tech propose, le gestionnaire valide) */
-      ((isGest||profile.role==='technicien')?'<input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)"'+roAttr+'>':'<span></span>')+
-      ((!locked&&(profile.role==='gestionnaire'||profile.role==='secretaire'))?'<button class="btn-rm" onclick="removeExtra('+i+')">&#10005;</button>':'<span></span>');
-    list.appendChild(row);
+      : '<span>'+escapeHtml(ex.service_nom||'')+'</span>';
+    const card=document.createElement('div');
+    card.className='svc-card'+(ex.actif?'':' svc-off')+lockedRowCls;
+    if(!ex.actif){ card.style.opacity='0.55'; }
+    card.innerHTML=
+      '<div class="svc-head">'+
+        '<span class="svc-name">'+
+          '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)"'+disAttr+'>'+
+          nameHtml+
+        '</span>'+
+        '<span style="display:flex;align-items:center;gap:8px;">'+
+          '<span class="svc-price-tag" id="svc-tag-'+i+'">'+money(parseFloat(ex.prix)||0)+'</span>'+
+          (canRemove?'<button class="svc-rm" onclick="removeExtra('+i+')">&#10005;</button>':'')+
+        '</span>'+
+      '</div>'+
+      '<div class="svc-fields">'+
+        '<span class="fld">Prix client <input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value);document.getElementById(\'svc-tag-'+i+'\').textContent=money(parseFloat(this.value)||0)"'+roAttr+'></span>'+
+        (showComm?'<span class="fld">Commission <input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)"'+roAttr+'></span>':'')+
+      '</div>';
+    list.appendChild(card);
   });
 
   /* Bouton "+ Ajouter un service" : visible pour Logica ET GEQ, cache si verrouille */
@@ -2546,6 +2569,7 @@ function recalc(){
   document.getElementById('tps-val').textContent=money(tps);
   document.getElementById('tvq-val').textContent=money(tvq);
   document.getElementById('total-ttc').textContent=money(ttc);
+  updateFinTypeDisplay();
   recalcComm();
   recalcProfit();
 }
@@ -4989,6 +5013,12 @@ async function renderCommissionValidation(){
     ck.style.display = isGest ? 'inline-flex' : 'none';
     ck.classList.toggle('validated', valide);
     ck.title = valide ? 'Commission validee (cliquer pour devalider)' : 'Valider la commission';
+  }
+  const ckLbl=document.getElementById('ck-valid-label');
+  if(ckLbl){
+    ckLbl.style.display = isGest ? 'inline' : 'none';
+    ckLbl.innerHTML = valide ? 'Valid\u00e9e' : '\u00c0 valider';
+    ckLbl.style.color = valide ? '#2e7d32' : '#94a3b8';
   }
   /* IDs caches conserves pour compat (texte/meta non affiches) */
   const widget=document.getElementById('commission-validation');
