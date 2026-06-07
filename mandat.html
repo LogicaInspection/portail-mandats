@@ -920,16 +920,19 @@ input[type=file]{display:none;}
 .cli-action:hover{color:#1565c0;}
 #client-edit-toggle:hover{background:#f1f3f5;color:#1565c0;}
 /* ===== Compactage section Finances (style dense) ===== */
-#sec-finances .fin-card{background:#fafbfc;padding:10px 12px;margin-bottom:8px;border:1px solid #eef0f2;}
-#sec-finances .fin-row{padding:5px 0;}
+#sec-finances .fin-card{background:#fafbfc;padding:8px 10px;margin-bottom:7px;border:1px solid #eef0f2;}
+#sec-finances .fin-row{padding:4px 0;}
 #sec-finances .fin-label{font-size:12.5px;color:#64748b;}
-#sec-finances .fin-input{width:104px;flex:0 0 104px;padding:6px 9px;font-size:13px;text-align:right;border-radius:7px;border-width:1px;}
-#sec-finances .fin-input.small{width:104px;flex:0 0 104px;}
-#sec-finances .fin-value{font-size:13px;}
-#sec-finances .fin-row.total,#sec-finances .fin-row.comm,#sec-finances .fin-row.profit{padding:8px 12px;margin-top:4px;}
-#sec-finances .fin-value.big,#sec-finances .fin-value.comm-val,#sec-finances .fin-value.profit-val{font-size:15px;font-weight:700;}
-#sec-finances label{font-size:11px;}
-#sec-finances .extras-wrap{margin-top:4px;}
+#sec-finances .fin-input{width:84px !important;min-width:0;flex:0 0 84px;padding:5px 8px !important;font-size:12.5px;text-align:right;border-radius:6px;border-width:1px;}
+#sec-finances .fin-input.small{width:84px !important;flex:0 0 84px;}
+#sec-finances .fin-value{font-size:12.5px;}
+#sec-finances .fin-row.tax-grouped{gap:10px;}
+#sec-finances .fin-row.total,#sec-finances .fin-row.comm{padding:7px 10px;margin-top:4px;}
+#sec-finances .fin-value.big,#sec-finances .fin-value.comm-val{font-size:14px;font-weight:700;}
+#sec-finances label{font-size:11px;color:#94a3b8;}
+/* Rapprocher montants des titres : limiter la largeur de la zone valeur */
+#sec-finances .fin-row{justify-content:space-between;}
+#sec-finances .fin-row > .fin-label{flex:1 1 auto;}
 /* Grilles 2 colonnes : empilees par defaut (petit ecran), cote a cote >=1000px */
 #panel-fin .fin-2col{display:flex;flex-direction:column;gap:14px;}
 /* Sur grand ecran, Suivi&RDV et Finances gardent 2 colonnes pour ne pas etirer */
@@ -1310,32 +1313,13 @@ input[type=file]{display:none;}
         <span class="fin-label">Tarif<span class="price-lock-badge" id="prix-lock-badge" style="display:none">&#128274; Verrouille</span></span>
         <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()">
       </div>
-      <div class="fin-row geq-only" id="redaction-row">
+      <div class="fin-row geq-only" id="redaction-row" style="display:none">
         <span class="fin-label">&#128221; Heures de r&eacute;daction <small style="color:#999;font-weight:400">(150$/h)</small></span>
         <input class="fin-input" id="heures-redaction" type="number" min="0" max="20" step="0.5" value="0" oninput="recalc()">
       </div>
-      <div class="fin-row" id="comm-base-row">
-        <span class="fin-label">Commission tech (base)</span>
-        <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()">
-      </div>
-      <!-- Phase 4 - Validation commission (gestionnaire seulement) -->
-      <div class="commission-validation" id="commission-validation" style="display:none">
-        <span class="ck-valid" id="ck-valid-comm" onclick="toggleCommissionValidation()">&#10003;</span>
-        <div style="flex:1">
-          <div class="commission-validation-text" id="commission-validation-text">Commission &agrave; valider</div>
-          <div class="commission-validation-meta" id="commission-validation-meta"></div>
-        </div>
-      </div>
     </div>
 
-    <!-- Info bar verrouillage prix (visible quand commission validee) -->
-    <div class="price-lock-info" id="price-lock-info" style="display:none">
-      <span class="lock-icon">&#128274;</span>
-      <span><strong>Tarif et services additionnels verrouilles</strong> &mdash; commission validee</span>
-      <span class="unlock-link" id="price-unlock-link" style="display:none" onclick="unlockPriceFields()">Deverrouiller</span>
-    </div>
-
-    <div style="margin-bottom:6px"><label>Services supplementaires</label></div>
+    <!-- Ajouter un service (sous le tarif) -->
     <div class="extras-wrap">
       <div class="extras-list" id="extras-list"></div>
       <button class="btn-add-extra" style="display:none" onclick="openAddServiceMenu()">+ Ajouter un service</button>
@@ -1351,23 +1335,40 @@ input[type=file]{display:none;}
       </div>
     </div>
 
-    <div class="fin-card" style="margin-top:14px">
-      <div class="fin-row">
-        <span class="fin-label">Transport</span>
-        <input class="fin-input" id="transport" type="number" min="0" step="0.01" value="0" oninput="recalc()">
-      </div>
+    <!-- Transport (masque, deplace vers services) + frais labo (conditionnel) -->
+    <div style="display:none"><input id="transport" type="number" value="0"></div>
 
-      <div id="frais-lab-section" style="display:none">
-        <div class="frais-lab-row">
-          <span class="frais-lab-label">&#128300; Frais de laboratoire</span>
+    <div id="frais-lab-wrap" style="display:none;margin:8px 0;">
+      <button type="button" id="btn-frais-lab" onclick="toggleFraisLab()" style="font-size:11.5px;color:#1565c0;background:#fff;border:1px dashed #cfd6dd;border-radius:6px;padding:5px 9px;cursor:pointer;">&#128300; Ajouter frais de laboratoire</button>
+      <div id="frais-lab-section" style="display:none;margin-top:8px;">
+        <div class="fin-row">
+          <span class="fin-label">&#128300; Frais de laboratoire</span>
           <input class="fin-input small" id="frais-lab" type="number" min="0" step="0.01" value="0" oninput="recalc()">
         </div>
         <div class="sans-lettre-row" id="sans-lettre-row" style="display:none">
           <input type="checkbox" id="sans-lettre" onchange="toggleSansLettre()">
-          <label for="sans-lettre" style="text-transform:none;font-size:13px;color:#666;font-weight:500;cursor:pointer">Sans lettre (-80$)</label>
+          <label for="sans-lettre" style="text-transform:none;font-size:12px;color:#666;font-weight:500;cursor:pointer">Sans lettre (-80$)</label>
         </div>
       </div>
+    </div>
 
+    <!-- Phase 4 - Validation commission (gestionnaire seulement) -->
+    <div class="commission-validation" id="commission-validation" style="display:none">
+      <span class="ck-valid" id="ck-valid-comm" onclick="toggleCommissionValidation()">&#10003;</span>
+      <div style="flex:1">
+        <div class="commission-validation-text" id="commission-validation-text">Commission &agrave; valider</div>
+        <div class="commission-validation-meta" id="commission-validation-meta"></div>
+      </div>
+    </div>
+
+    <!-- Info bar verrouillage prix (visible quand commission validee) -->
+    <div class="price-lock-info" id="price-lock-info" style="display:none">
+      <span class="lock-icon">&#128274;</span>
+      <span><strong>Tarif et services additionnels verrouilles</strong> &mdash; commission validee</span>
+      <span class="unlock-link" id="price-unlock-link" style="display:none" onclick="unlockPriceFields()">Deverrouiller</span>
+    </div>
+
+    <div class="fin-card" style="margin-top:10px">
       <div class="fin-row" id="bonus-row" style="display:none">
         <label class="bonus-label" for="bonus-check">
           <input type="checkbox" id="bonus-check" onchange="onBonusManuelChange()">
@@ -1388,10 +1389,15 @@ input[type=file]{display:none;}
         <span class="fin-label bold">Total TTC</span>
         <span class="fin-value big" id="total-ttc">0,00 $</span>
       </div>
+      <!-- Commission : UNE seule ligne, editable (base) + total calcule a droite -->
       <div class="fin-row comm" id="comm-totale-row">
-        <span class="fin-label comm-color">&#128188; Commission tech totale</span>
-        <span class="fin-value comm-val" id="total-comm">0,00 $</span>
+        <span class="fin-label comm-color">&#128188; Commission tech</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()" style="width:84px;">
+          <span class="fin-value comm-val" id="total-comm" title="Commission totale (base + extras + bonus)">0,00 $</span>
+        </span>
       </div>
+      <!-- profit retire de la fiche (reste dans Finance et stats) -->
       <div class="fin-row profit" id="profit-row" style="display:none">
         <span class="fin-label profit-color">&#128181; Mon profit</span>
         <span class="fin-value profit-val" id="profit-val">0,00 $</span>
@@ -1853,8 +1859,8 @@ techsFiltered.forEach(t=>{
        Elle reste verrouillee seulement si elle est validee par le gestionnaire. */
   }
   if(isGest){
-    document.getElementById('frais-lab-section').style.display='block';
-    document.getElementById('profit-row').style.display='flex';
+    /* Frais de labo : affichage gere par onTypeMandatChange selon le type.
+       Profit retire de la fiche (visible dans Finance et stats). */
   }
   if(profile.role==='secretaire'){
     var commBaseInput = document.getElementById('comm-base');
@@ -2153,6 +2159,21 @@ function onTypeMandatChange(skipAutoFill){
 
   const avecEchan=TYPE_AVEC_ECHAN.includes(type);
   const avecLettre=TYPE_AVEC_LETTRE.includes(type);
+
+  /* Heures de redaction : seulement pour Expertise AVEC rapport */
+  const avecRapport=/avec rapport/i.test(type)||type==='Expertise technique avec rapport';
+  const redRow=document.getElementById('redaction-row');
+  if(redRow) redRow.style.display=avecRapport?'flex':'none';
+
+  /* Frais de labo : seulement pour les types avec analyse laboratoire */
+  const avecLabo=Object.prototype.hasOwnProperty.call(FRAIS_LAB,type)
+    ||/amiante|fongique|plomb|merule|m\u00e9rule|biotape|eau/i.test(type);
+  const labWrap=document.getElementById('frais-lab-wrap');
+  if(labWrap) labWrap.style.display=avecLabo?'block':'none';
+  if(!avecLabo){
+    const labSec=document.getElementById('frais-lab-section');
+    if(labSec) labSec.style.display='none';
+  }
 
   /* Reset echantillons si le nouveau type ne supporte pas les echantillons.
      Sinon on garderait des residus invisibles qui faussent les calculs. */
@@ -2528,6 +2549,15 @@ function recalc(){
   document.getElementById('total-ttc').textContent=money(ttc);
   recalcComm();
   recalcProfit();
+}
+
+function toggleFraisLab(){
+  const sec=document.getElementById('frais-lab-section');
+  if(!sec) return;
+  const open=sec.style.display==='none';
+  sec.style.display=open?'block':'none';
+  const btn=document.getElementById('btn-frais-lab');
+  if(btn) btn.style.borderStyle=open?'solid':'dashed';
 }
 
 function recalcComm(){
