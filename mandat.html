@@ -932,24 +932,20 @@ input[type=file]{display:none;}
 #ck-valid-comm{width:22px;height:22px;border:1.5px solid #cfd6dd;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:transparent;font-size:13px;background:#fff;flex-shrink:0;transition:all .15s;}
 #ck-valid-comm:hover{border-color:#4caf50;}
 #ck-valid-comm.validated{background:#4caf50;border-color:#4caf50;color:#fff;}
-/* Grille Finances : nom | tarif(84) | commission(84) | suppr(20) */
-.fin-coltitles{display:grid;grid-template-columns:1fr 84px 84px 20px;gap:7px;margin-bottom:3px;}
+/* Grille Finances IDENTIQUE partout : case(18) | nom | tarif(80) | commission(80) | suppr(18) */
+.fin-coltitles{display:grid;grid-template-columns:18px 1fr 80px 80px 18px;gap:7px;margin-bottom:3px;}
 .fin-coltitles span{font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;text-align:center;}
-.fin-type-display.type-row{display:grid;grid-template-columns:1fr 84px 84px 20px;gap:7px;align-items:center;background:#fff7ed !important;border:1px solid #fed7aa;border-left:3px solid #f59e0b;border-radius:7px;padding:6px 9px;margin-bottom:6px;}
+.fin-type-display.type-row{display:grid;grid-template-columns:18px 1fr 80px 80px 18px;gap:7px;align-items:center;background:#fff7ed !important;border:1px solid #fed7aa;border-left:3px solid #f59e0b;border-radius:7px;padding:6px 9px;margin-bottom:6px;}
 .fin-type-display .type-name{font-size:12.5px;font-weight:600;color:#9a3412;overflow:hidden;line-height:1.25;}
 .fin-type-display .fin-input{width:100% !important;padding:4px 6px !important;font-size:12px;text-align:right;box-sizing:border-box;}
-/* Service : case(20) | nom | tarif(84) | commission(84) | suppr(20) */
 .svc-card{background:#fff7ed;border:1px solid #fed7aa;border-left:3px solid #f59e0b;border-radius:7px;padding:5px 9px;margin-bottom:5px;}
-.svc-card .svc-line{display:grid;grid-template-columns:20px 1fr 84px 84px 20px;gap:7px;align-items:center;}
+.svc-card .svc-line{display:grid;grid-template-columns:18px 1fr 80px 80px 18px;gap:7px;align-items:center;}
 .svc-card .extra-check{margin:0;width:15px;height:15px;}
 .svc-name{min-width:0;font-size:12px;font-weight:600;color:#9a3412;overflow:hidden;}
 .svc-name .extra-name-input{font-size:12px;padding:3px 5px;width:100%;box-sizing:border-box;}
 .svc-card .fin-input{width:100% !important;padding:4px 6px !important;font-size:12px;text-align:right;box-sizing:border-box;}
 .svc-rm{background:none;border:none;color:#d4a373;cursor:pointer;font-size:12px;padding:0;}
 .svc-rm:hover{color:#dc2626;}
-/* Rapprocher montants des titres : limiter la largeur de la zone valeur */
-#sec-finances .fin-row{justify-content:space-between;}
-#sec-finances .fin-row > .fin-label{flex:1 1 auto;}
 /* Grilles 2 colonnes : empilees par defaut (petit ecran), cote a cote >=1000px */
 #panel-fin .fin-2col{display:flex;flex-direction:column;gap:14px;}
 /* Sur grand ecran, Suivi&RDV et Finances gardent 2 colonnes pour ne pas etirer */
@@ -1323,7 +1319,7 @@ input[type=file]{display:none;}
 
   <div class="sec finance-sec" id="sec-finances">
     <div class="sec-title"><span class="ic">&#128176;</span> Finances</div>
-    <div id="fin-cols-header" class="fin-coltitles" style="display:none;"><span></span><span>Tarif</span><span>Commission</span><span></span></div>
+    <div id="fin-cols-header" class="fin-coltitles" style="display:none;"><span></span><span></span><span>Tarif</span><span>Commission</span><span></span></div>
     <div id="fin-type-display" class="fin-type-display"></div>
 
 <div class="fin-card" id="card-redaction" style="display:none">
@@ -2127,7 +2123,7 @@ function updateFinTypeDisplay(){
     let nameSpan=document.getElementById('fin-type-name');
     if(!nameSpan){
       el.classList.add('type-row');
-      el.innerHTML='<span id="fin-type-name" class="type-name"></span><span id="fin-type-prix"></span><span id="fin-type-comm"></span><span></span>';
+      el.innerHTML='<span></span><span id="fin-type-name" class="type-name"></span><span id="fin-type-prix"></span><span id="fin-type-comm"></span><span></span>';
       const prix=document.getElementById('prix-base');
       const badge=document.getElementById('prix-lock-badge');
       const comm=document.getElementById('comm-base');
