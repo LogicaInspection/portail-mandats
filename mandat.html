@@ -812,6 +812,9 @@ input[type=file]{display:none;}
 .histo-arrow.open{transform:rotate(90deg);}
 .histo-content{display:none;margin-top:14px;}
 .histo-content.open{display:block;}
+/* Historique du mandat sous Finances : titre sans bordure quand toggle */
+#sec-histo .sec-title{border-bottom:none;padding-bottom:0;margin-bottom:0;}
+#sec-histo .histo-content.open{margin-top:12px;border-top:1px solid #f1f3f5;padding-top:12px;}
 .histo-empty{text-align:center;color:#bbb;font-size:13px;padding:14px;}
 .histo-event{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0;}
 .histo-event:last-child{border-bottom:none;}
@@ -6566,6 +6569,8 @@ function buildTabs(){
   move('sec-docs',rightStack);
   move('sec-finances',right);
   move('sec-comm-tech',right);
+  /* Historique du mandat : bouton ouvrable en bas du volet Finances (colonne droite) */
+  move('sec-histo',right);
 
   /* Bloc Paiement + bouton Facture : MASQUES (paiement gere par menu "Paye par" dans Finances).
      Conserves dans le DOM (caches) pour reactivation future si besoin. */
@@ -6574,10 +6579,13 @@ function buildTabs(){
   if(paie) paie.style.display='none';
   if(btnFac) btnFac.style.display='none';
 
-  /* ===== ZONE BASSE : historique des contacts ===== */
-  const bgrid=document.createElement('div'); bgrid.className='mandat-bottom-grid';
-  bottom.appendChild(bgrid);
-  move('sec-suivi-client',bgrid);
+  /* Historique des contacts : retire completement */
+  const secSuiviClient=document.getElementById('sec-suivi-client');
+  if(secSuiviClient) secSuiviClient.style.display='none';
+
+  /* Zone basse vide (plus de sections) */
+  const bottomZone=document.getElementById('mandat-bottom');
+  if(bottomZone) bottomZone.style.display='none';
 
   /* Cacher les conteneurs residuels */
   const oldgrid=document.querySelector('.grid-3col');
