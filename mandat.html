@@ -178,7 +178,7 @@ body.test-mode .content { padding-top: 18px; }
   font-size:14px;
   line-height:1.6;
 }
-#f-notes-editor .ql-editor{min-height:90px;}
+#f-notes-editor .ql-editor{min-height:90px;max-height:280px;overflow-y:auto;}
 #m-body-editor .ql-editor{min-height:260px;}
 #mf-body-editor .ql-editor{min-height:160px;}
 
@@ -6664,7 +6664,7 @@ function openNotesFullscreen(){
   if(toolbar) host.appendChild(toolbar);
   host.appendChild(ed);
   ed.style.minHeight='55vh';
-  const qe=ed.querySelector('.ql-editor'); if(qe) qe.style.minHeight='55vh';
+  const qe=ed.querySelector('.ql-editor'); if(qe){ qe.style.minHeight='55vh'; qe.style.maxHeight='75vh'; }
   document.getElementById('modal-notes').style.display='flex';
 }
 function closeNotesFullscreen(){
@@ -6673,7 +6673,7 @@ function closeNotesFullscreen(){
     const toolbar=ed.previousElementSibling && ed.previousElementSibling.classList.contains('ql-toolbar')
       ? ed.previousElementSibling : null;
     ed.style.minHeight='';
-    const qe=ed.querySelector('.ql-editor'); if(qe) qe.style.minHeight='';
+    const qe=ed.querySelector('.ql-editor'); if(qe){ qe.style.minHeight=''; qe.style.maxHeight=''; }
     const ph=window._notesPlaceholder;
     if(ph && ph.parentNode){
       if(toolbar) ph.parentNode.insertBefore(toolbar, ph);
