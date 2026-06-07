@@ -919,6 +919,17 @@ input[type=file]{display:none;}
 .cli-action{background:none;border:none;cursor:pointer;color:#c0c6cf;font-size:13px;padding:0 2px;flex-shrink:0;}
 .cli-action:hover{color:#1565c0;}
 #client-edit-toggle:hover{background:#f1f3f5;color:#1565c0;}
+/* ===== Compactage section Finances (style dense) ===== */
+#sec-finances .fin-card{background:#fafbfc;padding:10px 12px;margin-bottom:8px;border:1px solid #eef0f2;}
+#sec-finances .fin-row{padding:5px 0;}
+#sec-finances .fin-label{font-size:12.5px;color:#64748b;}
+#sec-finances .fin-input{width:104px;flex:0 0 104px;padding:6px 9px;font-size:13px;text-align:right;border-radius:7px;border-width:1px;}
+#sec-finances .fin-input.small{width:104px;flex:0 0 104px;}
+#sec-finances .fin-value{font-size:13px;}
+#sec-finances .fin-row.total,#sec-finances .fin-row.comm,#sec-finances .fin-row.profit{padding:8px 12px;margin-top:4px;}
+#sec-finances .fin-value.big,#sec-finances .fin-value.comm-val,#sec-finances .fin-value.profit-val{font-size:15px;font-weight:700;}
+#sec-finances label{font-size:11px;}
+#sec-finances .extras-wrap{margin-top:4px;}
 /* Grilles 2 colonnes : empilees par defaut (petit ecran), cote a cote >=1000px */
 #panel-fin .fin-2col{display:flex;flex-direction:column;gap:14px;}
 /* Sur grand ecran, Suivi&RDV et Finances gardent 2 colonnes pour ne pas etirer */
@@ -1296,7 +1307,7 @@ input[type=file]{display:none;}
 
 <div class="fin-card">
       <div class="fin-row">
-        <span class="fin-label">Prix de base<span class="price-lock-badge" id="prix-lock-badge" style="display:none">&#128274; Verrouille</span></span>
+        <span class="fin-label">Tarif<span class="price-lock-badge" id="prix-lock-badge" style="display:none">&#128274; Verrouille</span></span>
         <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()">
       </div>
       <div class="fin-row geq-only" id="redaction-row">
@@ -1320,7 +1331,7 @@ input[type=file]{display:none;}
     <!-- Info bar verrouillage prix (visible quand commission validee) -->
     <div class="price-lock-info" id="price-lock-info" style="display:none">
       <span class="lock-icon">&#128274;</span>
-      <span><strong>Prix de base et services additionnels verrouilles</strong> &mdash; commission validee</span>
+      <span><strong>Tarif et services additionnels verrouilles</strong> &mdash; commission validee</span>
       <span class="unlock-link" id="price-unlock-link" style="display:none" onclick="unlockPriceFields()">Deverrouiller</span>
     </div>
 
