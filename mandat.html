@@ -2299,8 +2299,8 @@ function onTypeMandatChange(skipAutoFill){
 
   document.getElementById('special-btns').style.display=avecEchan?'flex':'none';
   document.getElementById('echan-wrap').style.display=avecEchan?'flex':'none';
-  /* Bonus visible pour tous les mandats GEQ (pas seulement certains types) */
-  document.getElementById('bonus-row').style.display='flex';
+  /* Bonus paiement non-carte retire : les techs l'ajoutent dans leur commission */
+  document.getElementById('bonus-row').style.display='none';
   document.getElementById('sans-lettre-row').style.display=avecLettre?'flex':'none';
 
 recalc();
@@ -2699,12 +2699,8 @@ function recalcComm(){
 }
 
 function getBonusNonCarte(){
-  const comp=document.getElementById('f-compagnie').value;
-  /* Bonus applique uniquement aux mandats GEQ (tous types) */
-  if(comp!=='geq') return 0;
-  /* Checkbox manuelle prioritaire si presente et cochee */
-  const chk=document.getElementById('bonus-check');
-  if(chk && chk.checked) return 12;
+  /* Bonus paiement non-carte retire de l'interface : les techs l'ajoutent
+     directement dans leur champ commission. Toujours 0 ici. */
   return 0;
 }
 
