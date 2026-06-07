@@ -930,6 +930,10 @@ input[type=file]{display:none;}
 #sec-finances .fin-row.total,#sec-finances .fin-row.comm{padding:7px 10px;margin-top:4px;}
 #sec-finances .fin-value.big,#sec-finances .fin-value.comm-val{font-size:14px;font-weight:700;}
 #sec-finances label{font-size:11px;color:#94a3b8;}
+/* Case de validation commission dans la ligne */
+#ck-valid-comm{width:22px;height:22px;border:1.5px solid #cfd6dd;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:transparent;font-size:13px;background:#fff;flex-shrink:0;transition:all .15s;}
+#ck-valid-comm:hover{border-color:#4caf50;}
+#ck-valid-comm.validated{background:#4caf50;border-color:#4caf50;color:#fff;}
 /* Rapprocher montants des titres : limiter la largeur de la zone valeur */
 #sec-finances .fin-row{justify-content:space-between;}
 #sec-finances .fin-row > .fin-label{flex:1 1 auto;}
@@ -1352,15 +1356,6 @@ input[type=file]{display:none;}
       </div>
     </div>
 
-    <!-- Phase 4 - Validation commission (gestionnaire seulement) -->
-    <div class="commission-validation" id="commission-validation" style="display:none">
-      <span class="ck-valid" id="ck-valid-comm" onclick="toggleCommissionValidation()">&#10003;</span>
-      <div style="flex:1">
-        <div class="commission-validation-text" id="commission-validation-text">Commission &agrave; valider</div>
-        <div class="commission-validation-meta" id="commission-validation-meta"></div>
-      </div>
-    </div>
-
     <!-- Info bar verrouillage prix (visible quand commission validee) -->
     <div class="price-lock-info" id="price-lock-info" style="display:none">
       <span class="lock-icon">&#128274;</span>
@@ -1374,7 +1369,7 @@ input[type=file]{display:none;}
           <input type="checkbox" id="bonus-check" onchange="onBonusManuelChange()">
           <span class="fin-label" style="cursor:pointer">&#127881; Bonus paiement non-carte (+12$ comm)</span>
         </label>
-        <span id="bonus-status" style="font-size:12px;color:#999">&mdash;</span>
+        <span id="bonus-status" style="font-size:12px;color:#999">&#8212;</span>
       </div>
 
       <div class="fin-row tax-grouped">
@@ -1389,14 +1384,19 @@ input[type=file]{display:none;}
         <span class="fin-label bold">Total TTC</span>
         <span class="fin-value big" id="total-ttc">0,00 $</span>
       </div>
-      <!-- Commission : UNE seule ligne, editable (base) + total calcule a droite -->
+      <!-- Commission : UNE seule ligne, editable (base) + total + case valider a droite -->
       <div class="fin-row comm" id="comm-totale-row">
         <span class="fin-label comm-color">&#128188; Commission tech</span>
         <span style="display:flex;align-items:center;gap:8px;">
           <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()" style="width:84px;">
           <span class="fin-value comm-val" id="total-comm" title="Commission totale (base + extras + bonus)">0,00 $</span>
+          <span class="ck-valid" id="ck-valid-comm" onclick="toggleCommissionValidation()" title="Valider la commission" style="display:none">&#10003;</span>
         </span>
       </div>
+      <!-- IDs conserves (caches) pour compat JS -->
+      <span id="commission-validation" style="display:none"></span>
+      <span id="commission-validation-text" style="display:none"></span>
+      <span id="commission-validation-meta" style="display:none"></span>
       <!-- profit retire de la fiche (reste dans Finance et stats) -->
       <div class="fin-row profit" id="profit-row" style="display:none">
         <span class="fin-label profit-color">&#128181; Mon profit</span>
@@ -2227,7 +2227,6 @@ function renderExtras(){
   const btnAddTop = document.querySelector('.btn-add-extra');
   if(btnAddTop) btnAddTop.style.display = locked ? 'none' : 'block';
   if(!extras.length){
-    list.innerHTML='<div style="font-size:13px;color:#bbb;padding:8px 0;text-align:center;">Aucun service supplementaire</div>';
     return;
   }
   const hdr=document.createElement('div');
@@ -4984,28 +4983,16 @@ async function renderCommissionValidation(){
   const isGest = profile.role==='gestionnaire';
   const valide = !!mandat.commission_validee;
 
-  /* Widget gestionnaire (cochable) */
-  const widget=document.getElementById('commission-validation');
-  if(widget){
-    widget.style.display = isGest ? 'flex' : 'none';
-    widget.classList.toggle('validated', valide);
-    const text=document.getElementById('commission-validation-text');
-    const meta=document.getElementById('commission-validation-meta');
-    if(text) text.textContent = valide ? 'Commission valid\u00e9e' : 'Valider la commission';
-    if(meta && valide && mandat.commission_validee_at){
-      const d=new Date(mandat.commission_validee_at);
-      const dStr=d.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
-      /* Recuperer le nom de la personne qui a valide */
-      let validePar='gestionnaire';
-      if(mandat.commission_validee_par && window.profilesCache){
-        const p=window.profilesCache[mandat.commission_validee_par];
-        if(p) validePar=`${p.prenom} ${p.nom}`;
-      }
-      meta.textContent=`Valid\u00e9e par ${validePar} le ${dStr}`;
-    } else if(meta){
-      meta.textContent = isGest ? 'Coche cette case quand la commission est correcte' : '';
-    }
+  /* Case de validation (cochable) integree dans la ligne commission */
+  const ck=document.getElementById('ck-valid-comm');
+  if(ck){
+    ck.style.display = isGest ? 'inline-flex' : 'none';
+    ck.classList.toggle('validated', valide);
+    ck.title = valide ? 'Commission validee (cliquer pour devalider)' : 'Valider la commission';
   }
+  /* IDs caches conserves pour compat (texte/meta non affiches) */
+  const widget=document.getElementById('commission-validation');
+  if(widget) widget.classList.toggle('validated', valide);
 
   /* Verrouille le champ commission si validee, peu importe le role
      (le tech ne peut pas modifier apres validation, ni meme le gestionnaire) */
