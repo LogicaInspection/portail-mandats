@@ -907,6 +907,18 @@ input[type=file]{display:none;}
   .m3-grid{grid-template-columns:1fr;}
   .m3-right{padding:12px;}
 }
+/* Lignes denses infos client (lecture) */
+.cli-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid #f1f3f5;}
+.cli-row:last-child{border-bottom:none;}
+.cli-label{color:#94a3b8;flex-shrink:0;}
+.cli-valwrap{display:flex;align-items:center;gap:6px;min-width:0;justify-content:flex-end;}
+.cli-val{color:#1f2937;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;}
+.cli-val.link{color:#1565c0;cursor:pointer;}
+.cli-copy{background:none;border:none;cursor:pointer;color:#c0c6cf;font-size:13px;padding:0 2px;flex-shrink:0;line-height:1;}
+.cli-copy:hover{color:#1565c0;}
+.cli-action{background:none;border:none;cursor:pointer;color:#c0c6cf;font-size:13px;padding:0 2px;flex-shrink:0;}
+.cli-action:hover{color:#1565c0;}
+#client-edit-toggle:hover{background:#f1f3f5;color:#1565c0;}
 /* Grilles 2 colonnes : empilees par defaut (petit ecran), cote a cote >=1000px */
 #panel-fin .fin-2col{display:flex;flex-direction:column;gap:14px;}
 /* Sur grand ecran, Suivi&RDV et Finances gardent 2 colonnes pour ne pas etirer */
@@ -1093,7 +1105,13 @@ input[type=file]{display:none;}
     <!-- ===== COLONNE 1 (gauche): Client / Planification / Statuts ===== -->
     <div class="col col-left">
   <div class="sec" id="sec-client">
-    <div class="sec-title"><span class="ic">&#128100;</span> Informations client</div>
+    <div class="sec-title"><span class="ic">&#128100;</span> Informations client
+      <button type="button" id="client-edit-toggle" onclick="toggleClientEdit()" title="Modifier" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:15px;padding:2px 6px;border-radius:6px;color:#94a3b8;">&#9999;&#65039;</button>
+    </div>
+    <!-- Vue lecture dense (generee par JS) -->
+    <div id="client-readonly"></div>
+    <!-- Formulaire (masque par defaut, revele par le crayon) -->
+    <div id="client-form" style="display:none">
     <div class="grid2">
       <div class="fg"><label>Compagnie</label>
         <select id="f-compagnie" onchange="onCompagnieChange()">
@@ -1149,6 +1167,7 @@ input[type=file]{display:none;}
         </select>
       </div>
     </div>
+    </div><!-- /client-form -->
   </div>
 
   <div class="sec" id="sec-planification">
@@ -6389,6 +6408,60 @@ function buildTabs(){
   tabsBuilt=true;
 }
 
+/* ===== Vue lecture dense des infos client (style GEQ Suivi) ===== */
+let clientEditMode=false;
+function cliVal(id){ const el=document.getElementById(id); return el?(el.value||'').trim():''; }
+function cliSelectLabel(id){ const el=document.getElementById(id); if(!el)return''; const o=el.options[el.selectedIndex]; return o?o.text:''; }
+function escAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function copyText(txt,btn){
+  if(!txt)return;
+  const done=()=>{ if(btn){ const old=btn.innerHTML; btn.innerHTML='&#10003;'; btn.style.color='#2e7d32'; setTimeout(()=>{btn.innerHTML=old;btn.style.color='';},1000); } };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(()=>{}); }
+  else { const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
+}
+
+function renderClientReadonly(){
+  const wrap=document.getElementById('client-readonly');
+  if(!wrap) return;
+  const isGeq=(cliVal('f-compagnie')==='geq');
+  const rows=[];
+  const row=(label,val,opts)=>{
+    opts=opts||{};
+    if(!val && !opts.always) return;
+    const v=val||'&mdash;';
+    let actions='';
+    if(opts.copy) actions+='<button class="cli-copy" title="Copier" onclick="copyText(\''+escAttr(val).replace(/'/g,"\\'")+'\',this)">&#128203;</button>';
+    if(opts.maps) actions+='<button class="cli-action" title="Ouvrir dans Maps" onclick="openInMaps()">&#128205;</button>';
+    if(opts.listing) actions+='<button class="cli-action" title="Ouvrir le listing" onclick="openListing()">&#128279;</button>';
+    rows.push('<div class="cli-row"><span class="cli-label">'+label+'</span><span class="cli-valwrap"><span class="cli-val'+(opts.link?' link':'')+'">'+v+'</span>'+actions+'</span></div>');
+  };
+  row('Compagnie', cliSelectLabel('f-compagnie'), {always:true});
+  if(isGeq && document.getElementById('fg-type-geq') && document.getElementById('fg-type-geq').style.display!=='none')
+    row('Type de mandat', cliSelectLabel('f-type-mandat'));
+  row('Client', cliVal('f-client-nom'), {always:true});
+  row('T\u00e9l\u00e9phone', cliVal('f-client-tel'), {copy:true});
+  row('Courriel', cliVal('f-client-email'), {copy:true,link:true});
+  row('Adresse', cliVal('f-adresse'), {copy:true,maps:true});
+  row('R\u00e9gion', cliSelectLabel('f-region'));
+  if(!isGeq){
+    row('Courtier acheteur', cliVal('f-courtier'));
+    row('R\u00e9f\u00e9r\u00e9 par', cliVal('f-reference'));
+    row('Lien listing', cliVal('f-listing')?'Voir la fiche':'', {listing:true});
+    row('Type de b\u00e2timent', cliSelectLabel('f-type-batiment'));
+  }
+  wrap.innerHTML=rows.join('');
+}
+
+function toggleClientEdit(){
+  clientEditMode=!clientEditMode;
+  document.getElementById('client-form').style.display=clientEditMode?'block':'none';
+  document.getElementById('client-readonly').style.display=clientEditMode?'none':'block';
+  const btn=document.getElementById('client-edit-toggle');
+  if(btn){ btn.innerHTML=clientEditMode?'&#10003;':'&#9999;&#65039;'; btn.title=clientEditMode?'Terminer':'Modifier'; btn.style.color=clientEditMode?'#2e7d32':''; }
+  if(!clientEditMode) renderClientReadonly();
+}
+
 function switchTab(tab){
   /* Plus d'onglets : layout 3 colonnes, tout est visible. On ne fait que scroller. */
   if(tab==='apercu') return;
@@ -6629,6 +6702,7 @@ function apercuAddGCal(){
 function initLayout(){
   buildTabs();
   renderPipeline();
+  renderClientReadonly();
 }
 </script>
 </body>
