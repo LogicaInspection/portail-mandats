@@ -167,7 +167,7 @@ body.test-mode .content { padding-top: 18px; }
   font-size:14px;
   line-height:1.6;
 }
-#f-notes-editor{min-height:240px;}
+#f-notes-editor{min-height:120px;}
 #m-body-editor{min-height:300px;}
 #mf-body-editor{min-height:200px;}
 
@@ -178,7 +178,7 @@ body.test-mode .content { padding-top: 18px; }
   font-size:14px;
   line-height:1.6;
 }
-#f-notes-editor .ql-editor{min-height:200px;}
+#f-notes-editor .ql-editor{min-height:90px;}
 #m-body-editor .ql-editor{min-height:260px;}
 #mf-body-editor .ql-editor{min-height:160px;}
 
@@ -1241,6 +1241,7 @@ input[type=file]{display:none;}
       </button>
     </div>
 
+    <div id="block-assignation">
     <div style="margin-top:14px">
       <label style="display:block;margin-bottom:8px;font-size:13px;color:#666;font-weight:500">Mode d'assignation</label>
       <div class="assign-mode-group">
@@ -1278,6 +1279,7 @@ input[type=file]{display:none;}
     </div>
 
     <div id="assign-info" class="assign-info"></div>
+    </div><!-- /block-assignation -->
   </div>
 
   <div class="sec suivi-sec" id="sec-suivi-client">
@@ -1302,7 +1304,9 @@ input[type=file]{display:none;}
     <!-- ===== COLONNE 2 (centre): Courriels / Documents / Notes ===== -->
     <div class="col col-center">
   <div class="sec" id="sec-notes">
-    <div class="sec-title"><span class="ic">&#128221;</span> Notes internes</div>
+    <div class="sec-title"><span class="ic">&#128221;</span> Notes internes
+      <button type="button" onclick="openNotesFullscreen()" title="Agrandir les notes" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;color:#94a3b8;">&#9974;</button>
+    </div>
     <div id="f-notes-editor"></div>
   </div>
 
@@ -1508,6 +1512,17 @@ input[type=file]{display:none;}
     </div>
   </div>
 
+</div>
+
+<!-- ===== MODAL NOTES PLEIN ECRAN ===== -->
+<div class="ov" id="modal-notes" style="display:none">
+  <div class="modal" style="max-width:1100px;width:96%;padding:18px 22px;max-height:94vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h2 style="margin:0;display:flex;align-items:center;gap:10px;font-size:18px;"><span>&#128221;</span> Notes internes</h2>
+      <button class="btn-cancel" onclick="closeNotesFullscreen()" style="padding:6px 14px;">Fermer</button>
+    </div>
+    <div id="notes-fullscreen-host" style="flex:1;overflow:auto;"></div>
+  </div>
 </div>
 
 <!-- ===== MODAL MINI-CALENDRIER GOOGLE ===== -->
@@ -6515,10 +6530,20 @@ function buildTabs(){
 
   /* ===== LIGNE PRINCIPALE : client | notes | finances ===== */
   move('sec-client',left);
-  /* ===== LIGNE PRINCIPALE : client + planification (gauche) | notes (centre) | finances (droite) ===== */
+  /* ===== LIGNE PRINCIPALE : client + planification (gauche) | notes + assignation (centre) | finances (droite) ===== */
   move('sec-client',left);
   move('sec-planification',left);
   move('sec-notes',center);
+  /* Mode d'assignation deplace au centre, sous Notes, dans une carte dediee */
+  const blockAssign=document.getElementById('block-assignation');
+  if(blockAssign){
+    const secAssign=document.createElement('div');
+    secAssign.className='sec'; secAssign.id='sec-assignation';
+    const t=document.createElement('div'); t.className='sec-title';
+    t.innerHTML='<span class="ic">&#128100;</span> Assignation';
+    secAssign.appendChild(t); secAssign.appendChild(blockAssign);
+    center.appendChild(secAssign);
+  }
   move('sec-finances',right);
   move('sec-comm-tech',right);
 
@@ -6591,6 +6616,26 @@ function renderClientReadonly(){
     row('Type de b\u00e2timent', cliSelectLabel('f-type-batiment'));
   }
   wrap.innerHTML=rows.join('');
+}
+
+function openNotesFullscreen(){
+  const ed=document.getElementById('f-notes-editor');
+  const host=document.getElementById('notes-fullscreen-host');
+  if(!ed||!host) return;
+  host.appendChild(ed);
+  ed.style.minHeight='60vh';
+  const qe=ed.querySelector('.ql-editor'); if(qe) qe.style.minHeight='60vh';
+  document.getElementById('modal-notes').style.display='flex';
+}
+function closeNotesFullscreen(){
+  const ed=document.getElementById('f-notes-editor');
+  const sec=document.getElementById('sec-notes');
+  if(ed&&sec){
+    ed.style.minHeight='';
+    const qe=ed.querySelector('.ql-editor'); if(qe) qe.style.minHeight='';
+    sec.appendChild(ed); /* remet l'editeur a sa place dans la carte */
+  }
+  document.getElementById('modal-notes').style.display='none';
 }
 
 function toggleClientEdit(){
