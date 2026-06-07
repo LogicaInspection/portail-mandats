@@ -894,6 +894,10 @@ input[type=file]{display:none;}
 .mandat-main3 .sec-title{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f1f3f5;}
 /* Zone basse */
 .mandat-bottom{margin-top:14px;}
+/* Rangee assignation + courriels cote a cote dans le centre */
+.assign-emails-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+.assign-emails-row > .sec{min-width:0;}
+@media(max-width:900px){.assign-emails-row{grid-template-columns:1fr;}}
 .mandat-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
 .mandat-bottom-grid .sec{background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:14px 16px;margin:0;}
 #alert-zone:empty{display:none;}
@@ -6534,7 +6538,9 @@ function buildTabs(){
   move('sec-client',left);
   move('sec-planification',left);
   move('sec-notes',center);
-  /* Mode d'assignation deplace au centre, sous Notes, dans une carte dediee */
+  /* Rangee : Assignation (gauche, etroite) + Courriels (droite) cote a cote */
+  const assignRow=document.createElement('div'); assignRow.className='assign-emails-row';
+  center.appendChild(assignRow);
   const blockAssign=document.getElementById('block-assignation');
   if(blockAssign){
     const secAssign=document.createElement('div');
@@ -6542,12 +6548,11 @@ function buildTabs(){
     const t=document.createElement('div'); t.className='sec-title';
     t.innerHTML='<span class="ic">&#128100;</span> Assignation';
     secAssign.appendChild(t); secAssign.appendChild(blockAssign);
-    center.appendChild(secAssign);
+    assignRow.appendChild(secAssign);
   }
+  move('sec-emails',assignRow);
   move('sec-finances',right);
   move('sec-comm-tech',right);
-  /* Courriels au centre, sous l'assignation */
-  move('sec-emails',center);
 
   /* Bloc Paiement + bouton Facture : MASQUES (paiement gere par menu "Paye par" dans Finances).
      Conserves dans le DOM (caches) pour reactivation future si besoin. */
