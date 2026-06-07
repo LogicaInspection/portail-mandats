@@ -686,6 +686,10 @@ textarea{resize:vertical;min-height:70px;line-height:1.5;}
 #sec-docs .doc-fn{font-size:12px;}
 #sec-emails .email-list{gap:6px;}
 #sec-emails #email-select{padding:6px 9px;font-size:12.5px;}
+/* Titre Courriels + menu deroulant sur la meme ligne */
+#sec-emails .email-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:none;margin-bottom:0;padding-bottom:0;}
+#sec-emails .email-title-row .email-list{flex:0 0 auto;width:200px;max-width:55%;display:flex;flex-direction:column;}
+#sec-emails .email-title-row #email-select{width:100%;text-transform:none;font-weight:400;letter-spacing:normal;color:#333;}
 .doc-block-title{font-size:13px;font-weight:700;color:#555;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
 .doc-drop{border:2px dashed #e8eaed;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;font-size:13px;color:#bbb;background:#fafafa;}
 .doc-drop:hover{border-color:#1a1a2e;background:#f5f5f5;color:#666;}
@@ -1326,8 +1330,9 @@ input[type=file]{display:none;}
   </div>
 
   <div class="sec email-sec" id="sec-emails" style="display:none">
-    <div class="sec-title"><span class="ic">&#9993;</span> Courriels</div>
-    <div class="email-list" id="email-list"></div>
+    <div class="sec-title email-title-row"><span><span class="ic">&#9993;</span> Courriels</span>
+      <span class="email-list" id="email-list"></span>
+    </div>
   </div>
 
   <div class="sec doc-sec" id="sec-docs" style="display:none">
