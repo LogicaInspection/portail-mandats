@@ -1320,7 +1320,13 @@ input[type=file]{display:none;}
   <div class="sec finance-sec" id="sec-finances">
     <div class="sec-title"><span class="ic">&#128176;</span> Finances</div>
     <div id="fin-cols-header" class="fin-coltitles" style="display:none;"><span></span><span></span><span>Tarif</span><span>Commission</span><span></span></div>
-    <div id="fin-type-display" class="fin-type-display"></div>
+    <div id="fin-type-display" class="fin-type-display type-row" style="display:none;">
+      <span></span>
+      <span id="fin-type-name" class="type-name"></span>
+      <span><input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()"><span class="price-lock-badge" id="prix-lock-badge" style="display:none">&#128274;</span></span>
+      <span id="fin-type-comm-cell"><input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()"></span>
+      <span></span>
+    </div>
 
 <div class="fin-card" id="card-redaction" style="display:none">
       <div class="fin-row geq-only" id="redaction-row" style="display:none">
@@ -1328,9 +1334,6 @@ input[type=file]{display:none;}
         <input class="fin-input" id="heures-redaction" type="number" min="0" max="20" step="0.5" value="0" oninput="recalc()">
       </div>
     </div>
-    <!-- Champ tarif (deplace dans le bandeau type par updateFinTypeDisplay) -->
-    <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()" style="display:none">
-    <span class="price-lock-badge" id="prix-lock-badge" style="display:none">&#128274; Verrouille</span>
 
     <!-- Ajouter un service (sous le tarif) -->
     <div class="extras-wrap">
@@ -1393,11 +1396,10 @@ input[type=file]{display:none;}
         <span class="fin-label bold">Total TTC</span>
         <span class="fin-value big" id="total-ttc">0,00 $</span>
       </div>
-      <!-- Commission : UNE seule ligne, editable (base) + total + case valider a droite -->
+      <!-- Commission : total de toutes les commissions + case valider -->
       <div class="fin-row comm" id="comm-totale-row">
         <span class="fin-label comm-color">&#128188; Commission tech</span>
         <span style="display:flex;align-items:center;gap:8px;">
-          <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()">
           <span class="fin-value comm-val" id="total-comm" title="Commission totale (base + extras + bonus)">0,00 $</span>
           <span id="ck-valid-label" style="font-size:11px;color:#94a3b8;display:none;">&Agrave; valider</span>
           <span class="ck-valid" id="ck-valid-comm" onclick="toggleCommissionValidation()" title="Valider la commission" style="display:none">&#10003;</span>
@@ -2118,27 +2120,20 @@ function updateFinTypeDisplay(){
     const sel=document.getElementById('f-type-mandat');
     txt=sel?(sel.options[sel.selectedIndex]?.text||sel.value||''):'';
   }
-  const showComm=(profile.role==='gestionnaire'||profile.role==='technicien');
+  const showComm=(profile&&(profile.role==='gestionnaire'||profile.role==='technicien'));
   if(txt){
-    let nameSpan=document.getElementById('fin-type-name');
-    if(!nameSpan){
-      el.classList.add('type-row');
-      el.innerHTML='<span></span><span id="fin-type-name" class="type-name"></span><span id="fin-type-prix"></span><span id="fin-type-comm"></span><span></span>';
-      const prix=document.getElementById('prix-base');
-      const badge=document.getElementById('prix-lock-badge');
-      const comm=document.getElementById('comm-base');
-      if(prix){ prix.style.display='block'; document.getElementById('fin-type-prix').appendChild(prix); }
-      if(badge) document.getElementById('fin-type-prix').appendChild(badge);
-      if(comm){ comm.style.display=showComm?'block':'none'; document.getElementById('fin-type-comm').appendChild(comm); }
-      nameSpan=document.getElementById('fin-type-name');
-    }
-    nameSpan.textContent=txt;
+    document.getElementById('fin-type-name').textContent=txt;
     el.style.display='grid';
     el.classList.remove('empty');
     const hdr=document.getElementById('fin-cols-header');
     if(hdr) hdr.style.display='grid';
+    const commCell=document.getElementById('fin-type-comm-cell');
+    if(commCell) commCell.style.visibility=showComm?'visible':'hidden';
   } else {
+    el.style.display='none';
     el.classList.add('empty');
+    const hdr=document.getElementById('fin-cols-header');
+    if(hdr) hdr.style.display='none';
   }
 }
 
