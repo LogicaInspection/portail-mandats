@@ -1033,6 +1033,9 @@ input[type=file]{display:none;}
       <span class="hmeta-sep">&bull;</span>
       <span class="hmeta-label">Assign&eacute; &agrave;</span>
       <span id="h-assigne" class="hmeta-val">&mdash;</span>
+      <span class="hmeta-sep" id="h-date-sep" style="display:none">&bull;</span>
+      <span class="hmeta-label" id="h-date-label" style="display:none">Cr&eacute;&eacute; le</span>
+      <span id="h-cree-le" class="hmeta-val" style="display:none"></span>
     </div>
   </div>
   <div class="hright">
@@ -2108,6 +2111,24 @@ function updateHeaderMeta(){
 
   document.getElementById('h-cree-par').textContent=creeParTxt;
   document.getElementById('h-assigne').textContent=assigneTxt;
+
+  /* Date de creation (peu importe qui a cree le mandat) */
+  const dateSep=document.getElementById('h-date-sep');
+  const dateLabel=document.getElementById('h-date-label');
+  const dateVal=document.getElementById('h-cree-le');
+  const rawDate=mandat&&(mandat.created_at||mandat.date_creation);
+  if(rawDate&&dateVal){
+    const d=new Date(rawDate);
+    dateVal.textContent=d.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
+    dateVal.style.display='inline';
+    if(dateSep) dateSep.style.display='inline';
+    if(dateLabel) dateLabel.style.display='inline';
+  } else if(dateVal){
+    dateVal.style.display='none';
+    if(dateSep) dateSep.style.display='none';
+    if(dateLabel) dateLabel.style.display='none';
+  }
+
   wrap.style.display='flex';
 }
 
