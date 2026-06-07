@@ -2691,7 +2691,7 @@ function recalcComm(){
       status.textContent='+12$ inclus';
       status.style.color='#e65100';
     } else {
-      status.textContent='&mdash;';
+      status.textContent='\u2014';
       status.style.color='#999';
     }
   }
@@ -6656,18 +6656,34 @@ function openNotesFullscreen(){
   const ed=document.getElementById('f-notes-editor');
   const host=document.getElementById('notes-fullscreen-host');
   if(!ed||!host) return;
+  /* La toolbar Quill (.ql-toolbar) est le frere precedent de l'editeur : on la deplace avec */
+  const toolbar=ed.previousElementSibling && ed.previousElementSibling.classList.contains('ql-toolbar')
+    ? ed.previousElementSibling : null;
+  /* Marqueur pour remettre exactement a la bonne place au retour */
+  if(!window._notesPlaceholder){
+    window._notesPlaceholder=document.createComment('notes-anchor');
+    ed.parentNode.insertBefore(window._notesPlaceholder, toolbar||ed);
+  }
+  if(toolbar) host.appendChild(toolbar);
   host.appendChild(ed);
-  ed.style.minHeight='60vh';
-  const qe=ed.querySelector('.ql-editor'); if(qe) qe.style.minHeight='60vh';
+  ed.style.minHeight='55vh';
+  const qe=ed.querySelector('.ql-editor'); if(qe) qe.style.minHeight='55vh';
   document.getElementById('modal-notes').style.display='flex';
 }
 function closeNotesFullscreen(){
   const ed=document.getElementById('f-notes-editor');
-  const sec=document.getElementById('sec-notes');
-  if(ed&&sec){
+  if(ed){
+    const toolbar=ed.previousElementSibling && ed.previousElementSibling.classList.contains('ql-toolbar')
+      ? ed.previousElementSibling : null;
     ed.style.minHeight='';
     const qe=ed.querySelector('.ql-editor'); if(qe) qe.style.minHeight='';
-    sec.appendChild(ed); /* remet l'editeur a sa place dans la carte */
+    const ph=window._notesPlaceholder;
+    if(ph && ph.parentNode){
+      if(toolbar) ph.parentNode.insertBefore(toolbar, ph);
+      ph.parentNode.insertBefore(ed, ph);
+      ph.parentNode.removeChild(ph);
+      window._notesPlaceholder=null;
+    }
   }
   document.getElementById('modal-notes').style.display='none';
 }
