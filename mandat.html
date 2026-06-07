@@ -920,34 +920,32 @@ input[type=file]{display:none;}
 .cli-action:hover{color:#1565c0;}
 #client-edit-toggle:hover{background:#f1f3f5;color:#1565c0;}
 /* ===== Compactage section Finances (style dense) ===== */
-#sec-finances .fin-card{background:#fafbfc;padding:8px 10px;margin-bottom:7px;border:1px solid #eef0f2;}
-#sec-finances .fin-row{padding:4px 0;}
-#sec-finances .fin-label{font-size:12.5px;color:#64748b;}
-#sec-finances .fin-input{width:84px !important;min-width:0;flex:0 0 84px;padding:5px 8px !important;font-size:12.5px;text-align:right;border-radius:6px;border-width:1px;}
-#sec-finances .fin-input.small{width:84px !important;flex:0 0 84px;}
-#sec-finances .fin-value{font-size:12.5px;}
+#sec-finances .fin-card{background:#fafbfc;padding:7px 10px;margin-bottom:6px;border:1px solid #eef0f2;}
+#sec-finances .fin-row{padding:3px 0;}
+#sec-finances .fin-label{font-size:12px;color:#64748b;}
+#sec-finances .fin-value{font-size:12px;}
 #sec-finances .fin-row.tax-grouped{gap:10px;}
-#sec-finances .fin-row.total,#sec-finances .fin-row.comm{padding:7px 10px;margin-top:4px;}
-#sec-finances .fin-value.big,#sec-finances .fin-value.comm-val{font-size:14px;font-weight:700;}
+#sec-finances .fin-row.total,#sec-finances .fin-row.comm{padding:6px 10px;margin-top:3px;}
+#sec-finances .fin-value.big,#sec-finances .fin-value.comm-val{font-size:13.5px;font-weight:700;}
 #sec-finances label{font-size:11px;color:#94a3b8;}
 /* Case de validation commission dans la ligne */
 #ck-valid-comm{width:22px;height:22px;border:1.5px solid #cfd6dd;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:transparent;font-size:13px;background:#fff;flex-shrink:0;transition:all .15s;}
 #ck-valid-comm:hover{border-color:#4caf50;}
 #ck-valid-comm.validated{background:#4caf50;border-color:#4caf50;color:#fff;}
-/* Grille partagée : bandeau type + services (check | nom | tarif | commission | suppr) */
-.svc-grid-row{display:grid;grid-template-columns:24px 1fr 76px 76px 22px;gap:8px;align-items:center;}
-.svc-col-title{font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;text-align:center;}
-.svc-grid-row.type-row{background:#fff7ed !important;border:1px solid #fed7aa;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 10px;}
-.svc-grid-row.type-row #fin-type-name{font-size:13px;font-weight:600;color:#9a3412;overflow:hidden;}
-.svc-grid-row .fin-input{width:100% !important;flex:none;padding:5px 7px !important;font-size:12px;text-align:right;}
-/* Encadré coloré par service (même grille) */
-.svc-card{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid #f59e0b;border-radius:8px;padding:6px 9px;margin-bottom:6px;}
-.svc-card .svc-line{display:grid;grid-template-columns:24px 1fr 76px 76px 22px;gap:8px;align-items:center;}
-.svc-card .extra-check{margin:0;}
-.svc-name{min-width:0;font-size:12.5px;font-weight:600;color:#9a3412;overflow:hidden;}
-.svc-name .extra-name-input{font-size:12.5px;padding:3px 6px;width:100%;}
-.svc-card .fin-input{width:100% !important;flex:none;padding:4px 6px !important;font-size:12px;text-align:right;}
-.svc-rm{background:none;border:none;color:#d4a373;cursor:pointer;font-size:13px;padding:0;}
+/* Grille Finances : nom | tarif(84) | commission(84) | suppr(20) */
+.fin-coltitles{display:grid;grid-template-columns:1fr 84px 84px 20px;gap:7px;margin-bottom:3px;}
+.fin-coltitles span{font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;text-align:center;}
+.fin-type-display.type-row{display:grid;grid-template-columns:1fr 84px 84px 20px;gap:7px;align-items:center;background:#fff7ed !important;border:1px solid #fed7aa;border-left:3px solid #f59e0b;border-radius:7px;padding:6px 9px;margin-bottom:6px;}
+.fin-type-display .type-name{font-size:12.5px;font-weight:600;color:#9a3412;overflow:hidden;line-height:1.25;}
+.fin-type-display .fin-input{width:100% !important;padding:4px 6px !important;font-size:12px;text-align:right;box-sizing:border-box;}
+/* Service : case(20) | nom | tarif(84) | commission(84) | suppr(20) */
+.svc-card{background:#fff7ed;border:1px solid #fed7aa;border-left:3px solid #f59e0b;border-radius:7px;padding:5px 9px;margin-bottom:5px;}
+.svc-card .svc-line{display:grid;grid-template-columns:20px 1fr 84px 84px 20px;gap:7px;align-items:center;}
+.svc-card .extra-check{margin:0;width:15px;height:15px;}
+.svc-name{min-width:0;font-size:12px;font-weight:600;color:#9a3412;overflow:hidden;}
+.svc-name .extra-name-input{font-size:12px;padding:3px 5px;width:100%;box-sizing:border-box;}
+.svc-card .fin-input{width:100% !important;padding:4px 6px !important;font-size:12px;text-align:right;box-sizing:border-box;}
+.svc-rm{background:none;border:none;color:#d4a373;cursor:pointer;font-size:12px;padding:0;}
 .svc-rm:hover{color:#dc2626;}
 /* Rapprocher montants des titres : limiter la largeur de la zone valeur */
 #sec-finances .fin-row{justify-content:space-between;}
@@ -1325,7 +1323,7 @@ input[type=file]{display:none;}
 
   <div class="sec finance-sec" id="sec-finances">
     <div class="sec-title"><span class="ic">&#128176;</span> Finances</div>
-    <div id="fin-cols-header" class="svc-grid-row" style="display:none;margin-bottom:4px;"><span class="svc-check-sp"></span><span></span><span class="svc-fld svc-col-title">Tarif</span><span class="svc-fld svc-col-title">Commission</span><span class="svc-rm-sp"></span></div>
+    <div id="fin-cols-header" class="fin-coltitles" style="display:none;"><span></span><span>Tarif</span><span>Commission</span><span></span></div>
     <div id="fin-type-display" class="fin-type-display"></div>
 
 <div class="fin-card" id="card-redaction" style="display:none">
@@ -1403,7 +1401,7 @@ input[type=file]{display:none;}
       <div class="fin-row comm" id="comm-totale-row">
         <span class="fin-label comm-color">&#128188; Commission tech</span>
         <span style="display:flex;align-items:center;gap:8px;">
-          <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()" style="width:84px;">
+          <input class="fin-input" id="comm-base" type="number" min="0" step="0.01" value="0" oninput="recalcComm()">
           <span class="fin-value comm-val" id="total-comm" title="Commission totale (base + extras + bonus)">0,00 $</span>
           <span id="ck-valid-label" style="font-size:11px;color:#94a3b8;display:none;">&Agrave; valider</span>
           <span class="ck-valid" id="ck-valid-comm" onclick="toggleCommissionValidation()" title="Valider la commission" style="display:none">&#10003;</span>
@@ -2128,8 +2126,8 @@ function updateFinTypeDisplay(){
   if(txt){
     let nameSpan=document.getElementById('fin-type-name');
     if(!nameSpan){
-      el.classList.add('svc-grid-row','type-row');
-      el.innerHTML='<span class="svc-check-sp"></span><span id="fin-type-name"></span><span id="fin-type-prix" class="svc-fld"></span><span id="fin-type-comm" class="svc-fld"></span><span class="svc-rm-sp"></span>';
+      el.classList.add('type-row');
+      el.innerHTML='<span id="fin-type-name" class="type-name"></span><span id="fin-type-prix"></span><span id="fin-type-comm"></span><span></span>';
       const prix=document.getElementById('prix-base');
       const badge=document.getElementById('prix-lock-badge');
       const comm=document.getElementById('comm-base');
