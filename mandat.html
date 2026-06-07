@@ -6538,7 +6538,7 @@ function buildTabs(){
   move('sec-client',left);
   move('sec-planification',left);
   move('sec-notes',center);
-  /* Rangee : Assignation (gauche, etroite) + Courriels (droite) cote a cote */
+  /* Rangee : Assignation (gauche) + colonne [Courriels + Documents] (droite) */
   const assignRow=document.createElement('div'); assignRow.className='assign-emails-row';
   center.appendChild(assignRow);
   const blockAssign=document.getElementById('block-assignation');
@@ -6550,9 +6550,12 @@ function buildTabs(){
     secAssign.appendChild(t); secAssign.appendChild(blockAssign);
     assignRow.appendChild(secAssign);
   }
-  move('sec-emails',assignRow);
-  /* Documents au centre, sous la rangee assignation/courriels */
-  move('sec-docs',center);
+  /* Colonne droite : Courriels au-dessus, Documents en dessous */
+  const rightStack=document.createElement('div');
+  rightStack.style.cssText='display:flex;flex-direction:column;gap:14px;min-width:0;';
+  assignRow.appendChild(rightStack);
+  move('sec-emails',rightStack);
+  move('sec-docs',rightStack);
   move('sec-finances',right);
   move('sec-comm-tech',right);
 
