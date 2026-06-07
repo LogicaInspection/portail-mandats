@@ -934,17 +934,15 @@ input[type=file]{display:none;}
 #ck-valid-comm{width:22px;height:22px;border:1.5px solid #cfd6dd;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:transparent;font-size:13px;background:#fff;flex-shrink:0;transition:all .15s;}
 #ck-valid-comm:hover{border-color:#4caf50;}
 #ck-valid-comm.validated{background:#4caf50;border-color:#4caf50;color:#fff;}
-/* Encadré coloré par service (style bandeau) */
-.svc-card{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 10px;margin-bottom:6px;}
-.svc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.svc-name{font-size:12.5px;font-weight:600;color:#9a3412;display:flex;align-items:center;gap:6px;min-width:0;}
+/* Encadré coloré par service (une seule ligne) */
+.svc-card{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid #f59e0b;border-radius:8px;padding:6px 9px;margin-bottom:6px;}
+.svc-line{display:flex;align-items:center;gap:8px;}
+.svc-line .extra-check{margin:0;flex-shrink:0;}
+.svc-name{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:600;color:#9a3412;overflow:hidden;}
 .svc-name .extra-name-input{font-size:12.5px;padding:3px 6px;width:100%;}
-.svc-price-tag{font-size:13px;font-weight:700;color:#9a3412;white-space:nowrap;}
-.svc-fields{display:flex;align-items:center;gap:8px;margin-top:6px;}
-.svc-fields .fld{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8;}
-.svc-fields .fin-input{width:74px !important;flex:0 0 74px;padding:4px 7px !important;font-size:12px;}
-.svc-card .extra-check{margin:0;}
-.svc-rm{background:none;border:none;color:#d4a373;cursor:pointer;font-size:13px;padding:0 2px;}
+.svc-fld{flex-shrink:0;}
+.svc-fld .fin-input{width:64px !important;flex:0 0 64px;padding:4px 6px !important;font-size:12px;text-align:right;}
+.svc-rm{background:none;border:none;color:#d4a373;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;}
 .svc-rm:hover{color:#dc2626;}
 /* Rapprocher montants des titres : limiter la largeur de la zone valeur */
 #sec-finances .fin-row{justify-content:space-between;}
@@ -1324,16 +1322,15 @@ input[type=file]{display:none;}
     <div class="sec-title"><span class="ic">&#128176;</span> Finances</div>
     <div id="fin-type-display" class="fin-type-display"></div>
 
-<div class="fin-card">
-      <div class="fin-row">
-        <span class="fin-label">Tarif<span class="price-lock-badge" id="prix-lock-badge" style="display:none">&#128274; Verrouille</span></span>
-        <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()">
-      </div>
+<div class="fin-card" id="card-redaction" style="display:none">
       <div class="fin-row geq-only" id="redaction-row" style="display:none">
         <span class="fin-label">&#128221; Heures de r&eacute;daction <small style="color:#999;font-weight:400">(150$/h)</small></span>
         <input class="fin-input" id="heures-redaction" type="number" min="0" max="20" step="0.5" value="0" oninput="recalc()">
       </div>
     </div>
+    <!-- Champ tarif (deplace dans le bandeau type par updateFinTypeDisplay) -->
+    <input class="fin-input" id="prix-base" type="number" min="0" step="0.01" value="0" oninput="recalc()" style="display:none">
+    <span class="price-lock-badge" id="prix-lock-badge" style="display:none">&#128274; Verrouille</span>
 
     <!-- Ajouter un service (sous le tarif) -->
     <div class="extras-wrap">
@@ -2122,14 +2119,23 @@ function updateFinTypeDisplay(){
     txt=sel?(sel.options[sel.selectedIndex]?.text||sel.value||''):'';
   }
   if(txt){
-    const prix=parseFloat(document.getElementById('prix-base').value)||0;
-    el.innerHTML='<span>'+txt.replace(/</g,'&lt;')+'</span>'+(prix>0?'<span style="font-weight:700;">'+money(prix)+'</span>':'');
+    /* Structure : nom a gauche + champ tarif a droite (le vrai input deplace ici) */
+    let nameSpan=document.getElementById('fin-type-name');
+    if(!nameSpan){
+      el.innerHTML='<span id="fin-type-name"></span><span id="fin-type-right" style="display:flex;align-items:center;gap:6px;"></span>';
+      const right=document.getElementById('fin-type-right');
+      const prix=document.getElementById('prix-base');
+      const badge=document.getElementById('prix-lock-badge');
+      if(prix){ prix.style.display='inline-block'; prix.style.width='90px'; prix.style.textAlign='right'; right.appendChild(prix); }
+      if(badge) right.appendChild(badge);
+      nameSpan=document.getElementById('fin-type-name');
+    }
+    nameSpan.textContent=txt;
     el.style.display='flex';
     el.style.justifyContent='space-between';
     el.style.alignItems='center';
     el.classList.remove('empty');
   } else {
-    el.textContent='';
     el.classList.add('empty');
   }
 }
@@ -2256,22 +2262,15 @@ function renderExtras(){
       ? '<input class="extra-name-input" type="text" placeholder="Nom du service..." value="'+escapeAttr(ex.service_nom||'')+'" oninput="extraSetNom('+i+',this.value)"'+roAttr+'>'
       : '<span>'+escapeHtml(ex.service_nom||'')+'</span>';
     const card=document.createElement('div');
-    card.className='svc-card'+(ex.actif?'':' svc-off')+lockedRowCls;
+    card.className='svc-card'+lockedRowCls;
     if(!ex.actif){ card.style.opacity='0.55'; }
     card.innerHTML=
-      '<div class="svc-head">'+
-        '<span class="svc-name">'+
-          '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)"'+disAttr+'>'+
-          nameHtml+
-        '</span>'+
-        '<span style="display:flex;align-items:center;gap:8px;">'+
-          '<span class="svc-price-tag" id="svc-tag-'+i+'">'+money(parseFloat(ex.prix)||0)+'</span>'+
-          (canRemove?'<button class="svc-rm" onclick="removeExtra('+i+')">&#10005;</button>':'')+
-        '</span>'+
-      '</div>'+
-      '<div class="svc-fields">'+
-        '<span class="fld">Prix client <input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value);document.getElementById(\'svc-tag-'+i+'\').textContent=money(parseFloat(this.value)||0)"'+roAttr+'></span>'+
-        (showComm?'<span class="fld">Commission <input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)"'+roAttr+'></span>':'')+
+      '<div class="svc-line">'+
+        '<input type="checkbox" class="extra-check" '+(ex.actif?'checked':'')+' onchange="extraToggle('+i+',this.checked)"'+disAttr+'>'+
+        '<span class="svc-name">'+nameHtml+'</span>'+
+        '<span class="svc-fld"><input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.prix||0)+'" oninput="extraSetPrix('+i+',this.value)" title="Prix client"'+roAttr+'></span>'+
+        (showComm?'<span class="svc-fld"><input class="'+inputCls+'" type="number" min="0" step="0.01" value="'+(ex.commission||0)+'" oninput="extraSetComm('+i+',this.value)" title="Commission"'+roAttr+'></span>':'')+
+        (canRemove?'<button class="svc-rm" onclick="removeExtra('+i+')">&#10005;</button>':'')+
       '</div>';
     list.appendChild(card);
   });
