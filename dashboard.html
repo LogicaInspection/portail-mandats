@@ -391,8 +391,23 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
 }
 .input::placeholder{color:var(--ink-4);}
 .search-wrap{position:relative;}
-.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-4);pointer-events:none;}
-.search-wrap input{padding-left:32px;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-4);pointer-events:none;transition:color 0.15s;}
+.search-wrap input{padding-left:32px;padding-right:32px;}
+/* Etat actif : champ illumine en rouge pour qu'on remarque qu'une recherche est en cours */
+.search-wrap.has-text input{
+  border-color:var(--primary);
+  background:var(--primary-soft);
+  box-shadow:0 0 0 3px rgba(183,28,28,0.10);
+}
+.search-wrap.has-text svg{color:var(--primary);}
+.search-clear{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  width:20px;height:20px;border-radius:5px;border:none;background:transparent;
+  color:var(--primary);font-size:16px;line-height:1;cursor:pointer;
+  display:none;align-items:center;justify-content:center;font-family:inherit;
+}
+.search-wrap.has-text .search-clear{display:inline-flex;}
+.search-clear:hover{background:rgba(183,28,28,0.12);}
 
 .tech-filter{display:flex;flex-direction:column;gap:3px;max-height:340px;overflow-y:auto;}
 .tech-pill{
@@ -662,9 +677,10 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
 
     <div class="field">
       <label class="field-label">Recherche</label>
-      <div class="search-wrap">
+      <div class="search-wrap" id="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input type="text" class="input" placeholder="Client, adresse, t&eacute;l&eacute;phone&hellip;" id="search" oninput="filterMandats()">
+        <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Effacer la recherche" aria-label="Effacer la recherche">&times;</button>
       </div>
     </div>
 
@@ -1128,6 +1144,8 @@ function filterMandats() {
   /* Pendant une recherche, le filtre de tuile est suspendu : on retire l'etat actif
      des tuiles pour signaler visuellement que la recherche couvre tout. */
   const searchActive = !!(document.getElementById('search').value||'').trim();
+  /* Illumine le champ de recherche en rouge quand il contient du texte (visibilite). */
+  document.getElementById('search-wrap').classList.toggle('has-text', searchActive);
   if (searchActive) {
     document.querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
   } else {
@@ -1136,6 +1154,12 @@ function filterMandats() {
   renderTable(getFilteredMandats());
   updateRappelsBanner(allMandats);
   saveFilters();
+}
+
+function clearSearch() {
+  document.getElementById('search').value = '';
+  filterMandats();
+  document.getElementById('search').focus();
 }
 
 function resetAllFilters() {
