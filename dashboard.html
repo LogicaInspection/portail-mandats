@@ -200,7 +200,7 @@ body.archives-mode .archive-banner{display:flex;}
 .btn svg{width:14px;height:14px;}
 
 /* ===== Stat Tiles ===== */
-.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:18px 0 20px;}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0 20px;}
 .tile{
   background:var(--white);border:1px solid var(--line);border-radius:12px;
   padding:14px 16px 13px;cursor:pointer;transition:all 0.18s ease;position:relative;overflow:hidden;
@@ -214,16 +214,16 @@ body.archives-mode .archive-banner{display:flex;}
 .tile-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
 .tile-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .tile.tile-all .tile-dot{background:var(--primary);}
-.tile.tile-pool .tile-dot{background:var(--warn);}
-.tile.tile-soum .tile-dot{background:var(--logica);}
+.tile.tile-finaliser .tile-dot{background:var(--warn);}
+.tile.tile-pool .tile-dot{background:var(--logica);}
 .tile.tile-aucun .tile-dot{background:var(--danger);}
-.tile.tile-msg .tile-dot{background:var(--info);}
-.tile.tile-standby{background:var(--bg-2);border-color:var(--line);}
-.tile.tile-standby .tile-dot{background:var(--ink-4);}
-.tile.tile-standby .tile-value{color:var(--ink-3);}
-.tile.tile-standby .tile-label{color:var(--ink-4);}
-.tile.tile-standby:hover{background:#ececea;}
-.tile.tile-standby.active{background:var(--ink-2);border-color:var(--ink-2);}
+.tile.tile-attente{background:var(--bg-2);border-color:var(--line);}
+.tile.tile-attente .tile-dot{background:var(--info);}
+.tile.tile-attente .tile-value{color:var(--ink-3);}
+.tile.tile-attente .tile-label{color:var(--ink-4);}
+.tile.tile-attente:hover{background:#ececea;}
+.tile.tile-attente.active{background:var(--ink-2);border-color:var(--ink-2);}
+.tile.tile-attente.active .tile-label,.tile.tile-attente.active .tile-value{color:#fff;}
 .tile-label{font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.04em;}
 .tile-value{font-family:'Instrument Serif',serif;font-weight:400;font-size:36px;line-height:1;letter-spacing:-0.02em;color:var(--ink);}
 .tile-meta{font-size:11px;color:var(--ink-4);margin-top:5px;font-weight:500;}
@@ -282,6 +282,8 @@ tr.t-sep td .sep-count{
 }
 tr.t-sep.aujourdhui td{background:#fff8e1;color:#7c2d12;border-color:#fbbf24;border-bottom:1px solid #fbbf24;border-top:1px solid #fbbf24;}
 tr.t-sep.aujourdhui .sep-count{background:#fef3c7;border-color:#fbbf24;color:#92400e;}
+tr.t-sep.pascontacte td{background:#fef2f2;color:#991b1b;border-color:#fca5a5;border-bottom:1px solid #fca5a5;border-top:1px solid #fca5a5;}
+tr.t-sep.pascontacte .sep-count{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;}
 tr.t-sep{cursor:pointer;user-select:none;}
 tr.t-sep:hover td{filter:brightness(0.97);}
 tr.t-sep.realises:hover td{background:#f0f1f3;}
@@ -593,35 +595,30 @@ tbody tr.row-passe{opacity:0.7;}
 
     <!-- ===== STAT TILES ===== -->
     <div class="tiles">
-      <div class="tile tile-all active" data-filter="tous" onclick="setFilter('tous')">
-        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Tous</span></div>
-        <div class="tile-value" id="tile-tous">&mdash;</div>
-        <div class="tile-meta" id="tile-tous-meta">dossiers actifs</div>
+      <div class="tile tile-all active" data-filter="actifs" onclick="setFilter('actifs')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Actifs</span></div>
+        <div class="tile-value" id="tile-actifs">&mdash;</div>
+        <div class="tile-meta">aujourd&rsquo;hui &amp; &agrave; venir</div>
+      </div>
+      <div class="tile tile-finaliser" data-filter="a_finaliser" onclick="setFilter('a_finaliser')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">&Agrave; finaliser</span></div>
+        <div class="tile-value" id="tile-finaliser">&mdash;</div>
+        <div class="tile-meta">pass&eacute; sur place</div>
       </div>
       <div class="tile tile-pool" data-filter="pool" onclick="setFilter('pool')">
         <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Pool</span></div>
         <div class="tile-value" id="tile-pool">&mdash;</div>
         <div class="tile-meta">non assign&eacute;s</div>
       </div>
-      <div class="tile tile-soum" data-filter="soumission_envoyee" onclick="setFilter('soumission_envoyee')">
-        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Soumission envoy&eacute;e</span></div>
-        <div class="tile-value" id="tile-soum">&mdash;</div>
-        <div class="tile-meta">en attente client</div>
-      </div>
       <div class="tile tile-aucun" data-filter="pas_contacte" onclick="setFilter('pas_contacte')">
         <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Pas contact&eacute;</span></div>
         <div class="tile-value" id="tile-aucun">&mdash;</div>
         <div class="tile-meta">&agrave; rappeler</div>
       </div>
-      <div class="tile tile-msg" data-filter="message_laisse" onclick="setFilter('message_laisse')">
-        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Message laiss&eacute;</span></div>
-        <div class="tile-value" id="tile-msg">&mdash;</div>
-        <div class="tile-meta">en suivi</div>
-      </div>
-      <div class="tile tile-standby" data-filter="standby" onclick="setFilter('standby')">
-        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">Stand-by</span></div>
-        <div class="tile-value" id="tile-standby">&mdash;</div>
-        <div class="tile-meta">injoignable ou refus&eacute;</div>
+      <div class="tile tile-attente" data-filter="en_attente" onclick="setFilter('en_attente')">
+        <div class="tile-head"><span class="tile-dot"></span><span class="tile-label">En attente</span></div>
+        <div class="tile-value" id="tile-attente">&mdash;</div>
+        <div class="tile-meta">soum. &middot; msg &middot; stand-by</div>
       </div>
     </div>
 
@@ -754,7 +751,7 @@ const TECH_COLORS = ['#1565c0','#7c3aed','#059669','#d97706','#dc2626','#0891b2'
 let realProfile = null;
 let profile = null;
 let allMandats = [];
-let currentFilter = 'tous';
+let currentFilter = 'actifs';
 let viewArchives = false;
 let timerInterval = null;
 let techList = [];
@@ -985,20 +982,23 @@ async function loadMandats() {
 /* ===== UPDATE COUNTS (sidebar nav + 5 tiles) ===== */
 function isComplete(m) { return m.est_complete === true || m.statut_final === true; }
 function isStandby(m) { return m.statut_contact === 'injoignable' || m.statut_contact === 'refuse'; }
+function todayStrLocal() { const n = new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
+/* En attente = soumission envoyee OU message laisse OU stand-by (injoignable/refuse) */
+function isEnAttente(m) { return m.statut_contact === 'soumission_envoyee' || m.statut_contact === 'message_laisse' || isStandby(m); }
+/* A finaliser = passe sur place (date < aujourd'hui) ET pas archive */
+function isAFinaliser(m) { return !isComplete(m) && !!m.date_mandat && m.date_mandat < todayStrLocal(); }
+/* Actif = bookе avec date aujourd'hui ou future, pas archive, pas en attente */
+function isActif(m) { return !isComplete(m) && !!m.date_mandat && m.date_mandat >= todayStrLocal(); }
 
 function updateTileCounts() {
-  /* Vue active = pas archive + pas standby. Standby a sa propre tuile. */
-  const baseFilter = viewArchives
-    ? isComplete
-    : (m => !isComplete(m) && !isStandby(m));
-  const c = (filterFn) => allMandats.filter(m => baseFilter(m) && filterFn(m)).length;
-  document.getElementById('tile-tous').textContent = c(() => true);
-  document.getElementById('tile-pool').textContent = c(m => m.statut_assignation === 'pool');
-  document.getElementById('tile-soum').textContent = c(m => m.statut_contact === 'soumission_envoyee');
-  document.getElementById('tile-aucun').textContent = c(m => m.statut_contact === 'pas_contacte');
-  document.getElementById('tile-msg').textContent = c(m => m.statut_contact === 'message_laisse');
-  /* Tuile Stand-by toujours visible (pas affecte par viewArchives) */
-  document.getElementById('tile-standby').textContent = allMandats.filter(m => !isComplete(m) && isStandby(m)).length;
+  /* Compteurs bases sur les mandats NON archives uniquement.
+     Chaque tuile compte sa propre categorie, independamment de viewArchives. */
+  const actifs = allMandats.filter(m => !isComplete(m));
+  document.getElementById('tile-actifs').textContent = actifs.filter(isActif).length;
+  document.getElementById('tile-finaliser').textContent = actifs.filter(isAFinaliser).length;
+  document.getElementById('tile-pool').textContent = actifs.filter(m => m.statut_assignation === 'pool').length;
+  document.getElementById('tile-aucun').textContent = actifs.filter(m => m.statut_contact === 'pas_contacte').length;
+  document.getElementById('tile-attente').textContent = actifs.filter(isEnAttente).length;
 
   /* Sidebar nav counts */
   document.getElementById('nav-mandats-count').textContent = allMandats.filter(m => !isComplete(m)).length;
@@ -1072,17 +1072,25 @@ function getFilteredMandats() {
 
   /* Filtre par tile selectionnee */
   if (currentFilter === 'pool') list = list.filter(m => m.statut_assignation === 'pool');
-  else if (currentFilter === 'soumission_envoyee') list = list.filter(m => m.statut_contact === 'soumission_envoyee');
   else if (currentFilter === 'pas_contacte') list = list.filter(m => m.statut_contact === 'pas_contacte');
-  else if (currentFilter === 'message_laisse') list = list.filter(m => m.statut_contact === 'message_laisse');
-  else if (currentFilter === 'standby') list = list.filter(isStandby);
+  else if (currentFilter === 'en_attente') list = list.filter(isEnAttente);
+  else if (currentFilter === 'a_finaliser') list = list.filter(isAFinaliser);
   else if (currentFilter === 'rappels') {
     const isGest = profile.role === 'gestionnaire';
     const baseList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
     list = getMandatsNecessitantSuivi(baseList);
-  } else if (currentFilter === 'tous' && !viewArchives) {
-    /* "Tous" exclut les stand-by pour garder la vue principale claire */
-    list = list.filter(m => !isStandby(m));
+  } else if (currentFilter === 'actifs' && !viewArchives) {
+    /* Vue d'accueil : mandats actifs (aujourd'hui + a venir) PLUS les "pas contacte"
+       assignes a l'utilisateur courant (priorite #1, affiches en haut par renderTable).
+       Pour le gestionnaire : tous les pas-contacte. Pour un tech : seulement les siens. */
+    const isGest = profile.role === 'gestionnaire';
+    list = list.filter(m => {
+      if (isActif(m)) return true;
+      if (m.statut_contact === 'pas_contacte') {
+        return isGest || m.technicien_id === profile.id;
+      }
+      return false;
+    });
   }
 
   /* Filtres droite */
@@ -1117,7 +1125,7 @@ function resetAllFilters() {
   document.getElementById('f-assign').value = '';
   document.getElementById('f-suivi').value = '';
   document.getElementById('f-tech').value = '';
-  setFilter('tous');
+  setFilter('actifs');
   if (profile.role === 'gestionnaire') renderTechPills();
 }
 
@@ -1149,7 +1157,7 @@ function restoreFilters(){
     document.getElementById('nav-archives').classList.add('active');
     document.querySelector('.nav-item').classList.remove('active');
   }
-  if(state.filter && state.filter !== 'tous'){
+  if(state.filter && state.filter !== 'actifs'){
     currentFilter = state.filter;
     document.querySelectorAll('.tile').forEach(t => t.classList.toggle('active', t.dataset.filter === currentFilter));
   }
@@ -1462,10 +1470,9 @@ function renderTable(list) {
   document.getElementById('table-count').textContent = count;
 
   const titleMap = {
-    'tous':'Tous les mandats','pool':'Pool ouvert',
-    'soumission_envoyee':'Soumissions envoy\u00e9es','pas_contacte':'\u00c0 rappeler',
-    'message_laisse':'En suivi','rappels':'Rappels en retard',
-    'standby':'Stand-by (injoignable ou refus\u00e9)',
+    'actifs':'Mandats actifs','pool':'Pool ouvert',
+    'a_finaliser':'\u00c0 finaliser','pas_contacte':'\u00c0 rappeler',
+    'en_attente':'En attente','rappels':'Rappels en retard',
   };
   document.getElementById('table-title-label').textContent = viewArchives ? 'Archives' : (titleMap[currentFilter] || 'Mandats');
 
@@ -1482,8 +1489,12 @@ function renderTable(list) {
   const now = new Date();
   const todayStr = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
 
-  const groupes = { aujourdhui:[], avenir:[], sansdate:[], realises:[] };
+  const onAccueilGroup = (currentFilter === 'actifs' && !viewArchives);
+  const groupes = { pascontacte:[], aujourdhui:[], avenir:[], sansdate:[], realises:[] };
   list.forEach(m => {
+    /* Sur l'accueil, les "pas contacte" vont dans leur propre section prioritaire,
+       qu'ils aient une date ou non (evite les doublons avec aujourd'hui/a venir). */
+    if (onAccueilGroup && m.statut_contact === 'pas_contacte') { groupes.pascontacte.push(m); return; }
     if (!m.date_mandat) groupes.sansdate.push(m);
     else if (m.date_mandat === todayStr) groupes.aujourdhui.push(m);
     else if (m.date_mandat > todayStr) groupes.avenir.push(m);
@@ -1491,10 +1502,18 @@ function renderTable(list) {
   });
   groupes.avenir.sort((a,b) => a.date_mandat.localeCompare(b.date_mandat));
   groupes.realises.sort((a,b) => b.date_mandat.localeCompare(a.date_mandat));
+  /* Pas contacte : les dates en premier (plus urgent), puis sans date */
+  groupes.pascontacte.sort((a,b) => (a.date_mandat||'9999').localeCompare(b.date_mandat||'9999'));
 
-  /* Etat de repli par section. Defaut : Aujourd'hui + A venir OUVERTS, le reste REPLIE.
-     Chaque section memorise son etat dans localStorage (cle dashboard_sec_<nom>_collapsed). */
-  const defaultCollapsed = { aujourdhui:false, avenir:false, sansdate:true, realises:true };
+  /* Etat de repli par section.
+     - Vue "actifs" (accueil) : Aujourd'hui + A venir OUVERTS. Sansdate/realises ne devraient
+       pas apparaitre ici (filtres en amont), mais restent replies par securite.
+     - Autres tuiles : la tuile EST deja le filtre, donc tout OUVERT par defaut.
+     Chaque section memorise ensuite son etat dans localStorage. */
+  const onAccueil = (currentFilter === 'actifs' && !viewArchives);
+  const defaultCollapsed = onAccueil
+    ? { pascontacte:false, aujourdhui:false, avenir:false, sansdate:true, realises:true }
+    : { pascontacte:false, aujourdhui:false, avenir:false, sansdate:false, realises:false };
   function isCollapsed(name){
     const v = localStorage.getItem('dashboard_sec_'+name+'_collapsed');
     if(v===null) return defaultCollapsed[name];
@@ -1564,6 +1583,11 @@ function renderTable(list) {
     </tr>`;
   }
 
+  if (groupes.pascontacte.length) {
+    const col = isCollapsed('pascontacte');
+    html += sepRow('\u{1F4DE}', 'Pas contact\u00e9', groupes.pascontacte.length, 'pascontacte', col);
+    groupes.pascontacte.forEach(m => html += renderRow(m, ' row-sec row-sec-pascontacte' + (col ? ' is-hidden' : '')));
+  }
   if (groupes.aujourdhui.length) {
     const col = isCollapsed('aujourdhui');
     html += sepRow('\u{1F31D}', "Aujourd'hui", groupes.aujourdhui.length, 'aujourdhui', col);
@@ -1655,11 +1679,11 @@ function exportToExcel() {
   });
   ws['!cols'] = colWidths;
   const wb = XLSX.utils.book_new();
-  const sheetName = currentFilter === 'tous' ? 'Tous les mandats' : currentFilter;
+  const sheetName = currentFilter === 'actifs' ? 'Mandats actifs' : currentFilter;
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   const today = new Date();
   const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-  const tabSuffix = currentFilter === 'tous' ? '' : '_' + currentFilter;
+  const tabSuffix = currentFilter === 'actifs' ? '' : '_' + currentFilter;
   const filename = `Mandats${tabSuffix}_${dateStr}.xlsx`;
   XLSX.writeFile(wb, filename);
 }
