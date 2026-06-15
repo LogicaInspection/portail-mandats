@@ -351,6 +351,15 @@ tbody tr.row-passe{opacity:0.7;}
 .suivi-badge.confirme{background:var(--good-soft);color:var(--good);}
 .suivi-badge.injoignable{background:#eeeeee;color:#525252;}
 .suivi-badge.refuse{background:var(--bg-2);color:var(--ink-3);}
+.suivi-cell{display:flex;align-items:center;gap:6px;}
+.discard-btn{
+  width:20px;height:20px;border-radius:5px;border:none;background:transparent;
+  color:var(--ink-4);font-size:16px;line-height:1;cursor:pointer;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity 0.15s,background 0.15s,color 0.15s;font-family:inherit;
+}
+tbody tr.t-row:hover .discard-btn{opacity:1;}
+.discard-btn:hover{background:var(--danger-soft);color:var(--danger);}
 .rappel-warn{font-size:10px;color:var(--danger);margin-left:4px;font-weight:600;}
 
 .cell-money{font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap;}
@@ -1564,7 +1573,7 @@ function renderTable(list) {
       <td>${m.type_mandat ? `<span class="type-pill">${escapeHtml(m.type_mandat)}</span>` : '<span style="color:#bbb">&mdash;</span>'}</td>
       <td>${techCell}</td>
       <td>${getAssignBadge(m)}${getTimerHtml(m)}</td>
-      <td>${getSuiviBadge(m)}</td>
+      <td><div class="suivi-cell">${getSuiviBadge(m)}${getDiscardBtn(m)}</div></td>
       ${isGest ? `<td class="cell-money">${m.sous_total ? money(m.sous_total) : '&mdash;'}</td>` : ''}
     </tr>`;
   }
@@ -1621,6 +1630,32 @@ function toggleSection(sepEl, name) {
   const isCollapsed = sepEl.classList.toggle('collapsed');
   localStorage.setItem('dashboard_sec_'+name+'_collapsed', isCollapsed ? 'true' : 'false');
   document.querySelectorAll('tr.row-sec-'+name).forEach(row => row.classList.toggle('is-hidden', isCollapsed));
+}
+
+/* ===== DISCARD (marquer refuse rapidement) ===== */
+/* Visible seulement pour gestionnaire/secretaire, hors mode test, et si pas deja refuse. */
+function canDiscard() {
+  if (localStorage.getItem(VIEW_AS_KEY)) return false; /* pas en mode "Voir comme" */
+  return profile.role === 'gestionnaire' || profile.role === 'secretaire';
+}
+function getDiscardBtn(m) {
+  if (!canDiscard()) return '';
+  if (m.statut_contact === 'refuse') return '';
+  return `<button class="discard-btn" title="Marquer comme refus\u00e9" onclick="discardMandat(event,'${m.id}')" aria-label="Refuser ce mandat">&times;</button>`;
+}
+async function discardMandat(e, id) {
+  e.stopPropagation(); /* ne pas ouvrir la fiche */
+  const m = allMandats.find(x => x.id === id);
+  const nom = m ? (m.client_nom || 'ce mandat') : 'ce mandat';
+  if (!confirm(`Marquer la demande de \u00ab ${nom} \u00bb comme refus\u00e9e ?\n\nElle quittera la liste active et se retrouvera dans \u00ab En attente \u00bb.`)) return;
+  const { error } = await sb.from('mandats')
+    .update({ statut_contact: 'refuse', updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  /* MAJ locale immediate sans recharger toute la page */
+  if (m) m.statut_contact = 'refuse';
+  updateTileCounts();
+  filterMandats();
 }
 
 /* ===== EXCEL EXPORT ===== */
