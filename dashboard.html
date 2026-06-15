@@ -1079,27 +1079,30 @@ function getFilteredMandats() {
   /* Filtre archives en premier */
   list = viewArchives ? list.filter(isComplete) : list.filter(m => !isComplete(m));
 
-  /* Filtre par tile selectionnee */
-  if (currentFilter === 'pool') list = list.filter(m => m.statut_assignation === 'pool');
-  else if (currentFilter === 'pas_contacte') list = list.filter(m => m.statut_contact === 'pas_contacte');
-  else if (currentFilter === 'en_attente') list = list.filter(isEnAttente);
-  else if (currentFilter === 'a_finaliser') list = list.filter(isAFinaliser);
-  else if (currentFilter === 'rappels') {
-    const isGest = profile.role === 'gestionnaire';
-    const baseList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
-    list = getMandatsNecessitantSuivi(baseList);
-  } else if (currentFilter === 'actifs' && !viewArchives) {
-    /* Vue d'accueil : mandats actifs (aujourd'hui + a venir) PLUS les "pas contacte"
-       assignes a l'utilisateur courant (priorite #1, affiches en haut par renderTable).
-       Pour le gestionnaire : tous les pas-contacte. Pour un tech : seulement les siens. */
-    const isGest = profile.role === 'gestionnaire';
-    list = list.filter(m => {
-      if (isActif(m)) return true;
-      if (m.statut_contact === 'pas_contacte') {
-        return isGest || m.technicien_id === profile.id;
-      }
-      return false;
-    });
+  /* Si une recherche texte est active, on cherche dans TOUS les mandats (toutes tuiles
+     confondues) : le filtre par tuile est ignore. Sinon, on applique le filtre de tuile. */
+  if (!s) {
+    if (currentFilter === 'pool') list = list.filter(m => m.statut_assignation === 'pool');
+    else if (currentFilter === 'pas_contacte') list = list.filter(m => m.statut_contact === 'pas_contacte');
+    else if (currentFilter === 'en_attente') list = list.filter(isEnAttente);
+    else if (currentFilter === 'a_finaliser') list = list.filter(isAFinaliser);
+    else if (currentFilter === 'rappels') {
+      const isGest = profile.role === 'gestionnaire';
+      const baseList = isGest ? list : list.filter(m => m.technicien_id === profile.id);
+      list = getMandatsNecessitantSuivi(baseList);
+    } else if (currentFilter === 'actifs' && !viewArchives) {
+      /* Vue d'accueil : mandats actifs (aujourd'hui + a venir) PLUS les "pas contacte"
+         assignes a l'utilisateur courant (priorite #1, affiches en haut par renderTable).
+         Pour le gestionnaire : tous les pas-contacte. Pour un tech : seulement les siens. */
+      const isGest = profile.role === 'gestionnaire';
+      list = list.filter(m => {
+        if (isActif(m)) return true;
+        if (m.statut_contact === 'pas_contacte') {
+          return isGest || m.technicien_id === profile.id;
+        }
+        return false;
+      });
+    }
   }
 
   /* Filtres droite */
@@ -1122,6 +1125,14 @@ function getFilteredMandats() {
 }
 
 function filterMandats() {
+  /* Pendant une recherche, le filtre de tuile est suspendu : on retire l'etat actif
+     des tuiles pour signaler visuellement que la recherche couvre tout. */
+  const searchActive = !!(document.getElementById('search').value||'').trim();
+  if (searchActive) {
+    document.querySelectorAll('.tile').forEach(t => t.classList.remove('active'));
+  } else {
+    document.querySelectorAll('.tile').forEach(t => t.classList.toggle('active', t.dataset.filter === currentFilter));
+  }
   renderTable(getFilteredMandats());
   updateRappelsBanner(allMandats);
   saveFilters();
@@ -1483,7 +1494,12 @@ function renderTable(list) {
     'a_finaliser':'\u00c0 finaliser','pas_contacte':'\u00c0 rappeler',
     'en_attente':'En attente','rappels':'Rappels en retard',
   };
-  document.getElementById('table-title-label').textContent = viewArchives ? 'Archives' : (titleMap[currentFilter] || 'Mandats');
+  const searchActive = !!(document.getElementById('search').value||'').trim();
+  let titleLabel;
+  if (searchActive) titleLabel = 'R\u00e9sultats de recherche';
+  else if (viewArchives) titleLabel = 'Archives';
+  else titleLabel = titleMap[currentFilter] || 'Mandats';
+  document.getElementById('table-title-label').textContent = titleLabel;
 
   if (!count) {
     document.getElementById('table-wrap').innerHTML = `
