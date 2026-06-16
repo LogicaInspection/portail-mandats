@@ -3418,7 +3418,9 @@ function toggleHistorique(){
   arrow.classList.toggle('open',isOpen);
 }
 
-async function saveMandat(){
+async function saveMandat(opts){
+  opts = opts || {};
+  const stayOnPage = !!opts.stayOnPage; /* si true : pas de redirection vers le dashboard */
   const nom=document.getElementById('f-client-nom').value.trim();
   if(!nom){toast('Le nom du client est requis','err');return;}
   /* Livraison B - Capturer l'ancien technicien_id avant la sauvegarde
@@ -3690,7 +3692,7 @@ async function saveMandat(){
 
     toast('Sauvegarde !');
     markClean();
-    setTimeout(()=>window.location.href='dashboard.html',800);
+    if(!stayOnPage) setTimeout(()=>window.location.href='dashboard.html',800);
   }
   document.getElementById('par-client-nom').textContent=nom;
   if(profile.role==='technicien') document.getElementById('tech-comm-val').textContent=money(commTot);
@@ -5338,6 +5340,18 @@ async function toggleCommissionValidation(){
   } else {
     /* Valider */
     if(!await confirmTestAction('Valider la commission pour ce mandat')) return;
+    /* Si des modifications (services/extras/prix) ne sont pas encore sauvegardees,
+       on les enregistre AVANT de valider, sans quitter la page. Cela evite de devoir
+       sauvegarder puis rouvrir le mandat : tout se fait en une seule action. */
+    if(formDirty){
+      toast('Sauvegarde des modifications\u2026');
+      await saveMandat({stayOnPage:true});
+      if(formDirty){
+        /* La sauvegarde a echoue (ex: nom client manquant) : on annule la validation. */
+        toast('Validation annul\u00e9e : corrige les erreurs puis r\u00e9essaie','err');
+        return;
+      }
+    }
     const now=new Date().toISOString();
     const {error}=await sb.from('mandats').update({
       commission_validee:true,
