@@ -486,8 +486,70 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
   .app{grid-template-columns:1fr;}
   .sidebar{display:none;}
   .tiles{grid-template-columns:repeat(2,1fr);}
-  .main{padding:16px;}
+  .main{padding:14px 12px 78px;}
+
+  /* Liste de cartes mobile */
+  .mob-list{display:flex;flex-direction:column;gap:0;}
+  .mandats{display:none;}
+  .mob-card{
+    background:var(--white);border:1px solid var(--line);border-radius:12px;
+    padding:12px 13px;margin-bottom:9px;cursor:pointer;
+  }
+  .mob-card:active{background:var(--bg-2);}
+  .mob-card.is-hidden{display:none;}
+  .mob-card-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+  .mob-name{font-size:15px;font-weight:600;color:var(--ink);}
+  .mob-time{font-size:12px;color:#0f766e;font-weight:600;white-space:nowrap;}
+  .mob-card-sub{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;}
+  .mob-type{font-size:11.5px;color:var(--ink-3);background:var(--bg-2);border-radius:6px;padding:2px 8px;}
+  .mob-addr{font-size:12.5px;color:var(--ink-2);margin-top:6px;}
+  .mob-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;}
+  .mob-foot-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .mob-tech{font-size:12px;color:var(--ink-3);}
+  .mob-card .discard-btn{opacity:1;}
+  .mob-actions{display:flex;gap:8px;margin-top:10px;}
+  .mob-act{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    font-size:13px;font-weight:600;padding:9px 0;border-radius:8px;text-decoration:none;
+  }
+  .mob-call{color:#0f6e56;background:#e1f5ee;}
+  .mob-map{color:#185fa5;background:#e6f1fb;}
+  .mob-act i{width:15px;height:15px;display:inline-block;background-size:contain;background-repeat:no-repeat;}
+  .mob-call i{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f6e56' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z'/%3E%3C/svg%3E") center/contain no-repeat;background:#0f6e56;}
+  .mob-map i{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23185fa5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E") center/contain no-repeat;background:#185fa5;}
+
+  /* Separateurs de section mobile */
+  .mob-sep{
+    display:flex;align-items:center;gap:8px;padding:9px 4px;margin:6px 0 8px;
+    font-size:12px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none;
+    border-bottom:1px solid var(--line);
+  }
+  .mob-sep.pascontacte{color:#991b1b;}
+  .mob-sep.aujourdhui{color:#7c2d12;}
+  .mob-sep .sep-count{margin-left:2px;background:var(--bg-2);border-radius:20px;padding:0 8px;font-size:11px;}
+  .mob-sep .sep-toggle{margin-left:auto;font-size:10px;transition:transform 0.2s;}
+  .mob-sep.collapsed .sep-toggle{transform:rotate(-90deg);}
+
+  /* Barre d'onglets en bas */
+  .bottom-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;
+    background:var(--white);border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom,0);
+  }
+  .bottom-nav a{
+    flex:1;text-align:center;padding:8px 0 10px;text-decoration:none;
+    color:var(--ink-4);font-size:10px;font-weight:500;
+  }
+  .bottom-nav a.active{color:var(--primary);}
+  .bottom-nav a i{display:block;width:22px;height:22px;margin:0 auto 2px;background:currentColor;
+    -webkit-mask-position:center;-webkit-mask-repeat:no-repeat;-webkit-mask-size:contain;
+    mask-position:center;mask-repeat:no-repeat;mask-size:contain;}
+  .bn-jobs i{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='8' y1='6' x2='21' y2='6'/%3E%3Cline x1='8' y1='12' x2='21' y2='12'/%3E%3Cline x1='8' y1='18' x2='21' y2='18'/%3E%3Cline x1='3' y1='6' x2='3.01' y2='6'/%3E%3Cline x1='3' y1='12' x2='3.01' y2='12'/%3E%3Cline x1='3' y1='18' x2='3.01' y2='18'/%3E%3C/svg%3E");mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='8' y1='6' x2='21' y2='6'/%3E%3Cline x1='8' y1='12' x2='21' y2='12'/%3E%3Cline x1='8' y1='18' x2='21' y2='18'/%3E%3Cline x1='3' y1='6' x2='3.01' y2='6'/%3E%3Cline x1='3' y1='12' x2='3.01' y2='12'/%3E%3Cline x1='3' y1='18' x2='3.01' y2='18'/%3E%3C/svg%3E");}
+  .bn-pool i{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E");mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E");}
+  .bn-tasks i{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11l3 3L22 4'/%3E%3Cpath d='M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'/%3E%3C/svg%3E");mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11l3 3L22 4'/%3E%3Cpath d='M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'/%3E%3C/svg%3E");}
+  .bn-search i{-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");}
 }
+.bottom-nav{display:none;}
 </style>
 </head>
 <body>
@@ -741,7 +803,16 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
 
 </div>
 
+<!-- ============ BARRE D'ONGLETS MOBILE ============ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <a href="#" id="bn-jobs" class="bn-jobs active" onclick="event.preventDefault();mobGoJobs();"><i></i>Jobs</a>
+  <a href="#" id="bn-pool" class="bn-pool" onclick="event.preventDefault();mobGoPool();"><i></i>Pool</a>
+  <a href="taches.html" class="bn-tasks"><i></i>T&acirc;ches</a>
+  <a href="#" id="bn-search" class="bn-search" onclick="event.preventDefault();mobGoSearch();"><i></i>Recherche</a>
+</nav>
+
 <!-- ============ MODALS ============ -->
+
 <div class="modal-overlay" id="modal-new" onclick="hideModalNew(event)">
   <div class="modal-box" onclick="event.stopPropagation()">
     <h2>Nouveau mandat</h2>
@@ -1160,12 +1231,43 @@ function filterMandats() {
   renderTable(getFilteredMandats());
   updateRappelsBanner(allMandats);
   saveFilters();
+  /* Synchronise la barre d'onglets mobile avec l'etat courant */
+  if (typeof setBottomNavActive === 'function') {
+    if (searchActive) setBottomNavActive('bn-search');
+    else if (currentFilter === 'pool') setBottomNavActive('bn-pool');
+    else setBottomNavActive('bn-jobs');
+  }
 }
 
 function clearSearch() {
   document.getElementById('search').value = '';
   filterMandats();
   document.getElementById('search').focus();
+}
+
+/* ===== Navigation barre d'onglets mobile ===== */
+function setBottomNavActive(id) {
+  document.querySelectorAll('.bottom-nav a').forEach(a => a.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+function mobGoJobs() {
+  if (document.getElementById('search').value) clearSearch();
+  setFilter('actifs');
+  setBottomNavActive('bn-jobs');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function mobGoPool() {
+  if (document.getElementById('search').value) clearSearch();
+  setFilter('pool');
+  setBottomNavActive('bn-pool');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function mobGoSearch() {
+  setBottomNavActive('bn-search');
+  const s = document.getElementById('search');
+  s.scrollIntoView({block:'center', behavior:'smooth'});
+  setTimeout(()=>s.focus(), 300);
 }
 
 function resetAllFilters() {
@@ -1576,7 +1678,13 @@ function renderTable(list) {
   }
 
   const colCount = isGest ? 8 : 7;
-  let html = `<table class="mandats">
+  const mobileView = window.matchMedia('(max-width:768px)').matches;
+
+  let html;
+  if (mobileView) {
+    html = `<div class="mob-list">`;
+  } else {
+    html = `<table class="mandats">
     <colgroup>
       <col style="width:120px"><col style="width:18%"><col style="width:20%">
       <col style="width:78px"><col style="width:150px"><col style="width:150px">
@@ -1589,8 +1697,47 @@ function renderTable(list) {
       ${isGest ? '<th style="text-align:right">Avant taxes</th>' : ''}
     </tr></thead>
     <tbody>`;
+  }
+
+  /* ===== Carte mobile : reutilise les memes donnees, presentation terrain ===== */
+  function renderRowMobile(m, extraClass='') {
+    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA', {day:'numeric', month:'short'}) : '';
+    const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
+    const dateLine = m.date_mandat ? (date + (heure ? ' \u00b7 ' + heure : '')) : '';
+    const tel = (m.client_telephone||'').trim();
+    const adr = (m.adresse||'').trim();
+    const telClean = tel.replace(/[^0-9+]/g,'');
+    const badge = m.compagnie === 'logica' ? '<span class="badge logica">Logica</span>' : '<span class="badge geq">GEQ</span>';
+    const archived = (!viewArchives && isComplete(m)) ? ' <span class="mini-archive">Archiv\u00e9</span>' : '';
+    let techLine = '';
+    if (m.technicien) techLine = `${escapeHtml(m.technicien.prenom||'')} ${escapeHtml(m.technicien.nom||'')}`;
+    else if (m.statut_assignation === 'pool') techLine = 'Pool';
+
+    let actions = '';
+    if (telClean) actions += `<a class="mob-act mob-call" href="tel:${telClean}" onclick="event.stopPropagation()"><i></i>Appeler</a>`;
+    if (adr) actions += `<a class="mob-act mob-map" href="https://maps.google.com/?q=${encodeURIComponent(adr)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i></i>Maps</a>`;
+
+    return `<div class="mob-card${extraClass}" onclick="window.location.href='mandat.html?id=${m.id}'">
+      <div class="mob-card-top">
+        <span class="mob-name">${escapeHtml(m.client_nom||'')}${archived}</span>
+        ${dateLine ? `<span class="mob-time">${dateLine}</span>` : ''}
+      </div>
+      <div class="mob-card-sub">
+        ${badge}
+        ${m.type_mandat ? `<span class="mob-type">${escapeHtml(m.type_mandat)}</span>` : ''}
+      </div>
+      ${adr ? `<div class="mob-addr">${escapeHtml(adr)}</div>` : ''}
+      <div class="mob-card-foot">
+        <div class="mob-foot-left">${getSuiviBadge(m)}${techLine ? `<span class="mob-tech">${techLine}</span>` : ''}</div>
+        ${getDiscardBtn(m)}
+      </div>
+      ${actions ? `<div class="mob-actions">${actions}</div>` : ''}
+    </div>`;
+  }
+
 
   function renderRow(m, extraClass='') {
+    if (mobileView) return renderRowMobile(m, extraClass);
     const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA', {day:'numeric', month:'short', year:'numeric'}) : '&mdash;';
     const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
     let techCell;
@@ -1626,6 +1773,14 @@ function renderTable(list) {
 
   /* Toutes les sections sont desormais repliables (toggle=true partout) */
   function sepRow(icon, label, cnt, name, collapsed) {
+    if (mobileView) {
+      return `<div class="mob-sep ${name}${collapsed ? ' collapsed' : ''}" onclick="toggleSection(this,'${name}')">
+        <span class="sep-icon">${icon}</span>
+        <span class="mob-sep-label">${label}</span>
+        <span class="sep-count">${cnt}</span>
+        <span class="sep-toggle">&#9660;</span>
+      </div>`;
+    }
     return `<tr class="t-sep ${name}${collapsed ? ' collapsed' : ''}" onclick="toggleSection(this,'${name}')">
       <td colspan="${colCount + (isGest?1:0)}">
         <div class="sep-content">
@@ -1663,7 +1818,7 @@ function renderTable(list) {
     html += sepRow('\u2713', 'R\u00e9alis\u00e9s', groupes.realises.length, 'realises', col);
     groupes.realises.forEach(m => html += renderRow(m, ' row-sec row-sec-realises row-passe row-realise' + (col ? ' is-hidden' : '')));
   }
-  html += '</tbody></table>';
+  html += mobileView ? '</div>' : '</tbody></table>';
 
   document.getElementById('table-wrap').innerHTML = html;
   /* Activer le redimensionnement des colonnes */
@@ -1783,6 +1938,20 @@ async function logout() {
 /* ===== HELPERS ===== */
 function money(n) { return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n||0); }
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* Re-render quand on franchit le seuil mobile/desktop (rotation, redimensionnement). */
+(function(){
+  let wasMobile = window.matchMedia('(max-width:768px)').matches;
+  let rt;
+  window.addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = setTimeout(() => {
+      const isMob = window.matchMedia('(max-width:768px)').matches;
+      if (isMob !== wasMobile) { wasMobile = isMob; if (typeof filterMandats === 'function') filterMandats(); }
+    }, 200);
+  });
+})();
+
 </script>
 </body>
 </html>
