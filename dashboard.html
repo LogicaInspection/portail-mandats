@@ -352,6 +352,7 @@ tbody tr.row-passe{opacity:0.7;}
 .suivi-badge.injoignable{background:#eeeeee;color:#525252;}
 .suivi-badge.refuse{background:var(--bg-2);color:var(--ink-3);}
 .suivi-cell{display:flex;align-items:center;gap:6px;}
+.mini-archive{display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600;vertical-align:middle;margin-left:4px;}
 .discard-btn{
   width:20px;height:20px;border-radius:5px;border:none;background:transparent;
   color:var(--ink-4);font-size:16px;line-height:1;cursor:pointer;flex-shrink:0;
@@ -1092,8 +1093,13 @@ function getFilteredMandats() {
   const suivi = document.getElementById('f-suivi').value;
 
   let list = allMandats;
-  /* Filtre archives en premier */
-  list = viewArchives ? list.filter(isComplete) : list.filter(m => !isComplete(m));
+  /* Filtre archives.
+     - Recherche active : on NE filtre PAS par archives -> la recherche trouve TOUT
+       (mandats actifs ET archives).
+     - Sinon : mode normal (archives OU non-archives selon viewArchives). */
+  if (!s) {
+    list = viewArchives ? list.filter(isComplete) : list.filter(m => !isComplete(m));
+  }
 
   /* Si une recherche texte est active, on cherche dans TOUS les mandats (toutes tuiles
      confondues) : le filtre par tuile est ignore. Sinon, on applique le filtre de tuile. */
@@ -1605,7 +1611,7 @@ function renderTable(list) {
         ${heure ? `<div class="date-time">${heure}</div>` : ''}
       </td>
       <td class="cell-client">
-        ${escapeHtml(m.client_nom||'')}
+        ${escapeHtml(m.client_nom||'')}${(!viewArchives && isComplete(m)) ? ' <span class="mini-archive">Archiv\u00e9</span>' : ''}
         <span class="phone">${escapeHtml(m.client_telephone||'')}</span>
       </td>
       <td class="cell-addr" title="${escapeHtml(m.adresse||'')}">${escapeHtml(m.adresse||'\u2014')}</td>
