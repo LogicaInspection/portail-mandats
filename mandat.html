@@ -1044,7 +1044,7 @@ input[type=file]{display:none;}
 /* ===== BLOC MOBILE TERRAIN (place en fin de style pour gagner la cascade) ===== */
 @media (max-width:768px){
   /* --- Header epure : on ne garde que Retour + titre court --- */
-  .header{height:auto !important;min-height:0;padding:8px 12px;flex-wrap:nowrap;gap:10px;justify-content:flex-start;}
+  .header{height:50px !important;min-height:50px;padding:0 12px;flex-wrap:nowrap;gap:10px;justify-content:flex-start;}
   .header .hmeta{display:none !important;}
   .header #hbadge{display:none !important;}
   .header .hcenter{min-width:0;flex:1;align-items:flex-start;gap:2px;}
@@ -1061,6 +1061,8 @@ input[type=file]{display:none;}
   .mandat-main3 .m3-col,
   .assign-emails-row,
   .right-stack-emails-docs{display:contents !important;}
+  /* Chaque section prend toute la largeur, quoi qu'il arrive */
+  .mandat-main3 .sec{width:100% !important;max-width:100% !important;box-sizing:border-box;}
 
   /* Ordre terrain : Client -> Notes -> Finances -> le reste */
   #sec-client{order:1;}
@@ -1129,7 +1131,7 @@ input[type=file]{display:none;}
   /* Barre sticky sous le header : nom du tech + Completer + Sauvegarder, toujours visible */
   .mob-topbar{
     display:flex;align-items:center;gap:8px;
-    position:sticky;top:52px;z-index:90;
+    position:sticky;top:50px;z-index:90;
     background:#fff;border-bottom:1px solid #e5e7eb;
     padding:8px 12px;
   }
