@@ -191,7 +191,7 @@ body.test-mode .content { padding-top: 18px; }
   #sec-suivi-mandat{order:0;}
   #sec-reclamer{order:0;}
 
-  .content{padding:12px 10px 90px;}
+  .content{padding:12px 10px 30px;}
   .col{gap:14px;}
 
   /* Statut : on cache les pills qui debordent, on montre le bouton + menu */
@@ -241,26 +241,34 @@ body.test-mode .content { padding-top: 18px; }
 
   /* Barre Sauvegarder collante en bas */
   .header #btn-save{display:none;}
-  .mob-save-bar{
-    display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;
-    background:#fff;border-top:1px solid #e5e7eb;padding:10px 12px;
-    padding-bottom:calc(10px + env(safe-area-inset-bottom,0));
+  /* Barre sticky sous le header : nom du tech + Completer + Sauvegarder, toujours visible */
+  .mob-topbar{
+    display:flex;align-items:center;gap:8px;
+    position:sticky;top:52px;z-index:90;
+    background:#fff;border-bottom:1px solid #e5e7eb;
+    padding:8px 12px;
   }
-  .mob-save-row{display:flex;gap:8px;}
+  .mob-topbar-tech{
+    flex:1;min-width:0;font-size:13px;font-weight:600;color:#1a1a2e;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    display:flex;align-items:center;gap:6px;
+  }
+  .mob-topbar-tech::before{content:"\1F464";font-size:14px;opacity:0.6;}
+  .mob-topbar-actions{display:flex;gap:6px;flex-shrink:0;}
   .mob-btn-save{
-    flex:2;padding:13px 0;border:none;border-radius:10px;
-    color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
-    background:#16a34a;
+    padding:9px 14px;border:none;border-radius:9px;
+    color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+    background:#16a34a;white-space:nowrap;
   }
   .mob-btn-save.dirty{background:#b71c1c;}
   .mob-btn-final{
-    flex:1;padding:13px 0;border:2px solid #1b5e20;border-radius:10px;
-    color:#1b5e20;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
+    padding:9px 12px;border:2px solid #1b5e20;border-radius:9px;
+    color:#1b5e20;background:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;
   }
   .mob-btn-final.btn-final-done{background:#1b5e20;color:#fff;}
 }
 .mob-client-actions{display:none;}
-.mob-save-bar{display:none;}
+.mob-topbar{display:none;}
 .mob-statut-wrap{display:none;}
 
 
@@ -1179,6 +1187,14 @@ input[type=file]{display:none;}
     <button id="btn-final" class="btn-final-header btn-final-pending" onclick="toggleFinal()">&#10003; FINAL</button>
     <button id="btn-del" class="btn-del" style="display:none" onclick="deleteMandat()">&#128465;</button>
     <button class="btn-save" id="btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
+  </div>
+</div>
+
+<div class="mob-topbar" id="mob-topbar">
+  <span class="mob-topbar-tech" id="mob-topbar-tech">&mdash;</span>
+  <div class="mob-topbar-actions">
+    <button id="mob-btn-final" class="mob-btn-final" onclick="toggleFinal()">&#10003; Compl&eacute;ter</button>
+    <button id="mob-btn-save" class="mob-btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
   </div>
 </div>
 
@@ -2294,6 +2310,9 @@ function updateHeaderMeta(){
 
   document.getElementById('h-cree-par').textContent=creeParTxt;
   document.getElementById('h-assigne').textContent=assigneTxt;
+  /* Barre mobile sticky : meme nom de tech */
+  const mt=document.getElementById('mob-topbar-tech');
+  if(mt) mt.textContent=assigneTxt||'Non assign\u00e9';
 
   /* Date de creation (peu importe qui a cree le mandat) */
   const dateSep=document.getElementById('h-date-sep');
@@ -7310,11 +7329,6 @@ function setupZeroClear(){
   });
 }
 </script>
-<div class="mob-save-bar" id="mob-save-bar">
-  <div class="mob-save-row">
-    <button id="mob-btn-final" class="mob-btn-final" onclick="toggleFinal()">&#10003; Compl&eacute;ter</button>
-    <button id="mob-btn-save" class="mob-btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
-  </div>
-</div>
+</script>
 </body>
 </html>
