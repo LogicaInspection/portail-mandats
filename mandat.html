@@ -158,25 +158,64 @@ body.test-mode .content { padding-top: 18px; }
 
 /* ===== VUE MOBILE TERRAIN (cell) ===== */
 @media (max-width:768px){
-  /* Les colonnes "s'effacent" pour que les sections deviennent enfants directs
-     de la grille -> on peut alors les reordonner pour le flux terrain. */
+  /* --- Header epure : on ne garde que Retour + titre court --- */
+  .header{height:auto;min-height:54px;padding:8px 12px;flex-wrap:nowrap;gap:8px;}
+  .header .hmeta{display:none !important;}
+  .header #hbadge{display:none !important;}
+  .header .htop{flex-wrap:nowrap;gap:6px;min-width:0;}
+  .header #htitle{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%;}
+  .header .hcenter{min-width:0;flex:1;}
+  .header #btn-final{display:none;}   /* "Complete" gere par un bouton dans la zone Statut mobile */
+  .header #btn-del{display:none;}
+  .header #btn-save{display:none;}
+  .header .dirty-indicator{display:none !important;}
+  .header .btn-back{font-size:13px;padding:7px 10px;white-space:nowrap;flex-shrink:0;}
+  .header-type-pill{font-size:11px;padding:2px 8px;flex-shrink:0;}
+
+  /* Les colonnes "s'effacent" pour reordonner les sections selon le flux terrain. */
   .grid-3col{display:flex;flex-direction:column;gap:14px;}
   .col{display:contents;}
 
+  /* Ordre terrain : Client -> Notes -> Finances -> le reste */
   #sec-client{order:1;}
-  #sec-suivi-client{order:2;}
+  #sec-notes{order:2;}
   #sec-finances{order:3;}
   #sec-comm-tech{order:4;}
-  #sec-planification{order:5;}
-  #sec-notes{order:6;}
-  #sec-docs{order:7;}
-  #sec-emails{order:8;}
-  #sec-histo{order:9;}
+  #sec-suivi-client{order:5;}
+  #sec-planification{order:6;}
+  #sec-assignation{order:7;}
+  #sec-docs{order:8;}
+  #sec-emails{order:9;}
+  #sec-histo{order:10;}
   #sec-suivi-mandat{order:0;}
   #sec-reclamer{order:0;}
 
   .content{padding:12px 10px 90px;}
   .col{gap:14px;}
+
+  /* Statut : on cache les pills qui debordent, on montre le bouton + menu */
+  #topbar-zone, #topbar-status{display:none !important;}
+  .mob-statut-wrap{display:block;margin-top:12px;position:relative;}
+  .mob-statut-btn{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:12px 14px;border-radius:10px;border:2px solid #d0d4d9;background:#f5f5f5;
+    font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:#666;
+  }
+  .mob-statut-caret{font-size:12px;opacity:0.7;}
+  .mob-statut-menu{
+    display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:300;
+    background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;
+    box-shadow:0 8px 24px rgba(0,0,0,0.15);
+  }
+  .mob-statut-menu.open{display:block;}
+  .mob-statut-opt{
+    width:100%;text-align:left;padding:13px 14px;border:none;background:#fff;
+    font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
+    border-bottom:1px solid #f1f2f4;
+  }
+  .mob-statut-opt:last-child{border-bottom:none;}
+  .mob-statut-opt.active{background:#f7f8fa;}
+  .mob-statut-opt:active{background:#eef0f2;}
 
   /* Sections repliables sur mobile : docs / emails / histo demarrent fermes */
   .sec.mob-collapsible .sec-body{display:none;}
@@ -206,15 +245,22 @@ body.test-mode .content { padding-top: 18px; }
     background:#fff;border-top:1px solid #e5e7eb;padding:10px 12px;
     padding-bottom:calc(10px + env(safe-area-inset-bottom,0));
   }
-  .mob-save-bar button{
-    width:100%;padding:13px 0;border:none;border-radius:10px;
-    background:#b71c1c;color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+  .mob-save-row{display:flex;gap:8px;}
+  .mob-btn-save{
+    flex:2;padding:13px 0;border:none;border-radius:10px;
+    color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+    background:#16a34a;
   }
-  .mob-save-bar button.dirty{background:#b71c1c;}
-  .mob-save-bar button:not(.dirty){background:#16a34a;}
+  .mob-btn-save.dirty{background:#b71c1c;}
+  .mob-btn-final{
+    flex:1;padding:13px 0;border:2px solid #1b5e20;border-radius:10px;
+    color:#1b5e20;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
+  .mob-btn-final.btn-final-done{background:#1b5e20;color:#fff;}
 }
 .mob-client-actions{display:none;}
 .mob-save-bar{display:none;}
+.mob-statut-wrap{display:none;}
 
 
 /* Textarea Notes plus grande et redimensionnable */
@@ -1241,6 +1287,7 @@ input[type=file]{display:none;}
     </div>
     <!-- Vue lecture dense (generee par JS) -->
     <div id="client-readonly"></div>
+    <div id="mob-statut-wrap" class="mob-statut-wrap"></div>
     <!-- Formulaire (masque par defaut, revele par le crayon) -->
     <div id="client-form" style="display:none">
     <div class="grid2">
@@ -5124,6 +5171,34 @@ function renderStatutContactPills(){
   if(req){
     req.classList.toggle('show',!currentStatutContact);
   }
+
+  /* ===== Version mobile : un seul bouton qui ouvre un menu de choix ===== */
+  const mobWrap=document.getElementById('mob-statut-wrap');
+  if(mobWrap){
+    const cur=currentStatutContact?getStatutContact(currentStatutContact):null;
+    const curLabel=cur?`${cur.icon} ${cur.label}`:'\u26A0\uFE0F Choisir un statut';
+    const curStyle=cur?`background:${cur.bg};color:${cur.color};border-color:${cur.color};`:'';
+    mobWrap.innerHTML=`
+      <button type="button" class="mob-statut-btn" style="${curStyle}" onclick="toggleMobStatutMenu()">
+        <span>${curLabel}</span><span class="mob-statut-caret">&#9662;</span>
+      </button>
+      <div class="mob-statut-menu" id="mob-statut-menu">
+        ${STATUTS_CONTACT.map(s=>{
+          const active=s.id===currentStatutContact;
+          return `<button type="button" class="mob-statut-opt${active?' active':''}" style="color:${s.color}" onclick="pickMobStatut('${s.id}')">${s.icon} ${s.label}${active?' \u2713':''}</button>`;
+        }).join('')}
+      </div>`;
+  }
+}
+
+function toggleMobStatutMenu(){
+  const m=document.getElementById('mob-statut-menu');
+  if(m) m.classList.toggle('open');
+}
+function pickMobStatut(id){
+  const m=document.getElementById('mob-statut-menu');
+  if(m) m.classList.remove('open');
+  changeStatutContact(id);
 }
 
 async function changeStatutContact(newId){
@@ -7216,7 +7291,10 @@ function setupZeroClear(){
 }
 </script>
 <div class="mob-save-bar" id="mob-save-bar">
-  <button id="mob-btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
+  <div class="mob-save-row">
+    <button id="mob-btn-final" class="mob-btn-final" onclick="toggleFinal()">&#10003; Compl&eacute;ter</button>
+    <button id="mob-btn-save" class="mob-btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
+  </div>
 </div>
 </body>
 </html>
