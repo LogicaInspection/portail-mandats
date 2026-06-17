@@ -528,7 +528,11 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
   .mob-addr{font-size:12.5px;color:var(--ink-2);margin-top:6px;}
   .mob-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;}
   .mob-foot-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-  .mob-tech{font-size:12px;color:var(--ink-3);}
+  .mob-tech{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);}
+  .mob-tech-av{
+    width:20px;height:20px;border-radius:50%;color:#fff;font-size:9px;font-weight:600;
+    display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
   .mob-card .discard-btn{opacity:1;}
   .mob-actions{display:flex;gap:8px;margin-top:10px;}
   .mob-act{
@@ -543,14 +547,15 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
 
   /* Separateurs de section mobile */
   .mob-sep{
-    display:flex;align-items:center;gap:8px;padding:9px 4px;margin:6px 0 8px;
-    font-size:12px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none;
-    border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:8px;padding:12px 4px 8px;margin:8px 0 10px;
+    font-size:16px;font-weight:700;color:var(--ink);cursor:pointer;user-select:none;
+    border-bottom:2px solid var(--line);text-transform:uppercase;letter-spacing:0.02em;
   }
-  .mob-sep.pascontacte{color:#991b1b;}
-  .mob-sep.aujourdhui{color:#7c2d12;}
-  .mob-sep .sep-count{margin-left:2px;background:var(--bg-2);border-radius:20px;padding:0 8px;font-size:11px;}
-  .mob-sep .sep-toggle{margin-left:auto;font-size:10px;transition:transform 0.2s;}
+  .mob-sep .sep-icon{font-size:17px;}
+  .mob-sep.pascontacte{color:#991b1b;border-bottom-color:#fca5a5;}
+  .mob-sep.aujourdhui{color:#7c2d12;border-bottom-color:#fbbf24;}
+  .mob-sep .sep-count{margin-left:2px;background:var(--bg-2);border-radius:20px;padding:1px 9px;font-size:12px;font-weight:600;}
+  .mob-sep .sep-toggle{margin-left:auto;font-size:11px;transition:transform 0.2s;}
   .mob-sep.collapsed .sep-toggle{transform:rotate(-90deg);}
 
   /* Barre d'onglets en bas */
@@ -1715,8 +1720,14 @@ function renderTable(list) {
     const badge = m.compagnie === 'logica' ? '<span class="badge logica">Logica</span>' : '<span class="badge geq">GEQ</span>';
     const archived = (!viewArchives && isComplete(m)) ? ' <span class="mini-archive">Archiv\u00e9</span>' : '';
     let techLine = '';
-    if (m.technicien) techLine = `${escapeHtml(m.technicien.prenom||'')} ${escapeHtml(m.technicien.nom||'')}`;
-    else if (m.statut_assignation === 'pool') techLine = 'Pool';
+    if (m.technicien) {
+      const tech = techList.find(t => t.id === m.technicien_id);
+      const color = tech ? tech.color : '#374151';
+      const initials = ((m.technicien.prenom||'')[0] + (m.technicien.nom||'')[0]).toUpperCase();
+      techLine = `<span class="mob-tech"><span class="mob-tech-av" style="background:${color}">${initials}</span>${escapeHtml(m.technicien.prenom||'')} ${escapeHtml(m.technicien.nom||'')}</span>`;
+    } else if (m.statut_assignation === 'pool') {
+      techLine = '<span class="mob-tech"><span class="mob-tech-av" style="background:#0891b2">P</span>Pool</span>';
+    }
 
     let actions = '';
     if (telClean) actions += `<a class="mob-act mob-call" href="tel:${telClean}" onclick="event.stopPropagation()"><i></i>Appeler</a>`;
@@ -1733,7 +1744,7 @@ function renderTable(list) {
       </div>
       ${adr ? `<div class="mob-addr">${escapeHtml(adr)}</div>` : ''}
       <div class="mob-card-foot">
-        <div class="mob-foot-left">${getSuiviBadge(m)}${techLine ? `<span class="mob-tech">${techLine}</span>` : ''}</div>
+        <div class="mob-foot-left">${getSuiviBadge(m)}${techLine}</div>
         ${getDiscardBtn(m)}
       </div>
       ${actions ? `<div class="mob-actions">${actions}</div>` : ''}
