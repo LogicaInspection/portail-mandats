@@ -485,8 +485,19 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
 @media(max-width:768px){
   .app{grid-template-columns:1fr;}
   .sidebar{display:none;}
-  .tiles{grid-template-columns:repeat(2,1fr);}
+  .tiles{grid-template-columns:repeat(2,1fr);gap:7px;margin:12px 0 14px;}
   .main{padding:14px 12px 78px;}
+
+  /* Tuiles compactes sur mobile */
+  .tile{padding:9px 11px 9px;border-radius:10px;}
+  .tile-head{margin-bottom:4px;gap:5px;}
+  .tile-label{font-size:9.5px;letter-spacing:0.02em;}
+  .tile-value{font-size:24px;}
+  .tile-meta{font-size:9.5px;margin-top:1px;}
+  .tile-dot{width:6px;height:6px;}
+
+  /* Pas de barre de stats sur cell (ni gestionnaire ni tech) */
+  .stats-line{display:none !important;}
 
   /* Liste de cartes mobile */
   .mob-list{display:flex;flex-direction:column;gap:0;}
@@ -602,11 +613,6 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
       <a class="nav-item" id="nav-fdp" href="#" style="display:none" onclick="event.preventDefault();goToFDP();">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 7l-5 5-3-3-4 4"/></svg></span>
         Fonds de pr&eacute;voyance
-        <span class="nav-ext">&#8599;</span>
-      </a>
-      <a class="nav-item" href="https://rapport-d-expertise-nine.vercel.app/" target="_blank" rel="noopener" title="Application de r&eacute;daction de rapports d'expertise">
-        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></span>
-        Rapports d'expertise
         <span class="nav-ext">&#8599;</span>
       </a>
     </nav>
@@ -1106,45 +1112,32 @@ function updateTileCounts() {
 function updateStats() {
   const line = document.getElementById('stats-line');
   const now = new Date();
-  const annee = now.getFullYear();
-  const moisN = now.getMonth();
+
+  /* Bornes de la semaine en cours : lundi 00h -> dimanche 23h59 (local) */
+  const day = now.getDay(); /* 0=dim, 1=lun ... */
+  const diffToMonday = (day === 0 ? -6 : 1 - day);
+  const monday = new Date(now); monday.setDate(now.getDate() + diffToMonday); monday.setHours(0,0,0,0);
+  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23,59,59,999);
+  const startStr = monday.getFullYear()+'-'+String(monday.getMonth()+1).padStart(2,'0')+'-'+String(monday.getDate()).padStart(2,'0');
+  const endStr = sunday.getFullYear()+'-'+String(sunday.getMonth()+1).padStart(2,'0')+'-'+String(sunday.getDate()).padStart(2,'0');
+  const inWeek = m => m.date_mandat && m.date_mandat >= startStr && m.date_mandat <= endStr;
 
   if (profile.role === 'gestionnaire' || profile.role === 'secretaire') {
-    const mois = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getMonth() === moisN && new Date(m.date_mandat).getFullYear() === annee);
-    const rapports = allMandats.filter(m => !m.statut_rapport_envoye && !isComplete(m)).length;
-    const nonpaye = allMandats.filter(m => !m.statut_paye && !isComplete(m)).length;
-    const rev = mois.reduce((s, m) => s + (parseFloat(m.sous_total) || 0), 0);
+    const semaine = allMandats.filter(inWeek);
+    const geq = semaine.filter(m => m.compagnie === 'geq').length;
+    const logica = semaine.filter(m => m.compagnie === 'logica').length;
     line.style.display = 'flex';
     line.innerHTML = `
-      <span class="stat-label">&#128202; Stats du mois</span>
-      <span class="stat-dot"></span>
-      <span><span class="stat-num">${mois.length}</span> mandats ce mois</span>
-      <span class="stat-dot"></span>
-      <span><span class="stat-num">${rapports}</span> rapports en attente</span>
-      <span class="stat-dot"></span>
-      <span><span class="stat-num">${nonpaye}</span> non pay&eacute;s</span>
-      ${profile.id===BASS_UID ? `<span class="stat-dot"></span><span><span class="stat-num">${money(rev)}</span> revenus</span>` : ''}
-    `;
-  } else if (profile.role === 'technicien') {
-    const ann = allMandats.filter(m => m.date_mandat && new Date(m.date_mandat).getFullYear() === annee);
-    const mois = ann.filter(m => new Date(m.date_mandat).getMonth() === moisN);
-    const logica = ann.filter(m => m.compagnie === 'logica').length;
-    const geq = ann.filter(m => m.compagnie === 'geq').length;
-    const comm = ann.reduce((s, m) => s + (parseFloat(m.commission_totale) || 0), 0);
-    line.style.display = 'flex';
-    line.innerHTML = `
-      <span class="stat-label">&#128202; Mes stats</span>
-      <span class="stat-dot"></span>
-      <span><span class="stat-num">${ann.length}</span> cette ann&eacute;e</span>
-      <span class="stat-dot"></span>
-      <span><span class="stat-num">${mois.length}</span> ce mois</span>
-      <span class="stat-dot"></span>
-      <span><span class="stat-num">${logica}</span> Logica</span>
+      <span class="stat-label">&#128202; Cette semaine</span>
       <span class="stat-dot"></span>
       <span><span class="stat-num">${geq}</span> GEQ</span>
       <span class="stat-dot"></span>
-      <span><span class="stat-num">${money(comm)}</span> commissions</span>
+      <span><span class="stat-num">${logica}</span> Logica</span>
     `;
+  } else {
+    /* Techniciens : pas de barre de stats */
+    line.style.display = 'none';
+    line.innerHTML = '';
   }
 }
 
