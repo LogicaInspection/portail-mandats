@@ -169,14 +169,12 @@ body.test-mode .content { padding-top: 18px; }
   .header .hright{display:none !important;}   /* FINAL/suppr/save deplaces dans la barre du bas */
   .header .btn-back{font-size:13px;padding:7px 12px;white-space:nowrap;flex-shrink:0;}
 
-  /* Les colonnes "s'effacent" pour reordonner les sections selon le flux terrain.
-     La fonction buildTabs() distribue les sections dans #m3-left/center/right (et un
-     rightStack + .assign-emails-row imbriques), donc on neutralise TOUS ces conteneurs
-     avec display:contents pour que les sections remontent comme enfants directs de la grille. */
-  .grid-3col{display:flex;flex-direction:column;gap:14px;}
-  .col,
-  #m3-left, #m3-center, #m3-right,
-  .assign-emails-row{display:contents;}
+  /* Le vrai conteneur d'affichage est .mandat-main3 (grid > m3-col). On le passe en
+     flex column et on neutralise les colonnes + sous-conteneurs avec display:contents
+     pour que les sections remontent et que leur "order" s'applique. */
+  .mandat-main3{display:flex !important;flex-direction:column;gap:14px;}
+  .mandat-main3 .m3-col,
+  .assign-emails-row,
   .right-stack-emails-docs{display:contents !important;}
 
   /* Ordre terrain : Client -> Notes -> Finances -> le reste */
@@ -6908,6 +6906,24 @@ function buildTabs(){
   if(oldSuiviMandat) oldSuiviMandat.style.display='none';
 
   tabsBuilt=true;
+
+  /* ===== Ceinture de securite mobile =====
+     Sur cell, on remet physiquement les sections dans .mandat-main3 dans l'ordre terrain
+     voulu (Client -> Notes -> Finances -> reste). Robuste, independant de display:contents. */
+  reorderForMobile();
+}
+
+function reorderForMobile(){
+  if(!window.matchMedia('(max-width:768px)').matches) return;
+  const main=document.getElementById('mandat-main3');
+  if(!main) return;
+  const order=['sec-client','sec-notes','sec-finances','sec-comm-tech',
+               'sec-suivi-client','sec-planification','sec-assignation',
+               'sec-docs','sec-emails','sec-histo'];
+  order.forEach(id=>{
+    const sec=document.getElementById(id);
+    if(sec) main.appendChild(sec); /* appendChild deplace l'element existant a la fin */
+  });
 }
 
 /* ===== Vue lecture dense des infos client (style GEQ Suivi) ===== */
