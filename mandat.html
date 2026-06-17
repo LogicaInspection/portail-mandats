@@ -157,116 +157,6 @@ body.test-mode .content { padding-top: 18px; }
 }
 
 /* ===== VUE MOBILE TERRAIN (cell) ===== */
-@media (max-width:768px){
-  /* --- Header epure : on ne garde que Retour + titre court --- */
-  .header{height:auto !important;min-height:0;padding:8px 12px;flex-wrap:nowrap;gap:10px;justify-content:flex-start;}
-  .header .hmeta{display:none !important;}
-  .header #hbadge{display:none !important;}
-  .header .hcenter{min-width:0;flex:1;align-items:flex-start;gap:2px;}
-  .header .htop{flex-wrap:nowrap;gap:6px;min-width:0;width:100%;}
-  .header #htitle{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;min-width:0;flex:1;}
-  .header .header-type-pill{font-size:10px;padding:2px 7px;flex-shrink:0;}
-  .header .hright{display:none !important;}   /* FINAL/suppr/save deplaces dans la barre du bas */
-  .header .btn-back{font-size:13px;padding:7px 12px;white-space:nowrap;flex-shrink:0;}
-
-  /* Le vrai conteneur d'affichage est .mandat-main3 (grid > m3-col). On le passe en
-     flex column et on neutralise les colonnes + sous-conteneurs avec display:contents
-     pour que les sections remontent et que leur "order" s'applique. */
-  .mandat-main3{display:flex !important;flex-direction:column;gap:14px;}
-  .mandat-main3 .m3-col,
-  .assign-emails-row,
-  .right-stack-emails-docs{display:contents !important;}
-
-  /* Ordre terrain : Client -> Notes -> Finances -> le reste */
-  #sec-client{order:1;}
-  #sec-notes{order:2;}
-  #sec-finances{order:3;}
-  #sec-comm-tech{order:4;}
-  #sec-suivi-client{order:5;}
-  #sec-planification{order:6;}
-  #sec-assignation{order:7;}
-  #sec-docs{order:8;}
-  #sec-emails{order:9;}
-  #sec-histo{order:10;}
-  #sec-suivi-mandat{order:0;}
-  #sec-reclamer{order:0;}
-
-  .content{padding:12px 10px 30px;}
-  .col{gap:14px;}
-
-  /* Statut : on cache les pills qui debordent, on montre le bouton + menu */
-  #topbar-zone, #topbar-status{display:none !important;}
-  .mob-statut-wrap{display:block;margin-top:12px;position:relative;}
-  .mob-statut-btn{
-    width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
-    padding:12px 14px;border-radius:10px;border:2px solid #d0d4d9;background:#f5f5f5;
-    font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:#666;
-  }
-  .mob-statut-caret{font-size:12px;opacity:0.7;}
-  .mob-statut-menu{
-    display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:300;
-    background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;
-    box-shadow:0 8px 24px rgba(0,0,0,0.15);
-  }
-  .mob-statut-menu.open{display:block;}
-  .mob-statut-opt{
-    width:100%;text-align:left;padding:13px 14px;border:none;background:#fff;
-    font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
-    border-bottom:1px solid #f1f2f4;
-  }
-  .mob-statut-opt:last-child{border-bottom:none;}
-  .mob-statut-opt.active{background:#f7f8fa;}
-  .mob-statut-opt:active{background:#eef0f2;}
-
-  /* Sections repliables sur mobile : docs / emails / histo demarrent fermes */
-  .sec.mob-collapsible .sec-body{display:none;}
-  .sec.mob-collapsible.mob-open .sec-body{display:block;}
-  .sec.mob-collapsible .sec-title{cursor:pointer;}
-  .sec.mob-collapsible .sec-title .mob-chevron{margin-left:auto;font-size:12px;color:#94a3b8;transition:transform 0.2s;}
-  .sec.mob-collapsible.mob-open .sec-title .mob-chevron{transform:rotate(180deg);}
-
-  /* Blocs d'action client (Maps / Appel) : seulement sur mobile */
-  .mob-client-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
-  .mob-action-btn{
-    display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;
-    text-decoration:none;border:none;width:100%;cursor:pointer;text-align:left;font-family:inherit;
-  }
-  .mob-action-btn .mab-ic{font-size:18px;}
-  .mob-action-btn .mab-main{font-size:13px;font-weight:600;}
-  .mob-action-btn .mab-sub{font-size:11px;opacity:0.8;}
-  .mob-action-map{background:#e6f1fb;color:#0c447c;}
-  .mob-action-map .mab-sub{color:#185fa5;}
-  .mob-action-call{background:#e1f5ee;color:#04342c;}
-  .mob-action-call .mab-sub{color:#0f6e56;}
-
-  /* Barre Sauvegarder collante en bas */
-  .header #btn-save{display:none;}
-  /* Barre sticky sous le header : nom du tech + Completer + Sauvegarder, toujours visible */
-  .mob-topbar{
-    display:flex;align-items:center;gap:8px;
-    position:sticky;top:52px;z-index:90;
-    background:#fff;border-bottom:1px solid #e5e7eb;
-    padding:8px 12px;
-  }
-  .mob-topbar-tech{
-    flex:1;min-width:0;font-size:13px;font-weight:600;color:#1a1a2e;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    display:flex;align-items:center;gap:6px;
-  }
-  .mob-topbar-tech::before{content:"\1F464";font-size:14px;opacity:0.6;}
-  .mob-topbar-actions{display:flex;gap:6px;flex-shrink:0;}
-  .mob-btn-save{
-    padding:9px 14px;border:none;border-radius:9px;
-    color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
-    background:#16a34a;white-space:nowrap;
-  }
-  .mob-btn-save.dirty{background:#b71c1c;}
-  .mob-btn-final{
-    padding:9px 12px;border:2px solid #1b5e20;border-radius:9px;
-    color:#1b5e20;background:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;
-  }
-  .mob-btn-final.btn-final-done{background:#1b5e20;color:#fff;}
-}
 .mob-client-actions{display:none;}
 .mob-topbar{display:none;}
 .mob-statut-wrap{display:none;}
@@ -1151,6 +1041,118 @@ input[type=file]{display:none;}
   font-family:inherit;transition:all .12s;text-decoration:none;
 }
 .apercu-actions .aa-btn:hover{border-color:#185fa5;color:#185fa5;background:#f4f8fd;}
+/* ===== BLOC MOBILE TERRAIN (place en fin de style pour gagner la cascade) ===== */
+@media (max-width:768px){
+  /* --- Header epure : on ne garde que Retour + titre court --- */
+  .header{height:auto !important;min-height:0;padding:8px 12px;flex-wrap:nowrap;gap:10px;justify-content:flex-start;}
+  .header .hmeta{display:none !important;}
+  .header #hbadge{display:none !important;}
+  .header .hcenter{min-width:0;flex:1;align-items:flex-start;gap:2px;}
+  .header .htop{flex-wrap:nowrap;gap:6px;min-width:0;width:100%;}
+  .header #htitle{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;min-width:0;flex:1;}
+  .header .header-type-pill{font-size:10px;padding:2px 7px;flex-shrink:0;}
+  .header .hright{display:none !important;}   /* FINAL/suppr/save deplaces dans la barre du bas */
+  .header .btn-back{font-size:13px;padding:7px 12px;white-space:nowrap;flex-shrink:0;}
+
+  /* Le vrai conteneur d'affichage est .mandat-main3 (grid > m3-col). On le passe en
+     flex column et on neutralise les colonnes + sous-conteneurs avec display:contents
+     pour que les sections remontent et que leur "order" s'applique. */
+  .mandat-main3{display:flex !important;flex-direction:column;gap:14px;}
+  .mandat-main3 .m3-col,
+  .assign-emails-row,
+  .right-stack-emails-docs{display:contents !important;}
+
+  /* Ordre terrain : Client -> Notes -> Finances -> le reste */
+  #sec-client{order:1;}
+  #sec-notes{order:2;}
+  #sec-finances{order:3;}
+  #sec-comm-tech{order:4;}
+  #sec-suivi-client{order:5;}
+  #sec-planification{order:6;}
+  #sec-assignation{order:7;}
+  #sec-docs{order:8;}
+  #sec-emails{order:9;}
+  #sec-histo{order:10;}
+  #sec-suivi-mandat{order:0;}
+  #sec-reclamer{order:0;}
+
+  .content{padding:12px 10px 30px;}
+  .col{gap:14px;}
+
+  /* Statut : on cache les pills qui debordent, on montre le bouton + menu */
+  #topbar-zone, #topbar-status{display:none !important;}
+  .mob-statut-wrap{display:block;margin-top:12px;position:relative;}
+  .mob-statut-btn{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:12px 14px;border-radius:10px;border:2px solid #d0d4d9;background:#f5f5f5;
+    font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:#666;
+  }
+  .mob-statut-caret{font-size:12px;opacity:0.7;}
+  .mob-statut-menu{
+    display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:300;
+    background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;
+    box-shadow:0 8px 24px rgba(0,0,0,0.15);
+  }
+  .mob-statut-menu.open{display:block;}
+  .mob-statut-opt{
+    width:100%;text-align:left;padding:13px 14px;border:none;background:#fff;
+    font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
+    border-bottom:1px solid #f1f2f4;
+  }
+  .mob-statut-opt:last-child{border-bottom:none;}
+  .mob-statut-opt.active{background:#f7f8fa;}
+  .mob-statut-opt:active{background:#eef0f2;}
+
+  /* Sections repliables sur mobile : docs / emails / histo demarrent fermes */
+  .sec.mob-collapsible .sec-body{display:none;}
+  .sec.mob-collapsible.mob-open .sec-body{display:block;}
+  .sec.mob-collapsible .sec-title{cursor:pointer;}
+  .sec.mob-collapsible .sec-title .mob-chevron{margin-left:auto;font-size:12px;color:#94a3b8;transition:transform 0.2s;}
+  .sec.mob-collapsible.mob-open .sec-title .mob-chevron{transform:rotate(180deg);}
+
+  /* Blocs d'action client (Maps / Appel) : seulement sur mobile */
+  .mob-client-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .mob-action-btn{
+    display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;
+    text-decoration:none;border:none;width:100%;cursor:pointer;text-align:left;font-family:inherit;
+  }
+  .mob-action-btn .mab-ic{font-size:18px;}
+  .mob-action-btn .mab-main{font-size:13px;font-weight:600;}
+  .mob-action-btn .mab-sub{font-size:11px;opacity:0.8;}
+  .mob-action-map{background:#e6f1fb;color:#0c447c;}
+  .mob-action-map .mab-sub{color:#185fa5;}
+  .mob-action-call{background:#e1f5ee;color:#04342c;}
+  .mob-action-call .mab-sub{color:#0f6e56;}
+
+  /* Barre Sauvegarder collante en bas */
+  .header #btn-save{display:none;}
+  /* Barre sticky sous le header : nom du tech + Completer + Sauvegarder, toujours visible */
+  .mob-topbar{
+    display:flex;align-items:center;gap:8px;
+    position:sticky;top:52px;z-index:90;
+    background:#fff;border-bottom:1px solid #e5e7eb;
+    padding:8px 12px;
+  }
+  .mob-topbar-tech{
+    flex:1;min-width:0;font-size:13px;font-weight:600;color:#1a1a2e;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    display:flex;align-items:center;gap:6px;
+  }
+  .mob-topbar-tech::before{content:"\1F464";font-size:14px;opacity:0.6;}
+  .mob-topbar-actions{display:flex;gap:6px;flex-shrink:0;}
+  .mob-btn-save{
+    padding:9px 14px;border:none;border-radius:9px;
+    color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+    background:#16a34a;white-space:nowrap;
+  }
+  .mob-btn-save.dirty{background:#b71c1c;}
+  .mob-btn-final{
+    padding:9px 12px;border:2px solid #1b5e20;border-radius:9px;
+    color:#1b5e20;background:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;
+  }
+  .mob-btn-final.btn-final-done{background:#1b5e20;color:#fff;}
+}
+
 </style>
 </head>
 <body>
