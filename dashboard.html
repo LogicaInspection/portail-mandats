@@ -88,7 +88,7 @@ body.archives-mode .archive-banner{display:flex;}
   padding:11px 14px;border-radius:10px;margin-bottom:14px;
   align-items:center;gap:11px;font-size:13px;
 }
-.rappels-banner.show{display:flex;}
+.rappels-banner.show{display:none;}
 .rappels-banner-icon{font-size:18px;}
 .rappels-banner-content{flex:1;min-width:0;}
 .rappels-banner-title{font-weight:600;color:#92400e;font-size:13px;}
@@ -632,6 +632,11 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
       <a class="nav-item" id="nav-fdp" href="#" style="display:none" onclick="event.preventDefault();goToFDP();">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 7l-5 5-3-3-4 4"/></svg></span>
         Fonds de pr&eacute;voyance
+        <span class="nav-ext">&#8599;</span>
+      </a>
+      <a class="nav-item" href="https://rapport-d-expertise-nine.vercel.app/" target="_blank" rel="noopener" title="Application de r&eacute;daction de rapports d'expertise">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></span>
+        Rapports d'expertise
         <span class="nav-ext">&#8599;</span>
       </a>
     </nav>
@@ -1405,6 +1410,13 @@ function dismissRappels() {
 }
 
 function updateRappelsBanner(list) {
+  /* Banniere de rappels desactivee : on ne l'affiche plus (desktop + mobile).
+     La fonction est conservee pour ne pas casser les appels existants. */
+  const banner = document.getElementById('rappels-banner');
+  if (banner) banner.classList.remove('show');
+  return;
+}
+function updateRappelsBanner_DISABLED(list) {
   const banner = document.getElementById('rappels-banner');
   /* Cache la banniere si:
      - l'utilisateur l'a manuellement fermee pour cette session
