@@ -499,6 +499,18 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
   /* Pas de barre de stats sur cell (ni gestionnaire ni tech) */
   .stats-line{display:none !important;}
 
+  /* Bannière de rappels masquée sur cell (c'est de l'admin, pas du terrain) */
+  .rappels-banner{display:none !important;}
+
+  /* Topbar : Export masqué, bouton Nouveau mandat compact (icône seule) */
+  #btn-export{display:none !important;}
+  .page-head{gap:8px;align-items:center;}
+  .page-title{font-size:26px;}
+  .head-actions{flex-shrink:0;}
+  #btn-new{padding:9px;border-radius:10px;}
+  #btn-new svg{margin:0;}
+  #btn-new .btn-label{display:none;}
+
   /* Liste de cartes mobile */
   .mob-list{display:flex;flex-direction:column;gap:0;}
   .mandats{display:none;}
@@ -681,7 +693,7 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
         </button>
         <button class="btn btn-primary" id="btn-new" style="display:none" onclick="showModalNouveauMandat()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          Nouveau mandat
+          <span class="btn-label">Nouveau mandat</span>
         </button>
       </div>
     </div>
