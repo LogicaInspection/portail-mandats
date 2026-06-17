@@ -159,22 +159,25 @@ body.test-mode .content { padding-top: 18px; }
 /* ===== VUE MOBILE TERRAIN (cell) ===== */
 @media (max-width:768px){
   /* --- Header epure : on ne garde que Retour + titre court --- */
-  .header{height:auto;min-height:54px;padding:8px 12px;flex-wrap:nowrap;gap:8px;}
+  .header{height:auto !important;min-height:0;padding:8px 12px;flex-wrap:nowrap;gap:10px;justify-content:flex-start;}
   .header .hmeta{display:none !important;}
   .header #hbadge{display:none !important;}
-  .header .htop{flex-wrap:nowrap;gap:6px;min-width:0;}
-  .header #htitle{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%;}
-  .header .hcenter{min-width:0;flex:1;}
-  .header #btn-final{display:none;}   /* "Complete" gere par un bouton dans la zone Statut mobile */
-  .header #btn-del{display:none;}
-  .header #btn-save{display:none;}
-  .header .dirty-indicator{display:none !important;}
-  .header .btn-back{font-size:13px;padding:7px 10px;white-space:nowrap;flex-shrink:0;}
-  .header-type-pill{font-size:11px;padding:2px 8px;flex-shrink:0;}
+  .header .hcenter{min-width:0;flex:1;align-items:flex-start;gap:2px;}
+  .header .htop{flex-wrap:nowrap;gap:6px;min-width:0;width:100%;}
+  .header #htitle{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;min-width:0;flex:1;}
+  .header .header-type-pill{font-size:10px;padding:2px 7px;flex-shrink:0;}
+  .header .hright{display:none !important;}   /* FINAL/suppr/save deplaces dans la barre du bas */
+  .header .btn-back{font-size:13px;padding:7px 12px;white-space:nowrap;flex-shrink:0;}
 
-  /* Les colonnes "s'effacent" pour reordonner les sections selon le flux terrain. */
+  /* Les colonnes "s'effacent" pour reordonner les sections selon le flux terrain.
+     La fonction buildTabs() distribue les sections dans #m3-left/center/right (et un
+     rightStack + .assign-emails-row imbriques), donc on neutralise TOUS ces conteneurs
+     avec display:contents pour que les sections remontent comme enfants directs de la grille. */
   .grid-3col{display:flex;flex-direction:column;gap:14px;}
-  .col{display:contents;}
+  .col,
+  #m3-left, #m3-center, #m3-right,
+  .assign-emails-row{display:contents;}
+  .right-stack-emails-docs{display:contents !important;}
 
   /* Ordre terrain : Client -> Notes -> Finances -> le reste */
   #sec-client{order:1;}
@@ -6873,6 +6876,7 @@ function buildTabs(){
   }
   /* Colonne droite : Courriels au-dessus, Documents en dessous */
   const rightStack=document.createElement('div');
+  rightStack.className='right-stack-emails-docs';
   rightStack.style.cssText='display:flex;flex-direction:column;gap:14px;min-width:0;';
   assignRow.appendChild(rightStack);
   move('sec-emails',rightStack);
