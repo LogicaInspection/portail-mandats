@@ -156,6 +156,67 @@ body.test-mode .content { padding-top: 18px; }
   .content{max-width:920px;}
 }
 
+/* ===== VUE MOBILE TERRAIN (cell) ===== */
+@media (max-width:768px){
+  /* Les colonnes "s'effacent" pour que les sections deviennent enfants directs
+     de la grille -> on peut alors les reordonner pour le flux terrain. */
+  .grid-3col{display:flex;flex-direction:column;gap:14px;}
+  .col{display:contents;}
+
+  #sec-client{order:1;}
+  #sec-suivi-client{order:2;}
+  #sec-finances{order:3;}
+  #sec-comm-tech{order:4;}
+  #sec-planification{order:5;}
+  #sec-notes{order:6;}
+  #sec-docs{order:7;}
+  #sec-emails{order:8;}
+  #sec-histo{order:9;}
+  #sec-suivi-mandat{order:0;}
+  #sec-reclamer{order:0;}
+
+  .content{padding:12px 10px 90px;}
+  .col{gap:14px;}
+
+  /* Sections repliables sur mobile : docs / emails / histo demarrent fermes */
+  .sec.mob-collapsible .sec-body{display:none;}
+  .sec.mob-collapsible.mob-open .sec-body{display:block;}
+  .sec.mob-collapsible .sec-title{cursor:pointer;}
+  .sec.mob-collapsible .sec-title .mob-chevron{margin-left:auto;font-size:12px;color:#94a3b8;transition:transform 0.2s;}
+  .sec.mob-collapsible.mob-open .sec-title .mob-chevron{transform:rotate(180deg);}
+
+  /* Blocs d'action client (Maps / Appel) : seulement sur mobile */
+  .mob-client-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .mob-action-btn{
+    display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;
+    text-decoration:none;border:none;width:100%;cursor:pointer;text-align:left;font-family:inherit;
+  }
+  .mob-action-btn .mab-ic{font-size:18px;}
+  .mob-action-btn .mab-main{font-size:13px;font-weight:600;}
+  .mob-action-btn .mab-sub{font-size:11px;opacity:0.8;}
+  .mob-action-map{background:#e6f1fb;color:#0c447c;}
+  .mob-action-map .mab-sub{color:#185fa5;}
+  .mob-action-call{background:#e1f5ee;color:#04342c;}
+  .mob-action-call .mab-sub{color:#0f6e56;}
+
+  /* Barre Sauvegarder collante en bas */
+  .header #btn-save{display:none;}
+  .mob-save-bar{
+    display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;
+    background:#fff;border-top:1px solid #e5e7eb;padding:10px 12px;
+    padding-bottom:calc(10px + env(safe-area-inset-bottom,0));
+  }
+  .mob-save-bar button{
+    width:100%;padding:13px 0;border:none;border-radius:10px;
+    background:#b71c1c;color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+  }
+  .mob-save-bar button.dirty{background:#b71c1c;}
+  .mob-save-bar button:not(.dirty){background:#16a34a;}
+}
+.mob-client-actions{display:none;}
+.mob-save-bar{display:none;}
+
+
 /* Textarea Notes plus grande et redimensionnable */
 /* Editeur riche Quill - integration dans le design */
 #f-notes-editor,
@@ -5564,11 +5625,38 @@ async function submitContact(){
 let formDirty=false;
 let formInitialized=false;
 
+/* Rend certaines sections repliables sur mobile (docs, courriels, historique).
+   Enveloppe le contenu apres le titre dans un .sec-body et ajoute un chevron. */
+function setupMobileCollapsibles(){
+  if(!window.matchMedia('(max-width:768px)').matches) return;
+  ['sec-docs','sec-emails','sec-histo'].forEach(id=>{
+    const sec=document.getElementById(id);
+    if(!sec || sec.dataset.mobCollapsibleDone) return;
+    const title=sec.querySelector('.sec-title');
+    if(!title) return;
+    /* Regroupe tout ce qui suit le titre dans un .sec-body */
+    const body=document.createElement('div');
+    body.className='sec-body';
+    let node=title.nextSibling;
+    while(node){ const next=node.nextSibling; body.appendChild(node); node=next; }
+    sec.appendChild(body);
+    sec.classList.add('mob-collapsible');
+    if(!title.querySelector('.mob-chevron')){
+      const chev=document.createElement('span');
+      chev.className='mob-chevron'; chev.innerHTML='&#9660;';
+      title.appendChild(chev);
+    }
+    title.addEventListener('click',()=>sec.classList.toggle('mob-open'));
+    sec.dataset.mobCollapsibleDone='1';
+  });
+}
+
 function markDirty(){
   if(!formInitialized||formDirty) return;
   formDirty=true;
   document.getElementById('dirty-indicator').style.display='inline';
   document.getElementById('btn-save').classList.add('dirty');
+  const mb=document.getElementById('mob-btn-save'); if(mb){mb.classList.add('dirty');mb.innerHTML='\uD83D\uDCBE Sauvegarder';}
 }
 
 function markClean(){
@@ -5577,6 +5665,7 @@ function markClean(){
   const btn=document.getElementById('btn-save');
   if(ind) ind.style.display='none';
   if(btn) btn.classList.remove('dirty');
+  const mb=document.getElementById('mob-btn-save'); if(mb){mb.classList.remove('dirty');mb.innerHTML='\u2713 Sauvegard\u00e9';}
 }
 
 function goBack(){
@@ -6790,6 +6879,26 @@ function renderClientReadonly(){
     row('Type de b\u00e2timent', cliSelectLabel('f-type-batiment'));
   }
   wrap.innerHTML=rows.join('');
+
+  /* Gros boutons d'action tactiles (visibles seulement sur mobile via CSS) */
+  const adr=cliVal('f-adresse');
+  const tel=cliVal('f-client-tel');
+  let actionsHtml='';
+  if(adr){
+    actionsHtml+='<button type="button" class="mob-action-btn mob-action-map" onclick="openInMaps()">'+
+      '<span class="mab-ic">\uD83D\uDCCD</span><span><span class="mab-main">'+escAttr(adr)+'</span><br><span class="mab-sub">Ouvrir dans Google Maps</span></span></button>';
+  }
+  if(tel){
+    const t=tel.replace(/[^0-9+]/g,'');
+    actionsHtml+='<a class="mob-action-btn mob-action-call" href="tel:'+t+'">'+
+      '<span class="mab-ic">\uD83D\uDCDE</span><span><span class="mab-main">'+escAttr(tel)+'</span><br><span class="mab-sub">Appeler le client</span></span></a>';
+  }
+  if(actionsHtml){
+    const div=document.createElement('div');
+    div.className='mob-client-actions';
+    div.innerHTML=actionsHtml;
+    wrap.appendChild(div);
+  }
 }
 
 function openNotesFullscreen(){
@@ -7079,6 +7188,7 @@ function initLayout(){
   renderPipeline();
   renderClientReadonly();
   setupZeroClear();
+  setupMobileCollapsibles();
 }
 
 /* Quand on clique dans un champ tarif/commission a 0, on le vide.
@@ -7105,5 +7215,8 @@ function setupZeroClear(){
   });
 }
 </script>
+<div class="mob-save-bar" id="mob-save-bar">
+  <button id="mob-btn-save" onclick="saveMandat()">&#128190; Sauvegarder</button>
+</div>
 </body>
 </html>
