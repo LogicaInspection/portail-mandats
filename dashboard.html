@@ -547,14 +547,16 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
 
   /* Separateurs de section mobile */
   .mob-sep{
-    display:flex;align-items:center;gap:8px;padding:12px 4px 8px;margin:8px 0 10px;
-    font-size:16px;font-weight:700;color:var(--ink);cursor:pointer;user-select:none;
-    border-bottom:2px solid var(--line);text-transform:uppercase;letter-spacing:0.02em;
+    display:flex;align-items:center;gap:8px;padding:10px 12px;margin:14px 0 10px;
+    font-size:14px;font-weight:700;cursor:pointer;user-select:none;
+    border-radius:10px;text-transform:uppercase;letter-spacing:0.03em;
+    background:var(--bg-2);color:var(--ink-2);border:1px solid var(--line);
   }
-  .mob-sep .sep-icon{font-size:17px;}
-  .mob-sep.pascontacte{color:#991b1b;border-bottom-color:#fca5a5;}
-  .mob-sep.aujourdhui{color:#7c2d12;border-bottom-color:#fbbf24;}
-  .mob-sep .sep-count{margin-left:2px;background:var(--bg-2);border-radius:20px;padding:1px 9px;font-size:12px;font-weight:600;}
+  .mob-sep .sep-icon{font-size:16px;}
+  .mob-sep.pascontacte{background:#fef2f2;color:#991b1b;border-color:#fca5a5;}
+  .mob-sep.aujourdhui{background:#fff8e1;color:#7c2d12;border-color:#fbbf24;}
+  .mob-sep.avenir{background:#eef2ff;color:#3730a3;border-color:#c7d2fe;}
+  .mob-sep .sep-count{margin-left:2px;background:rgba(255,255,255,0.6);border-radius:20px;padding:1px 9px;font-size:12px;font-weight:600;}
   .mob-sep .sep-toggle{margin-left:auto;font-size:11px;transition:transform 0.2s;}
   .mob-sep.collapsed .sep-toggle{transform:rotate(-90deg);}
 
