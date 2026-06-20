@@ -4205,12 +4205,29 @@ function renderEmails(){
   };
   list.appendChild(sel);
 
-  /* Petit recap des courriels deja envoyes */
+  /* Petit recap des courriels deja envoyes, avec date/heure d'envoi */
   const sentList = allBtns.filter(b=>emailLogs.some(l=>l.type_email===b.type));
   if(sentList.length){
     const recap=document.createElement('div');
-    recap.style.cssText='margin-top:8px;font-size:11.5px;color:#4caf50;display:flex;flex-direction:column;gap:2px;';
-    recap.innerHTML=sentList.map(b=>'<span>&#10003; '+b.title+' envoy&eacute;</span>').join('');
+    recap.style.cssText='margin-top:8px;font-size:11.5px;color:#2e7d32;display:flex;flex-direction:column;gap:3px;';
+    recap.innerHTML=sentList.map(function(b){
+      /* Retrouve le log le plus recent pour ce type (au cas ou envoye plusieurs fois) */
+      var logs=emailLogs.filter(function(l){return l.type_email===b.type && l.envoye_at;});
+      var quand='';
+      if(logs.length){
+        logs.sort(function(a,c){return (c.envoye_at||'').localeCompare(a.envoye_at||'');});
+        var d=new Date(logs[0].envoye_at);
+        if(!isNaN(d)){
+          var dateTxt=d.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
+          var heureTxt=d.toLocaleTimeString('fr-CA',{hour:'2-digit',minute:'2-digit'});
+          quand=' <span style="color:#7a8a7a;font-weight:400;">\u2014 '+dateTxt+', '+heureTxt+'</span>';
+        }
+      }
+      return '<span style="display:flex;align-items:center;gap:5px;">'
+        +'<span style="color:#4caf50;font-weight:700;">&#10003;</span>'
+        +'<span style="font-weight:600;">'+b.title+' envoy\u00e9</span>'
+        +quand+'</span>';
+    }).join('');
     list.appendChild(recap);
   }
 }
@@ -4219,8 +4236,9 @@ function renderEmails(){
 async function loadEmailLogs(){
   if(!mandat){emailLogs=[];return;}
   try{
-    const {data}=await sb.from('email_logs').select('type_email,envoye_at').eq('mandat_id',mandat.id);
-    emailLogs=data||[];
+    const {data}=await sb.from('email_logs').select('type_email,envoye_le').eq('mandat_id',mandat.id);
+    /* On normalise vers .envoye_at pour le reste du code d'affichage */
+    emailLogs=(data||[]).map(function(l){return {type_email:l.type_email, envoye_at:l.envoye_le};});
   }catch(e){emailLogs=[];}
 }
 
