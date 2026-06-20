@@ -1685,6 +1685,14 @@ function renderTable(list) {
   groupes.realises.sort((a,b) => b.date_mandat.localeCompare(a.date_mandat));
   /* Pas contacte : les dates en premier (plus urgent), puis sans date */
   groupes.pascontacte.sort((a,b) => (a.date_mandat||'9999').localeCompare(b.date_mandat||'9999'));
+  /* Sans date planifiee : tri par derniere modification (updated_at) decroissant.
+     Le mandat modifie le plus recemment apparait en haut. Fallback sur created_at
+     puis chaine vide si les deux sont absents. */
+  groupes.sansdate.sort((a,b) => {
+    const va = a.updated_at || a.created_at || '';
+    const vb = b.updated_at || b.created_at || '';
+    return vb.localeCompare(va);
+  });
 
   /* Etat de repli par section.
      - Vue "actifs" (accueil) : Aujourd'hui + A venir OUVERTS. Sansdate/realises ne devraient
