@@ -1682,6 +1682,26 @@ input[type=file]{display:none;}
   </div>
 </div>
 
+<!-- ===== MODAL AVERTISSEMENT DOUBLON ===== -->
+<div class="ov" id="modal-doublon" style="display:none">
+  <div class="modal" style="max-width:560px;padding:24px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <span style="font-size:32px;">&#9888;&#65039;</span>
+      <h2 style="margin:0;font-size:18px;">Doublon possible d&eacute;tect&eacute;</h2>
+    </div>
+    <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px;">
+      Un ou plusieurs mandats <strong>actifs</strong> correspondent d&eacute;j&agrave; &agrave; ce client
+      (m&ecirc;me nom et m&ecirc;me t&eacute;l&eacute;phone ou courriel). V&eacute;rifie qu&rsquo;il ne
+      s&rsquo;agit pas du m&ecirc;me mandat avant de continuer.
+    </p>
+    <div id="doublon-liste" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;max-height:300px;overflow-y:auto;"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn-cancel" style="width:100%;justify-content:center;" onclick="doublonAnnuler()">Annuler et v&eacute;rifier</button>
+      <button class="btn-save" style="width:100%;justify-content:center;background:#e65100;border-color:#e65100;" onclick="doublonForcer()">Cr&eacute;er quand m&ecirc;me</button>
+    </div>
+  </div>
+</div>
+
 <div class="ov" id="modal-notes" style="display:none">
   <div class="modal" style="max-width:1100px;width:96%;padding:18px 22px;max-height:94vh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -3550,6 +3570,101 @@ function toggleHistorique(){
   arrow.classList.toggle('open',isOpen);
 }
 
+/* ===== DETECTION DE DOUBLON (mandats actifs seulement) =====
+   Bloque (avertissement forcable) la creation d'un nouveau mandat si un mandat
+   ACTIF existant matche sur (nom + courriel) OU (nom + telephone).
+   "Actif" = pas complete/archive (est_complete!=true ET statut_final!=true) -> meme
+   critere que le dashboard (isComplete). Donc un ancien mandat termine du meme client
+   (ex: Bob 2025 vs Bob 2026) ne bloque pas la creation.
+   Match souple : accents/casse/espaces ignores pour nom+courriel ; chiffres seulement
+   pour le telephone. */
+
+/* Normalise une chaine : minuscules, sans accents, espaces compactes, trim. */
+function normSoft(s){
+  return (s||'')
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')   /* enleve les diacritiques */
+    .toLowerCase()
+    .replace(/\s+/g,' ')
+    .trim();
+}
+/* Reduit un telephone a ses chiffres seulement (gere les +1 nord-americains :
+   on garde les 10 derniers chiffres pour comparer de facon robuste). */
+function normTel(s){
+  let d=(s||'').toString().replace(/\D+/g,'');
+  if(d.length>10) d=d.slice(-10);
+  return d;
+}
+
+/* Cherche les mandats actifs en doublon. Retourne un tableau (vide si aucun). */
+async function trouverDoublonsActifs(nom, email, tel){
+  const nomN=normSoft(nom);
+  if(!nomN) return [];
+  const emailN=normSoft(email);
+  const telN=normTel(tel);
+  /* Il faut au moins un 2e critere (courriel ou tel) pour pouvoir matcher sur 2 elements */
+  if(!emailN && !telN) return [];
+
+  /* On charge les mandats potentiellement en doublon. Le filtre "actif" definitif
+     est applique cote client (plus bas) avec le MEME critere que le dashboard
+     (est_complete!==true ET statut_final!==true), ce qui gere proprement les NULL.
+     On exclut deja cote serveur les mandats clairement archives pour alleger. */
+  const {data,error}=await sb.from('mandats')
+    .select('id,client_nom,client_email,client_telephone,compagnie,date_mandat,statut_assignation,est_complete,statut_final,created_at')
+    .neq('est_complete',true)
+    .neq('statut_final',true);
+  if(error){console.warn('Lookup doublon impossible:',error.message);return [];}
+
+  return (data||[]).filter(m=>{
+    /* Securite : exclut le mandat courant (cas edge si jamais appele sur existant) */
+    if(mandat && m.id===mandat.id) return false;
+    /* Double securite cote client sur le critere actif */
+    if(m.est_complete===true || m.statut_final===true) return false;
+    if(normSoft(m.client_nom)!==nomN) return false;   /* nom doit matcher */
+    const emailMatch = emailN && normSoft(m.client_email)===emailN;
+    const telMatch   = telN   && normTel(m.client_telephone)===telN;
+    return emailMatch || telMatch;   /* nom + (courriel OU tel) */
+  });
+}
+
+/* Affiche la modal d'avertissement et resout true (forcer) / false (annuler). */
+let _doublonResolve=null;
+function montrerModalDoublon(doublons){
+  const liste=document.getElementById('doublon-liste');
+  liste.innerHTML='';
+  doublons.forEach(m=>{
+    const comp=(m.compagnie==='geq')?'GEQ':'Logica';
+    const dateTxt=m.date_mandat
+      ? new Date(m.date_mandat+'T00:00:00').toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'})
+      : 'Sans date planifiee';
+    const tel=m.client_telephone?(' &middot; '+escapeHtml(m.client_telephone)):'';
+    const mail=m.client_email?(' &middot; '+escapeHtml(m.client_email)):'';
+    const card=document.createElement('div');
+    card.style.cssText='border:1px solid #ffcc80;background:#fff8f0;border-radius:8px;padding:10px 12px;';
+    card.innerHTML=
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">'
+      +'<div style="min-width:0;">'
+      +'<div style="font-weight:600;font-size:14px;">'+escapeHtml(m.client_nom||'Client')+' <span style="font-size:11px;color:#e65100;font-weight:600;">'+comp+'</span></div>'
+      +'<div style="font-size:12px;color:#777;margin-top:2px;">'+dateTxt+tel+mail+'</div>'
+      +'</div>'
+      +'<a href="mandat.html?id='+encodeURIComponent(m.id)+'" target="_blank" rel="noopener" '
+      +'style="flex-shrink:0;font-size:12px;font-weight:600;color:#1565c0;text-decoration:none;border:1px solid #90caf9;border-radius:6px;padding:5px 10px;">Ouvrir &#8599;</a>'
+      +'</div>';
+    liste.appendChild(card);
+  });
+  document.getElementById('modal-doublon').style.display='flex';
+  return new Promise(res=>{ _doublonResolve=res; });
+}
+function doublonForcer(){
+  document.getElementById('modal-doublon').style.display='none';
+  if(_doublonResolve){_doublonResolve(true);_doublonResolve=null;}
+}
+function doublonAnnuler(){
+  document.getElementById('modal-doublon').style.display='none';
+  if(_doublonResolve){_doublonResolve(false);_doublonResolve=null;}
+}
+
 async function saveMandat(opts){
   opts = opts || {};
   const stayOnPage = !!opts.stayOnPage; /* si true : pas de redirection vers le dashboard */
@@ -3592,6 +3707,20 @@ async function saveMandat(opts){
     }
     window.scrollTo({top:0,behavior:'smooth'});
     return;
+  }
+  /* ===== DETECTION DE DOUBLON (nouveau mandat seulement) =====
+     On verifie uniquement a la CREATION (isNew). Bypassable via opts.forceDuplicate
+     (mis a true quand l'utilisateur clique "Creer quand meme"). */
+  if(isNew && !(opts && opts.forceDuplicate)){
+    const emailVal=document.getElementById('f-client-email').value||'';
+    const telVal=document.getElementById('f-client-tel').value||'';
+    const doublons=await trouverDoublonsActifs(nom, emailVal, telVal);
+    if(doublons.length){
+      const forcer=await montrerModalDoublon(doublons);
+      if(!forcer) return;   /* l'utilisateur annule pour verifier */
+      /* relance la sauvegarde en bypassant le check */
+      return saveMandat({...opts, forceDuplicate:true});
+    }
   }
   if(!await confirmTestAction(isNew?'Creer un nouveau mandat':'Sauvegarder les modifications')) return;
   const comp=document.getElementById('f-compagnie').value;
