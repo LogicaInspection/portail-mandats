@@ -284,6 +284,8 @@ tr.t-sep.aujourdhui td{background:#fff8e1;color:#7c2d12;border-color:#fbbf24;bor
 tr.t-sep.aujourdhui .sep-count{background:#fef3c7;border-color:#fbbf24;color:#92400e;}
 tr.t-sep.pascontacte td{background:#fef2f2;color:#991b1b;border-color:#fca5a5;border-bottom:1px solid #fca5a5;border-top:1px solid #fca5a5;}
 tr.t-sep.pascontacte .sep-count{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;}
+tr.t-sep.afinaliser td{background:#fff7ed;color:#9a3412;border-color:#fdba74;border-bottom:1px solid #fdba74;border-top:1px solid #fdba74;}
+tr.t-sep.afinaliser .sep-count{background:#ffedd5;border-color:#fdba74;color:#c2410c;}
 tr.t-sep{cursor:pointer;user-select:none;}
 tr.t-sep:hover td{filter:brightness(0.97);}
 tr.t-sep.realises:hover td{background:#f0f1f3;}
@@ -556,6 +558,7 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
   .mob-sep.pascontacte{background:#fef2f2;color:#991b1b;border-color:#fca5a5;}
   .mob-sep.aujourdhui{background:#fff8e1;color:#7c2d12;border-color:#fbbf24;}
   .mob-sep.avenir{background:#eef2ff;color:#3730a3;border-color:#c7d2fe;}
+  .mob-sep.afinaliser{background:#fff7ed;color:#9a3412;border-color:#fdba74;}
   .mob-sep .sep-count{margin-left:2px;background:rgba(255,255,255,0.6);border-radius:20px;padding:1px 9px;font-size:12px;font-weight:600;}
   .mob-sep .sep-toggle{margin-left:auto;font-size:11px;transition:transform 0.2s;}
   .mob-sep.collapsed .sep-toggle{transform:rotate(-90deg);}
@@ -1207,6 +1210,7 @@ function getFilteredMandats() {
       const isGest = profile.role === 'gestionnaire';
       list = list.filter(m => {
         if (isActif(m)) return true;
+        if (isAFinaliser(m)) return true;
         if (m.statut_contact === 'pas_contacte') {
           return isGest || m.technicien_id === profile.id;
         }
@@ -1671,16 +1675,21 @@ function renderTable(list) {
   const todayStr = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
 
   const onAccueilGroup = (currentFilter === 'actifs' && !viewArchives);
-  const groupes = { pascontacte:[], aujourdhui:[], avenir:[], sansdate:[], realises:[] };
+  const groupes = { pascontacte:[], aujourdhui:[], avenir:[], sansdate:[], afinaliser:[], realises:[] };
   list.forEach(m => {
     /* Sur l'accueil, les "pas contacte" vont dans leur propre section prioritaire,
        qu'ils aient une date ou non (evite les doublons avec aujourd'hui/a venir). */
     if (onAccueilGroup && m.statut_contact === 'pas_contacte') { groupes.pascontacte.push(m); return; }
+    /* Sur l'accueil, les mandats passes sur place non archives vont dans "A finaliser"
+       (paiement manquant, rapport a envoyer, en cours d'execution, etc.). */
+    if (onAccueilGroup && isAFinaliser(m)) { groupes.afinaliser.push(m); return; }
     if (!m.date_mandat) groupes.sansdate.push(m);
     else if (m.date_mandat === todayStr) groupes.aujourdhui.push(m);
     else if (m.date_mandat > todayStr) groupes.avenir.push(m);
     else groupes.realises.push(m);
   });
+  /* A finaliser : plus ancien en premier (le plus en retard remonte en haut) */
+  groupes.afinaliser.sort((a,b) => (a.date_mandat||'').localeCompare(b.date_mandat||''));
   groupes.avenir.sort((a,b) => a.date_mandat.localeCompare(b.date_mandat));
   groupes.realises.sort((a,b) => b.date_mandat.localeCompare(a.date_mandat));
   /* Pas contacte : les dates en premier (plus urgent), puis sans date */
@@ -1701,8 +1710,8 @@ function renderTable(list) {
      Chaque section memorise ensuite son etat dans localStorage. */
   const onAccueil = (currentFilter === 'actifs' && !viewArchives);
   const defaultCollapsed = onAccueil
-    ? { pascontacte:false, aujourdhui:false, avenir:false, sansdate:true, realises:true }
-    : { pascontacte:false, aujourdhui:false, avenir:false, sansdate:false, realises:false };
+    ? { pascontacte:false, aujourdhui:false, avenir:false, sansdate:true, afinaliser:false, realises:true }
+    : { pascontacte:false, aujourdhui:false, avenir:false, sansdate:false, afinaliser:false, realises:false };
   function isCollapsed(name){
     const v = localStorage.getItem('dashboard_sec_'+name+'_collapsed');
     if(v===null) return defaultCollapsed[name];
@@ -1850,6 +1859,11 @@ function renderTable(list) {
     const col = isCollapsed('sansdate');
     html += sepRow('\u{1F4CB}', 'Sans date planifi\u00e9e', groupes.sansdate.length, 'sansdate', col);
     groupes.sansdate.forEach(m => html += renderRow(m, ' row-sec row-sec-sansdate' + (col ? ' is-hidden' : '')));
+  }
+  if (groupes.afinaliser.length) {
+    const col = isCollapsed('afinaliser');
+    html += sepRow('\u{1F551}', '\u00C0 finaliser', groupes.afinaliser.length, 'afinaliser', col);
+    groupes.afinaliser.forEach(m => html += renderRow(m, ' row-sec row-sec-afinaliser row-passe' + (col ? ' is-hidden' : '')));
   }
   if (groupes.realises.length) {
     const col = isCollapsed('realises');
