@@ -308,6 +308,7 @@ tbody tr.row-passe{opacity:0.7;}
 .cell-date{font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap;}
 .cell-date .date-main{font-size:12.5px;font-weight:500;color:var(--ink);}
 .cell-date .date-time{font-size:11px;color:var(--ink-4);margin-top:1px;}
+.cell-date .date-aplanifier{display:inline-block;font-size:11px;font-weight:600;color:#c2410c;background:#ffedd5;border:1px solid #fdba74;border-radius:7px;padding:2px 7px;white-space:nowrap;}
 .cell-client{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;}
 .cell-client .phone{display:block;font-size:11px;color:var(--ink-4);margin-top:1px;font-weight:400;font-variant-numeric:tabular-nums;}
 .cell-addr{font-size:12.5px;color:var(--ink-3);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -1117,6 +1118,9 @@ function todayStrLocal() { const n = new Date(); return n.getFullYear()+'-'+Stri
 function isEnAttente(m) { return m.statut_contact === 'soumission_envoyee' || m.statut_contact === 'message_laisse' || isStandby(m); }
 /* A finaliser = passe sur place (date < aujourd'hui) ET pas archive */
 function isAFinaliser(m) { return !isComplete(m) && !!m.date_mandat && m.date_mandat < todayStrLocal(); }
+/* A planifier = pas archive, sans date, mais deja avance (ni en attente, ni pas contacte).
+   Ex: mandat confirme/booke ou assigne mais dont la date de planif n'est pas encore saisie. */
+function isAPlanifier(m) { return !isComplete(m) && !m.date_mandat && !isEnAttente(m) && m.statut_contact !== 'pas_contacte'; }
 /* Actif = bookе avec date aujourd'hui ou future, pas archive, pas en attente */
 function isActif(m) { return !isComplete(m) && !!m.date_mandat && m.date_mandat >= todayStrLocal(); }
 
@@ -1211,6 +1215,7 @@ function getFilteredMandats() {
       list = list.filter(m => {
         if (isActif(m)) return true;
         if (isAFinaliser(m)) return true;
+        if (isAPlanifier(m)) return true;
         if (m.statut_contact === 'pas_contacte') {
           return isGest || m.technicien_id === profile.id;
         }
@@ -1683,6 +1688,9 @@ function renderTable(list) {
     /* Sur l'accueil, les mandats passes sur place non archives vont dans "A finaliser"
        (paiement manquant, rapport a envoyer, en cours d'execution, etc.). */
     if (onAccueilGroup && isAFinaliser(m)) { groupes.afinaliser.push(m); return; }
+    /* Sur l'accueil, un mandat avance mais sans date de planif (confirme/assigne, pas
+       encore date) est range dans "A venir" : c'est du travail a planifier, pas du passe. */
+    if (onAccueilGroup && isAPlanifier(m)) { groupes.avenir.push(m); return; }
     if (!m.date_mandat) groupes.sansdate.push(m);
     else if (m.date_mandat === todayStr) groupes.aujourdhui.push(m);
     else if (m.date_mandat > todayStr) groupes.avenir.push(m);
@@ -1690,7 +1698,13 @@ function renderTable(list) {
   });
   /* A finaliser : plus ancien en premier (le plus en retard remonte en haut) */
   groupes.afinaliser.sort((a,b) => (a.date_mandat||'').localeCompare(b.date_mandat||''));
-  groupes.avenir.sort((a,b) => a.date_mandat.localeCompare(b.date_mandat));
+  groupes.avenir.sort((a,b) => {
+    /* Dates connues en premier (croissant), mandats sans date (a planifier) a la fin */
+    if (!a.date_mandat && !b.date_mandat) return 0;
+    if (!a.date_mandat) return 1;
+    if (!b.date_mandat) return -1;
+    return a.date_mandat.localeCompare(b.date_mandat);
+  });
   groupes.realises.sort((a,b) => b.date_mandat.localeCompare(a.date_mandat));
   /* Pas contacte : les dates en premier (plus urgent), puis sans date */
   groupes.pascontacte.sort((a,b) => (a.date_mandat||'9999').localeCompare(b.date_mandat||'9999'));
@@ -1785,7 +1799,7 @@ function renderTable(list) {
 
   function renderRow(m, extraClass='') {
     if (mobileView) return renderRowMobile(m, extraClass);
-    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA', {day:'numeric', month:'short', year:'numeric'}) : '&mdash;';
+    const date = m.date_mandat ? new Date(m.date_mandat + 'T12:00:00').toLocaleDateString('fr-CA', {day:'numeric', month:'short', year:'numeric'}) : '<span class="date-aplanifier">&#128197; \u00c0 planifier</span>';
     const heure = m.heure_mandat ? m.heure_mandat.substring(0,5) : '';
     let techCell;
     if (m.technicien) {
