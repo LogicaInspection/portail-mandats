@@ -5099,6 +5099,20 @@ function money(n){
    - Si gcal_event_id existe deja: UPDATE l'evenement (utile si date/adresse change)
    - Bouton ✕ pour supprimer l'evenement */
 
+/* Determine DANS QUEL calendrier ecrire l'evenement.
+   Si un technicien est assigne et qu'on connait son courriel, on ecrit
+   directement dans SON calendrier (il l'a partage avec Bass en ecriture).
+   Sinon, fallback sur 'primary' (le calendrier du compte Google connecte). */
+async function resolveGcalCalendarId(){
+  try{
+    const techId=mandat?mandat.technicien_id:null;
+    if(!techId) return 'primary';
+    const {data:tech}=await sb.from('profiles').select('email,courriel').eq('id',techId).single();
+    const email=tech?(tech.email||tech.courriel||null):null;
+    return email||'primary';
+  }catch(e){ return 'primary'; }
+}
+
 function buildGcalEventBody(){
   const clientNom=document.getElementById('f-client-nom').value||'Client';
   const clientEmail=document.getElementById('f-client-email').value||'';
@@ -5122,7 +5136,8 @@ function buildGcalEventBody(){
     const sel=document.getElementById('f-type-mandat');
     typeM=sel?(sel.options[sel.selectedIndex]?.text||sel.value||''):'';
   }
-  const total=mandat?mandat.total_ttc:0;
+  /* Montant AVANT taxes pour l'agenda (le TTC ne nous interesse pas ici) */
+  const prixAvantTaxes=mandat?(parseFloat(mandat.prix_base)||0):0;
   const compNom=comp==='logica'?'Logica Inspection':'GEQ - Batiment Conseil';
 
   if(!date||!heure) throw new Error('Date et heure obligatoires');
@@ -5170,9 +5185,14 @@ function buildGcalEventBody(){
     parts.push('');
   }
 
-  if(total){
+  if(prixAvantTaxes){
     parts.push('<b>\uD83D\uDCB0 MONTANT</b>');
-    parts.push('Total TTC : '+h(money(total)));
+    parts.push('Avant taxes : '+h(money(prixAvantTaxes)));
+    /* Si la commission est validee, on l'affiche directement dans l'evenement */
+    if(mandat && mandat.commission_validee){
+      const comm=parseFloat(mandat.commission_totale)||0;
+      parts.push('\uD83D\uDCB5 Commission : '+h(money(comm)));
+    }
     parts.push('');
   }
 
@@ -5230,9 +5250,16 @@ async function addToGoogleCalendar(){
   try{eventBody=buildGcalEventBody();}
   catch(e){toast(e.message,'err');return;}
 
+  /* Pour une mise a jour : on reutilise le calendrier ou l'event a ete cree.
+     Pour une creation : on cible le calendrier du tech assigne (sinon primary). */
+  const calId=isUpdate
+    ?(mandat.gcal_calendar_id||'primary')
+    :await resolveGcalCalendarId();
+  const calSeg=encodeURIComponent(calId);
+
   const url=isUpdate
-    ?'https://www.googleapis.com/calendar/v3/calendars/primary/events/'+mandat.gcal_event_id
-    :'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+    ?'https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events/'+mandat.gcal_event_id
+    :'https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events';
   const method=isUpdate?'PUT':'POST';
 
   try{
@@ -5247,13 +5274,15 @@ async function addToGoogleCalendar(){
       return;
     }
     const data=await resp.json();
-    /* Sauvegarde l'id en BD si c'est une nouvelle creation */
+    /* Sauvegarde l'id ET le calendrier en BD si c'est une nouvelle creation */
     if(!isUpdate){
-      await sb.from('mandats').update({gcal_event_id:data.id}).eq('id',mandat.id);
+      await sb.from('mandats').update({gcal_event_id:data.id,gcal_calendar_id:calId}).eq('id',mandat.id);
       mandat.gcal_event_id=data.id;
+      mandat.gcal_calendar_id=calId;
     }
     updateGcalStatus();
-    toast(isUpdate?'Calendrier mis a jour':'Ajoute au calendrier !');
+    const inTechCal=calId!=='primary';
+    toast(isUpdate?'Calendrier mis a jour':(inTechCal?'Ajoute au calendrier du technicien !':'Ajoute au calendrier !'));
   }catch(e){toast('Erreur reseau: '+e.message,'err');}
 }
 
@@ -5266,7 +5295,8 @@ async function removeFromGoogleCalendar(){
   catch(e){toast('Connexion Google annulee','err');return;}
 
   try{
-    const resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events/'+mandat.gcal_event_id,{
+    const calSeg=encodeURIComponent(mandat.gcal_calendar_id||'primary');
+    const resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events/'+mandat.gcal_event_id,{
       method:'DELETE',
       headers:{'Authorization':'Bearer '+token}
     });
@@ -5276,8 +5306,9 @@ async function removeFromGoogleCalendar(){
       toast('Erreur: '+(err.error?.message||'inconnue'),'err');
       return;
     }
-    await sb.from('mandats').update({gcal_event_id:null}).eq('id',mandat.id);
+    await sb.from('mandats').update({gcal_event_id:null,gcal_calendar_id:null}).eq('id',mandat.id);
     mandat.gcal_event_id=null;
+    mandat.gcal_calendar_id=null;
     updateGcalStatus();
     toast('Retire du calendrier');
   }catch(e){toast('Erreur reseau: '+e.message,'err');}
@@ -5621,6 +5652,29 @@ async function renderCommissionValidation(){
 }
 
 /* Toggle la validation de la commission par le gestionnaire */
+/* Apres validation/devalidation de commission : met a jour l'evenement Google
+   Calendar existant (dans le calendrier ou il vit, meme si c'est le tech qui l'a
+   cree) pour y refleter le montant de commission. Silencieux si pas d'event.
+   "Fire and forget" : n'echoue jamais la validation. */
+async function syncGcalApresCommission(){
+  try{
+    if(!mandat || !mandat.gcal_event_id) return;
+    const date=document.getElementById('f-date')?document.getElementById('f-date').value:'';
+    const heure=document.getElementById('f-heure')?document.getElementById('f-heure').value:'';
+    if(!date||!heure) return; /* event sans date/heure : on ne peut pas reconstruire le body */
+    let token;
+    try{token=await getGoogleToken();}catch(e){return;}
+    let body;
+    try{body=buildGcalEventBody();}catch(e){return;}
+    const calSeg=encodeURIComponent(mandat.gcal_calendar_id||'primary');
+    await fetch('https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events/'+mandat.gcal_event_id,{
+      method:'PUT',
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+  }catch(e){ console.warn('Sync commission -> agenda echouee', e); }
+}
+
 async function toggleCommissionValidation(){
   if(profile.role !== 'gestionnaire'){
     toast('Seul un gestionnaire peut valider la commission','err');
@@ -5644,6 +5698,7 @@ async function toggleCommissionValidation(){
     mandat.commission_validee_at=null;
     mandat.commission_validee_par=null;
     toast('Commission d\u00e9valid\u00e9e');
+    syncGcalApresCommission(); /* retire la commission de l'agenda */
   } else {
     /* Valider */
     if(!await confirmTestAction('Valider la commission pour ce mandat')) return;
@@ -5670,6 +5725,7 @@ async function toggleCommissionValidation(){
     mandat.commission_validee_at=now;
     mandat.commission_validee_par=profile.id;
     toast('Commission valid\u00e9e');
+    syncGcalApresCommission(); /* met a jour l'agenda du tech avec la commission */
   }
   renderCommissionValidation();
 }
