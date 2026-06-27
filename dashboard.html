@@ -367,6 +367,9 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
 .rappel-warn{font-size:10px;color:var(--danger);margin-left:4px;font-weight:600;}
 
 .cell-money{font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap;}
+.cell-comm{text-align:center;}
+.comm-check{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e8f5e9;color:#2e7d32;font-size:13px;font-weight:800;line-height:1;}
+.mob-comm-check{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#e8f5e9;color:#2e7d32;font-size:12px;font-weight:800;line-height:1;flex-shrink:0;}
 
 .icon-btn{
   width:28px;height:28px;border-radius:7px;border:1px solid transparent;background:transparent;
@@ -1562,9 +1565,9 @@ async function updateFactBadge() {
 }
 
 /* ===== COLUMN RESIZE ===== */
-const COL_WIDTHS_KEY = 'dashboard_col_widths_v2';
+const COL_WIDTHS_KEY = 'dashboard_col_widths_v3';
 const DEFAULT_COL_WIDTHS = {
-  gest: ['120px','18%','20%','78px','150px','150px','130px','130px','100px'],
+  gest: ['120px','18%','20%','78px','150px','150px','130px','130px','70px','100px'],
   tech: ['120px','18%','20%','78px','150px','150px','130px','130px'],
 };
 
@@ -1744,11 +1747,13 @@ function renderTable(list) {
       <col style="width:120px"><col style="width:18%"><col style="width:20%">
       <col style="width:78px"><col style="width:150px"><col style="width:150px">
       <col style="width:130px"><col style="width:130px">
+      ${isGest ? '<col style="width:70px">' : ''}
       ${isGest ? '<col style="width:100px">' : ''}
     </colgroup>
     <thead><tr>
       <th>Date</th><th>Client</th><th>Adresse</th><th>Comp.</th>
       <th>Type</th><th>Technicien</th><th>Assignation</th><th>Suivi</th>
+      ${isGest ? '<th style="text-align:center">Comm.</th>' : ''}
       ${isGest ? '<th style="text-align:right">Avant taxes</th>' : ''}
     </tr></thead>
     <tbody>`;
@@ -1789,7 +1794,7 @@ function renderTable(list) {
       </div>
       ${adr ? `<div class="mob-addr">${escapeHtml(adr)}</div>` : ''}
       <div class="mob-card-foot">
-        <div class="mob-foot-left">${getSuiviBadge(m)}${techLine}</div>
+        <div class="mob-foot-left">${getSuiviBadge(m)}${(isGest && m.commission_validee) ? '<span class="mob-comm-check" title="Commission valid\u00e9e">&#10003;</span>' : ''}${techLine}</div>
         ${getDiscardBtn(m)}
       </div>
       ${actions ? `<div class="mob-actions">${actions}</div>` : ''}
@@ -1828,6 +1833,7 @@ function renderTable(list) {
       <td>${techCell}</td>
       <td>${getAssignBadge(m)}${getTimerHtml(m)}</td>
       <td><div class="suivi-cell">${getSuiviBadge(m)}${getDiscardBtn(m)}</div></td>
+      ${isGest ? `<td class="cell-comm" title="${m.commission_validee ? 'Commission valid\u00e9e' : 'Commission non valid\u00e9e'}">${m.commission_validee ? '<span class="comm-check">&#10003;</span>' : ''}</td>` : ''}
       ${isGest ? `<td class="cell-money">${m.sous_total ? money(m.sous_total) : '&mdash;'}</td>` : ''}
     </tr>`;
   }
@@ -1843,7 +1849,7 @@ function renderTable(list) {
       </div>`;
     }
     return `<tr class="t-sep ${name}${collapsed ? ' collapsed' : ''}" onclick="toggleSection(this,'${name}')">
-      <td colspan="${colCount + (isGest?1:0)}">
+      <td colspan="${colCount + (isGest?2:0)}">
         <div class="sep-content">
           <span class="sep-icon">${icon}</span>
           <span>${label}</span>
