@@ -1814,7 +1814,7 @@ function renderTable(list) {
       const tech = techList.find(t => t.id === m.technicien_id);
       const color = tech ? tech.color : '#374151';
       const initials = ((m.technicien.prenom||'')[0] + (m.technicien.nom||'')[0]).toUpperCase();
-      techCell = `<div class="tech-chip-cell"><div class="tech-av" style="background:${color}">${initials}</div><span class="tech-name">${m.technicien.prenom} ${m.technicien.nom}</span></div>`;
+      techCell = `<div class="tech-chip-cell" title="${escapeHtml((m.technicien.prenom||'')+' '+(m.technicien.nom||''))}"><div class="tech-av" style="background:${color}">${initials}</div></div>`;
     } else if (m.statut_assignation === 'pool') {
       techCell = '<span class="tech-pool">Pool</span>';
     } else {
