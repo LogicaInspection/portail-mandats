@@ -367,7 +367,10 @@ tbody tr.t-row:hover .discard-btn{opacity:1;}
 .rappel-warn{font-size:10px;color:var(--danger);margin-left:4px;font-weight:600;}
 
 .cell-money{font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;white-space:nowrap;}
+.cell-money.paye{color:#2e7d32;}
+.cell-money.nonpaye{color:#c62828;}
 .cell-comm{text-align:center;}
+.comm-empty{display:inline-block;width:16px;height:16px;border:1.5px solid #d0d5dd;border-radius:4px;background:#fff;vertical-align:middle;}
 .comm-check{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e8f5e9;color:#2e7d32;font-size:13px;font-weight:800;line-height:1;}
 .mob-comm-check{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#e8f5e9;color:#2e7d32;font-size:12px;font-weight:800;line-height:1;flex-shrink:0;}
 
@@ -1833,8 +1836,8 @@ function renderTable(list) {
       <td>${techCell}</td>
       <td>${getAssignBadge(m)}${getTimerHtml(m)}</td>
       <td><div class="suivi-cell">${getSuiviBadge(m)}${getDiscardBtn(m)}</div></td>
-      ${isGest ? `<td class="cell-comm" title="${m.commission_validee ? 'Commission valid\u00e9e' : 'Commission non valid\u00e9e'}">${m.commission_validee ? '<span class="comm-check">&#10003;</span>' : ''}</td>` : ''}
-      ${isGest ? `<td class="cell-money">${m.sous_total ? money(m.sous_total) : '&mdash;'}</td>` : ''}
+      ${isGest ? `<td class="cell-comm" title="${m.commission_validee ? 'Commission valid\u00e9e' : 'Commission non valid\u00e9e'}">${m.commission_validee ? '<span class="comm-check">&#10003;</span>' : '<span class="comm-empty"></span>'}</td>` : ''}
+      ${isGest ? `<td class="cell-money ${m.statut_paye ? 'paye' : 'nonpaye'}">${m.sous_total ? money(m.sous_total) : '&mdash;'}</td>` : ''}
     </tr>`;
   }
 
