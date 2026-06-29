@@ -5110,7 +5110,7 @@ async function sendEmail(){
     renderEmails();
     updateFinalBtn();
     /* Reflete le courriel envoye dans l'agenda du technicien (confirmation, rapport, etc.) */
-    pushGcalUpdate('Courriel');
+    pushGcalUpdate('Courriel', true);
   } else {
     const err=await resp.json();
     toast('Erreur: '+(err.error?.message||'Erreur inconnue'),'err');
@@ -5161,6 +5161,17 @@ async function resolveGcalCalendarId(){
     toast('Erreur lecture profil technicien : '+e.message,'err');
     return 'primary';
   }
+}
+
+/* Libelle lisible d'un courriel envoye, pour le bloc STATUTS de l'agenda.
+   Base sur le prefixe du type (conf_, rapp_, res_/resultat_, soum_). */
+function gcalLibelleCourriel(type){
+  const t=String(type||'');
+  if(t.startsWith('conf_'))      return '\u2709\uFE0F Confirmation d\'inspection envoy\u00e9e';
+  if(t.startsWith('rapp_'))      return '\uD83D\uDCC4 Rapport d\'inspection envoy\u00e9';
+  if(t.startsWith('res_')||t.startsWith('resultat_')) return '\uD83D\uDD2C R\u00e9sultats envoy\u00e9s';
+  if(t.startsWith('soum_'))      return '\uD83D\uDCD1 Soumission envoy\u00e9e';
+  return '\u2709\uFE0F Courriel envoy\u00e9';
 }
 
 function buildGcalEventBody(){
@@ -5252,14 +5263,21 @@ function buildGcalEventBody(){
     parts.push('');
   }
 
-  /* Bloc STATUTS : reflete dans l'agenda les etapes franchies du mandat
-     (courriels envoyes, facture, paiement). Affiche seulement les lignes vraies. */
+  /* Bloc STATUTS : reflete dans l'agenda les etapes franchies du mandat.
+     Les courriels proviennent de email_logs (chaque envoi reel, peu importe
+     le type), avec un libelle lisible. Facture et paiement viennent des flags. */
   if(mandat){
     const st=[];
-    if(mandat.statut_confirmation_envoyee) st.push('\u2709\uFE0F Confirmation d\'inspection envoy\u00e9e');
-    if(mandat.statut_rapport_envoye)       st.push('\uD83D\uDCC4 Rapport / Analyse envoy\u00e9');
-    if(mandat.statut_facture_envoyee)      st.push('\uD83E\uDDFE Facture envoy\u00e9e');
-    if(mandat.statut_paye)                 st.push('\u2705 Pay\u00e9');
+    /* Courriels reellement envoyes (dedupliques par type) */
+    const vus={};
+    (typeof emailLogs!=='undefined'&&emailLogs?emailLogs:[]).forEach(function(l){
+      const t=l.type_email||'';
+      if(!t||vus[t]) return;
+      vus[t]=true;
+      st.push(gcalLibelleCourriel(t));
+    });
+    if(mandat.statut_facture_envoyee) st.push('\uD83E\uDDFE Facture envoy\u00e9e');
+    if(mandat.statut_paye)            st.push('\u2705 Pay\u00e9');
     if(st.length){
       parts.push('<b>\uD83D\uDCCB STATUTS</b>');
       st.forEach(function(s){ parts.push(s); });
@@ -5762,16 +5780,18 @@ async function renderCommissionValidation(){
    paiement, les courriels envoyes et la facture. "Fire and forget" : ne bloque
    jamais l'action principale. `label` sert juste a personnaliser les messages.
    Silencieux si le mandat n'a pas encore d'evenement au calendrier. */
-async function pushGcalUpdate(label){
+async function pushGcalUpdate(label, warnSiAbsent){
   label = label || 'Mise \u00e0 jour';
   try{
     if(!mandat || !mandat.gcal_event_id){
       /* Pas d'evenement au calendrier pour ce mandat : rien a synchroniser. */
+      if(warnSiAbsent) toast(label+' enregistr\u00e9 (aucun \u00e9v\u00e9nement au calendrier pour ce mandat)','err');
       return;
     }
     const date=document.getElementById('f-date')?document.getElementById('f-date').value:'';
     const heure=document.getElementById('f-heure')?document.getElementById('f-heure').value:'';
     if(!date||!heure){
+      if(warnSiAbsent) toast(label+' enregistr\u00e9, mais agenda non mis \u00e0 jour (date/heure manquante)','err');
       return; /* event sans date/heure : on ne peut pas reconstruire le body */
     }
     let token;
