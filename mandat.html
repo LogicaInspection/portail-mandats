@@ -5104,13 +5104,29 @@ function money(n){
    directement dans SON calendrier (il l'a partage avec Bass en ecriture).
    Sinon, fallback sur 'primary' (le calendrier du compte Google connecte). */
 async function resolveGcalCalendarId(){
+  const techId=mandat?mandat.technicien_id:null;
+  if(!techId){
+    /* Aucun technicien assigne : l'event va dans le calendrier du compte connecte. */
+    return 'primary';
+  }
   try{
-    const techId=mandat?mandat.technicien_id:null;
-    if(!techId) return 'primary';
-    const {data:tech}=await sb.from('profiles').select('email,courriel').eq('id',techId).single();
-    const email=tech?(tech.email||tech.courriel||null):null;
-    return email||'primary';
-  }catch(e){ return 'primary'; }
+    const {data:tech,error}=await sb.from('profiles').select('email').eq('id',techId).single();
+    if(error){
+      toast('Impossible de lire le profil du technicien, ajout dans ton calendrier','err');
+      return 'primary';
+    }
+    const email=tech?(tech.email||null):null;
+    if(!email){
+      /* Le tech n'a pas de courriel : on ne peut pas cibler son agenda.
+         On previent clairement plutot que d'ajouter en silence dans primary. */
+      toast('\u26A0\uFE0F Ce technicien n\'a pas de courriel dans son profil : impossible de cibler son agenda. Ajout dans ton calendrier.','err');
+      return 'primary';
+    }
+    return email;
+  }catch(e){
+    toast('Erreur lecture profil technicien : '+e.message,'err');
+    return 'primary';
+  }
 }
 
 function buildGcalEventBody(){
@@ -5263,14 +5279,52 @@ async function addToGoogleCalendar(){
   const method=isUpdate?'PUT':'POST';
 
   try{
-    const resp=await fetch(url,{
+    let resp=await fetch(url,{
       method:method,
       headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
       body:JSON.stringify(eventBody)
     });
+
+    /* Cas frequent : l'event a ete DEPLACE manuellement vers un autre calendrier
+       (ex: de ton calendrier vers celui d'Alain). Le PUT sur l'ancien emplacement
+       renvoie alors 404 (introuvable) ou 403 (interdit). On recree proprement
+       l'event dans le BON calendrier (celui du tech assigne) et on remet a jour la BD. */
+    if(isUpdate && (resp.status===404 || resp.status===403)){
+      const bonCalId=await resolveGcalCalendarId();
+      const bonSeg=encodeURIComponent(bonCalId);
+      /* On tente d'abord de supprimer l'ancien event la ou il etait suppose etre,
+         pour eviter un doublon (ignore si ca echoue). */
+      try{
+        await fetch('https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events/'+mandat.gcal_event_id,{
+          method:'DELETE',headers:{'Authorization':'Bearer '+token}
+        });
+      }catch(e){}
+      /* Puis on recree dans le bon calendrier. */
+      resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/'+bonSeg+'/events',{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+        body:JSON.stringify(eventBody)
+      });
+      if(resp.ok){
+        const data=await resp.json();
+        await sb.from('mandats').update({gcal_event_id:data.id,gcal_calendar_id:bonCalId}).eq('id',mandat.id);
+        mandat.gcal_event_id=data.id;
+        mandat.gcal_calendar_id=bonCalId;
+        updateGcalStatus();
+        toast('\u00c9v\u00e9nement recr\u00e9\u00e9 dans le calendrier'+(bonCalId!=='primary'?' du technicien':''));
+        return;
+      }
+    }
+
     if(!resp.ok){
-      const err=await resp.json();
-      toast('Erreur calendrier: '+(err.error?.message||'inconnue'),'err');
+      let msg='';
+      try{ const err=await resp.json(); msg=err.error?.message||('HTTP '+resp.status); }
+      catch(e){ msg='HTTP '+resp.status; }
+      if(resp.status===403){
+        toast('Acc\u00e8s refus\u00e9 (403) : le calendrier du technicien n\'est pas partag\u00e9 en \u00e9criture avec ton compte, ou tu n\'es pas connect\u00e9 au bon compte Google.','err');
+      }else{
+        toast('Erreur calendrier: '+msg,'err');
+      }
       return;
     }
     const data=await resp.json();
@@ -5676,16 +5730,43 @@ async function syncGcalApresCommission(){
     catch(e){ toast('Commission valid\u00e9e, mais erreur agenda : '+e.message,'err'); return; }
     const calId=mandat.gcal_calendar_id||'primary';
     const calSeg=encodeURIComponent(calId);
-    const resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events/'+mandat.gcal_event_id,{
+    let resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events/'+mandat.gcal_event_id,{
       method:'PUT',
       headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
       body:JSON.stringify(body)
     });
+    /* Si l'event a ete deplace manuellement (404/403), on le recree dans le bon calendrier. */
+    if(resp.status===404 || resp.status===403){
+      const bonCalId=await resolveGcalCalendarId();
+      const bonSeg=encodeURIComponent(bonCalId);
+      try{
+        await fetch('https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events/'+mandat.gcal_event_id,{
+          method:'DELETE',headers:{'Authorization':'Bearer '+token}
+        });
+      }catch(e){}
+      resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/'+bonSeg+'/events',{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+        body:JSON.stringify(body)
+      });
+      if(resp.ok){
+        const data=await resp.json();
+        await sb.from('mandats').update({gcal_event_id:data.id,gcal_calendar_id:bonCalId}).eq('id',mandat.id);
+        mandat.gcal_event_id=data.id;
+        mandat.gcal_calendar_id=bonCalId;
+        toast('Commission ajout\u00e9e \u00e0 l\'agenda'+(bonCalId!=='primary'?' du technicien':''));
+        return;
+      }
+    }
     if(!resp.ok){
       let msg='';
       try{ const err=await resp.json(); msg=err.error?.message||('HTTP '+resp.status); }
       catch(e){ msg='HTTP '+resp.status; }
-      toast('Commission valid\u00e9e, mais agenda non mis \u00e0 jour : '+msg,'err');
+      if(resp.status===403){
+        toast('Commission valid\u00e9e, mais agenda refus\u00e9 (403) : calendrier du tech non partag\u00e9 en \u00e9criture ou mauvais compte Google.','err');
+      }else{
+        toast('Commission valid\u00e9e, mais agenda non mis \u00e0 jour : '+msg,'err');
+      }
       return;
     }
     toast('Commission ajout\u00e9e \u00e0 l\'agenda'+(calId!=='primary'?' du technicien':''));
