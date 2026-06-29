@@ -1591,6 +1591,14 @@ input[type=file]{display:none;}
           <option value="argent_comptant">Argent comptant</option>
         </select>
       </div>
+      <!-- Facture envoyee : case cochable manuelle -->
+      <div class="fin-row" id="facture-envoyee-row">
+        <label class="bonus-label" for="chk-facture-envoyee" style="display:flex;align-items:center;gap:7px;cursor:pointer;">
+          <input type="checkbox" id="chk-facture-envoyee" onchange="toggleFactureEnvoyee(this.checked)">
+          <span class="fin-label" style="cursor:pointer">&#129534; Facture envoy&eacute;e</span>
+        </label>
+        <span id="facture-envoyee-status" style="font-size:12px;color:#999">&#8212;</span>
+      </div>
       <!-- Commission : total de toutes les commissions + case valider -->
       <div class="fin-row comm" id="comm-totale-row">
         <span class="fin-label comm-color">&#128188; Commission tech</span>
@@ -2259,6 +2267,14 @@ if(m.type_mandat){
   setStBtn('st-soum',m.statut_soumission_envoyee);
   setStBtn('st-conf',m.statut_confirmation_envoyee);
   setStBtn('st-fact',m.statut_facture_envoyee);
+  /* Synchronise la case visible "Facture envoyee" dans Finances */
+  const chkFact=document.getElementById('chk-facture-envoyee');
+  if(chkFact) chkFact.checked=!!m.statut_facture_envoyee;
+  const factStatus=document.getElementById('facture-envoyee-status');
+  if(factStatus){
+    factStatus.innerHTML = m.statut_facture_envoyee ? '\u2713 Envoy\u00e9e' : '&#8212;';
+    factStatus.style.color = m.statut_facture_envoyee ? '#2e7d32' : '#999';
+  }
   setStBtn('st-paye',m.statut_paye);
   setStBtn('st-rapp',m.statut_rapport_envoye);
 
@@ -3008,8 +3024,23 @@ async function toggleSoumissionEnvoyee(){
   updateFinalBtn();
 }
 
+function toggleFactureEnvoyee(checked){
+  setStBtn('st-fact',checked); /* maj bouton legacy + badge header */
+  const status=document.getElementById('facture-envoyee-status');
+  if(status){
+    status.innerHTML = checked ? '\u2713 Envoy\u00e9e' : '&#8212;';
+    status.style.color = checked ? '#2e7d32' : '#999';
+  }
+  if(!isNew&&mandat){
+    sb.from('mandats').update({statut_facture_envoyee:checked}).eq('id',mandat.id);
+    mandat.statut_facture_envoyee=checked;
+    toast(checked?'Facture marqu\u00e9e envoy\u00e9e':'Statut facture retir\u00e9');
+    pushGcalUpdate('Facture'); /* reflete dans l'agenda */
+  }
+  updateFinalBtn();
+}
+
 function togglePaye(){
-  const btn=document.getElementById('st-paye');
   const newVal=!btn.classList.contains('on');
   setStBtn('st-paye',newVal);
   document.getElementById('paye-section').classList.toggle('show',newVal);
@@ -3017,6 +3048,7 @@ function togglePaye(){
     sb.from('mandats').update({statut_paye:newVal}).eq('id',mandat.id);
     mandat.statut_paye=newVal;
     toast(newVal?'Marque paye':'Statut paye retire');
+    pushGcalUpdate('Paiement');
   }
   updateFinalBtn();
 }
@@ -5077,6 +5109,8 @@ async function sendEmail(){
     }
     renderEmails();
     updateFinalBtn();
+    /* Reflete le courriel envoye dans l'agenda du technicien (confirmation, rapport, etc.) */
+    pushGcalUpdate('Courriel');
   } else {
     const err=await resp.json();
     toast('Erreur: '+(err.error?.message||'Erreur inconnue'),'err');
@@ -5216,6 +5250,21 @@ function buildGcalEventBody(){
     parts.push('<b>\uD83D\uDCDD NOTES INTERNES</b>');
     parts.push(h(notes));
     parts.push('');
+  }
+
+  /* Bloc STATUTS : reflete dans l'agenda les etapes franchies du mandat
+     (courriels envoyes, facture, paiement). Affiche seulement les lignes vraies. */
+  if(mandat){
+    const st=[];
+    if(mandat.statut_confirmation_envoyee) st.push('\u2709\uFE0F Confirmation d\'inspection envoy\u00e9e');
+    if(mandat.statut_rapport_envoye)       st.push('\uD83D\uDCC4 Rapport / Analyse envoy\u00e9');
+    if(mandat.statut_facture_envoyee)      st.push('\uD83E\uDDFE Facture envoy\u00e9e');
+    if(mandat.statut_paye)                 st.push('\u2705 Pay\u00e9');
+    if(st.length){
+      parts.push('<b>\uD83D\uDCCB STATUTS</b>');
+      st.forEach(function(s){ parts.push(s); });
+      parts.push('');
+    }
   }
 
   if(mandat){
@@ -5574,6 +5623,7 @@ function setModePaiement(mode){
     sb.from('mandats').update({statut_paye:true}).eq('id',mandat.id).then(()=>{
       mandat.statut_paye=true;
       setStBtn('st-paye',true);
+      pushGcalUpdate('Paiement'); /* reflete le statut paye dans l'agenda */
     });
   } else {
     markDirty();
@@ -5591,6 +5641,7 @@ function clearModePaiement(){
       mandat.statut_paye=false;
       setStBtn('st-paye',false);
       toast('Paiement efface');
+      pushGcalUpdate('Paiement'); /* retire le statut paye de l'agenda */
     });
   } else {
     markDirty();
@@ -5706,11 +5757,13 @@ async function renderCommissionValidation(){
 }
 
 /* Toggle la validation de la commission par le gestionnaire */
-/* Apres validation/devalidation de commission : met a jour l'evenement Google
-   Calendar existant (dans le calendrier ou il vit, meme si c'est le tech qui l'a
-   cree) pour y refleter le montant de commission. Silencieux si pas d'event.
-   "Fire and forget" : n'echoue jamais la validation. */
-async function syncGcalApresCommission(){
+/* Re-pousse l'evenement Google Calendar du mandat avec sa description a jour
+   (statuts, commission, etc.). Generique : utilise pour la commission, le
+   paiement, les courriels envoyes et la facture. "Fire and forget" : ne bloque
+   jamais l'action principale. `label` sert juste a personnaliser les messages.
+   Silencieux si le mandat n'a pas encore d'evenement au calendrier. */
+async function pushGcalUpdate(label){
+  label = label || 'Mise \u00e0 jour';
   try{
     if(!mandat || !mandat.gcal_event_id){
       /* Pas d'evenement au calendrier pour ce mandat : rien a synchroniser. */
@@ -5719,15 +5772,14 @@ async function syncGcalApresCommission(){
     const date=document.getElementById('f-date')?document.getElementById('f-date').value:'';
     const heure=document.getElementById('f-heure')?document.getElementById('f-heure').value:'';
     if(!date||!heure){
-      toast('Commission valid\u00e9e, mais l\'agenda n\'a pas pu \u00eatre mis \u00e0 jour (date/heure manquante)','err');
-      return;
+      return; /* event sans date/heure : on ne peut pas reconstruire le body */
     }
     let token;
     try{token=await getGoogleToken();}
-    catch(e){ toast('Commission valid\u00e9e, mais connexion Google requise pour mettre \u00e0 jour l\'agenda','err'); return; }
+    catch(e){ toast(label+' enregistr\u00e9, mais connexion Google requise pour l\'agenda','err'); return; }
     let body;
     try{body=buildGcalEventBody();}
-    catch(e){ toast('Commission valid\u00e9e, mais erreur agenda : '+e.message,'err'); return; }
+    catch(e){ toast(label+' enregistr\u00e9, mais erreur agenda : '+e.message,'err'); return; }
     const calId=mandat.gcal_calendar_id||'primary';
     const calSeg=encodeURIComponent(calId);
     let resp=await fetch('https://www.googleapis.com/calendar/v3/calendars/'+calSeg+'/events/'+mandat.gcal_event_id,{
@@ -5754,7 +5806,7 @@ async function syncGcalApresCommission(){
         await sb.from('mandats').update({gcal_event_id:data.id,gcal_calendar_id:bonCalId}).eq('id',mandat.id);
         mandat.gcal_event_id=data.id;
         mandat.gcal_calendar_id=bonCalId;
-        toast('Commission ajout\u00e9e \u00e0 l\'agenda'+(bonCalId!=='primary'?' du technicien':''));
+        toast('Agenda mis \u00e0 jour'+(bonCalId!=='primary'?' (technicien)':''));
         return;
       }
     }
@@ -5763,17 +5815,21 @@ async function syncGcalApresCommission(){
       try{ const err=await resp.json(); msg=err.error?.message||('HTTP '+resp.status); }
       catch(e){ msg='HTTP '+resp.status; }
       if(resp.status===403){
-        toast('Commission valid\u00e9e, mais agenda refus\u00e9 (403) : calendrier du tech non partag\u00e9 en \u00e9criture ou mauvais compte Google.','err');
+        toast(label+' enregistr\u00e9, mais agenda refus\u00e9 (403) : calendrier non partag\u00e9 en \u00e9criture ou mauvais compte Google.','err');
       }else{
-        toast('Commission valid\u00e9e, mais agenda non mis \u00e0 jour : '+msg,'err');
+        toast(label+' enregistr\u00e9, mais agenda non mis \u00e0 jour : '+msg,'err');
       }
       return;
     }
-    toast('Commission ajout\u00e9e \u00e0 l\'agenda'+(calId!=='primary'?' du technicien':''));
+    toast('Agenda mis \u00e0 jour'+(calId!=='primary'?' (technicien)':''));
   }catch(e){
-    console.warn('Sync commission -> agenda echouee', e);
-    toast('Commission valid\u00e9e, mais erreur agenda : '+e.message,'err');
+    console.warn('pushGcalUpdate echouee', e);
   }
+}
+
+/* Conserve pour compat : la validation de commission appelle ceci. */
+async function syncGcalApresCommission(){
+  return pushGcalUpdate('Commission');
 }
 
 async function toggleCommissionValidation(){
